@@ -4,8 +4,10 @@
   "description": "MediBook - Nền tảng đặt lịch khám và quản lý phòng khám thông minh (Node.js Express + SQLite)",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "start:dev": "node --watch server.js",
+    "dev": "tsc -w",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -20,5 +22,16 @@
     "express-session": "^1.19.0",
     "method-override": "^3.0.0",
     "multer": "^2.4.0"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/better-sqlite3": "^9.6.0",
+    "@types/connect-flash": "^0.0.40",
+    "@types/express": "^5.0.6",
+    "@types/express-session": "^1.19.0",
+    "@types/method-override": "^3.0.0",
+    "@types/multer": "^2.2.0",
+    "@types/node": "^26.6.3",
+    "typescript": "^7.0.2"
   }
 }
