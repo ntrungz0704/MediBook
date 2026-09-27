@@ -1,0 +1,134 @@
+<mxfile host="app.diagrams.net" modified="2026-09-27T10:40:00.000Z" agent="Mozilla/5.0" version="21.0.0" type="device">
+  <diagram id="usecase-diagram" name="MediBook - Use Case Diagram">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" background="#ffffff" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- System Boundary Box -->
+        <mxCell id="boundary" value="HỆ THỐNG QUẢN LÝ &amp; ĐẶT LỊCH PHÒNG KHÁM MEDIBOOK" style="swimlane;whiteSpace=wrap;html=1;fontSize=16;fontStyle=1;align=center;verticalAlign=top;startSize=35;fillColor=#f8fafc;strokeColor=#0284c7;strokeWidth=2;rounded=1;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="250" y="40" width="670" height="730" as="geometry" />
+        </mxCell>
+
+        <!-- ACTORS -->
+        <!-- Patient (Left) -->
+        <mxCell id="actor_patient" value="Bệnh nhân&#xa;(Patient)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#e0f2fe;strokeColor=#0284c7;strokeWidth=2;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="160" width="55" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Receptionist (Left Bottom) -->
+        <mxCell id="actor_receptionist" value="Lễ tân &amp; Thu ngân&#xa;(Receptionist)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#fef08a;strokeColor=#ca8a04;strokeWidth=2;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="520" width="55" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Doctor (Right Top) -->
+        <mxCell id="actor_doctor" value="Bác sĩ khám bệnh&#xa;(Doctor)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ccfbf1;strokeColor=#0d9488;strokeWidth=2;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="160" width="55" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Admin (Right Bottom) -->
+        <mxCell id="actor_admin" value="Quản trị viên&#xa;(Admin)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#fee2e2;strokeColor=#dc2626;strokeWidth=2;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="520" width="55" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- USE CASES INSIDE BOUNDARY -->
+        <!-- Patient UCs -->
+        <mxCell id="uc_p1" value="Đăng ký &amp; Đăng nhập" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f0fdf4;strokeColor=#16a34a;strokeWidth=1.5;fontSize=12;fontStyle=1;" vertex="1" parent="boundary">
+          <mxGeometry x="40" y="50" width="170" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_p2" value="Tìm kiếm Bác sĩ &amp; Chuyên khoa" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f0fdf4;strokeColor=#16a34a;strokeWidth=1.5;fontSize=12;fontStyle=1;" vertex="1" parent="boundary">
+          <mxGeometry x="40" y="120" width="180" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_p3" value="Đặt lịch khám trực tuyến" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dcfce7;strokeColor=#15803d;strokeWidth=2;fontSize=12;fontStyle=1;" vertex="1" parent="boundary">
+          <mxGeometry x="40" y="190" width="180" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_p4" value="Lưu Bác sĩ yêu thích" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f0fdf4;strokeColor=#16a34a;strokeWidth=1.5;fontSize=12;" vertex="1" parent="boundary">
+          <mxGeometry x="40" y="265" width="160" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_p5" value="Xem Lịch sử khám &amp; Đơn thuốc" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f0fdf4;strokeColor=#16a34a;strokeWidth=1.5;fontSize=12;" vertex="1" parent="boundary">
+          <mxGeometry x="40" y="330" width="180" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Receptionist UCs -->
+        <mxCell id="uc_r1" value="Tiếp đón &amp; Check-in bệnh nhân" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fef9c3;strokeColor=#ca8a04;strokeWidth=2;fontSize=12;fontStyle=1;" vertex="1" parent="boundary">
+          <mxGeometry x="40" y="420" width="180" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_r2" value="Cấp số thứ tự khám (STT)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fef9c3;strokeColor=#ca8a04;strokeWidth=1.5;fontSize=12;" vertex="1" parent="boundary">
+          <mxGeometry x="40" y="490" width="170" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_r3" value="Đặt lịch khám tại quầy" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fef9c3;strokeColor=#ca8a04;strokeWidth=1.5;fontSize=12;" vertex="1" parent="boundary">
+          <mxGeometry x="40" y="555" width="170" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_r4" value="Thu viện phí &amp; In biên lai" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fef9c3;strokeColor=#ca8a04;strokeWidth=2;fontSize=12;fontStyle=1;" vertex="1" parent="boundary">
+          <mxGeometry x="40" y="620" width="170" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_r5" value="Màn hình gọi số sảnh chờ" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fef9c3;strokeColor=#ca8a04;strokeWidth=1.5;fontSize=12;" vertex="1" parent="boundary">
+          <mxGeometry x="240" y="520" width="170" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Doctor UCs -->
+        <mxCell id="uc_d1" value="Xem hàng đợi bệnh nhân" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ccfbf1;strokeColor=#0f766e;strokeWidth=2;fontSize=12;fontStyle=1;" vertex="1" parent="boundary">
+          <mxGeometry x="440" y="50" width="180" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_d2" value="Gọi bệnh nhân vào khám" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ccfbf1;strokeColor=#0f766e;strokeWidth=1.5;fontSize=12;" vertex="1" parent="boundary">
+          <mxGeometry x="440" y="120" width="180" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_d3" value="Khám &amp; Nhập chỉ số sinh tồn" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ccfbf1;strokeColor=#0f766e;strokeWidth=2;fontSize=12;fontStyle=1;" vertex="1" parent="boundary">
+          <mxGeometry x="440" y="190" width="180" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_d4" value="Kê đơn thuốc điện tử" style="ellipse;whiteSpace=wrap;html=1;fillColor=#99f6e4;strokeColor=#0d9488;strokeWidth=2;fontSize=12;fontStyle=1;" vertex="1" parent="boundary">
+          <mxGeometry x="440" y="260" width="180" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_d5" value="Xem ca trực &amp; Xin nghỉ phép" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ccfbf1;strokeColor=#0f766e;strokeWidth=1.5;fontSize=12;" vertex="1" parent="boundary">
+          <mxGeometry x="440" y="330" width="180" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Admin UCs -->
+        <mxCell id="uc_a1" value="Dashboard &amp; Thống kê doanh thu" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fee2e2;strokeColor=#b91c1c;strokeWidth=2;fontSize=12;fontStyle=1;" vertex="1" parent="boundary">
+          <mxGeometry x="440" y="420" width="190" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_a2" value="Quản lý Người dùng &amp; Phân quyền" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fee2e2;strokeColor=#b91c1c;strokeWidth=1.5;fontSize=12;" vertex="1" parent="boundary">
+          <mxGeometry x="440" y="490" width="200" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_a3" value="Quản lý Bác sĩ &amp; Chuyên khoa" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fee2e2;strokeColor=#b91c1c;strokeWidth=1.5;fontSize=12;" vertex="1" parent="boundary">
+          <mxGeometry x="440" y="555" width="190" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_a4" value="Quản lý Kho thuốc &amp; Dịch vụ" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fee2e2;strokeColor=#b91c1c;strokeWidth=1.5;fontSize=12;" vertex="1" parent="boundary">
+          <mxGeometry x="440" y="620" width="180" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_a5" value="Nhật ký bảo mật (Activity Logs)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fee2e2;strokeColor=#b91c1c;strokeWidth=1.5;fontSize=12;" vertex="1" parent="boundary">
+          <mxGeometry x="440" y="680" width="190" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- CONNECTIONS -->
+        <!-- Patient to UCs -->
+        <mxCell id="e_p1" edge="1" parent="1" source="actor_patient" target="uc_p1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_p2" edge="1" parent="1" source="actor_patient" target="uc_p2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_p3" edge="1" parent="1" source="actor_patient" target="uc_p3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_p4" edge="1" parent="1" source="actor_patient" target="uc_p4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_p5" edge="1" parent="1" source="actor_patient" target="uc_p5"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- Receptionist to UCs -->
+        <mxCell id="e_r1" edge="1" parent="1" source="actor_receptionist" target="uc_r1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_r2" edge="1" parent="1" source="actor_receptionist" target="uc_r2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_r3" edge="1" parent="1" source="actor_receptionist" target="uc_r3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_r4" edge="1" parent="1" source="actor_receptionist" target="uc_r4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_r5" edge="1" parent="1" source="actor_receptionist" target="uc_r5"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- Doctor to UCs -->
+        <mxCell id="e_d1" edge="1" parent="1" source="actor_doctor" target="uc_d1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_d2" edge="1" parent="1" source="actor_doctor" target="uc_d2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_d3" edge="1" parent="1" source="actor_doctor" target="uc_d3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_d4" edge="1" parent="1" source="actor_doctor" target="uc_d4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_d5" edge="1" parent="1" source="actor_doctor" target="uc_d5"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- Admin to UCs -->
+        <mxCell id="e_a1" edge="1" parent="1" source="actor_admin" target="uc_a1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_a2" edge="1" parent="1" source="actor_admin" target="uc_a2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_a3" edge="1" parent="1" source="actor_admin" target="uc_a3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_a4" edge="1" parent="1" source="actor_admin" target="uc_a4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_a5" edge="1" parent="1" source="actor_admin" target="uc_a5"><mxGeometry relative="1" as="geometry" /></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

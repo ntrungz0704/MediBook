@@ -1,0 +1,98 @@
+<mxfile host="app.diagrams.net" modified="2026-09-27T10:45:00.000Z" agent="Mozilla/5.0" version="21.0.0" type="device">
+  <diagram id="erd-diagram" name="MediBook - ERD Diagram">
+    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" background="#ffffff" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- 1. USERS TABLE -->
+        <mxCell id="t_users" value="users&#xa;---------------------------------&#xa;+ id : INTEGER [PK]&#xa;  role : TEXT&#xa;  name : TEXT&#xa;  email : TEXT [UQ]&#xa;  password_hash : TEXT&#xa;  phone : TEXT&#xa;  status : TEXT&#xa;  created_at : DATETIME" style="shape=table;startSize=30;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#e0f2fe;strokeColor=#0284c7;strokeWidth=2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="60" y="80" width="180" height="170" as="geometry" />
+        </mxCell>
+
+        <!-- 2. PATIENTS TABLE -->
+        <mxCell id="t_patients" value="patients&#xa;---------------------------------&#xa;+ id : INTEGER [PK]&#xa;# user_id : INTEGER [FK]&#xa;  dob : TEXT&#xa;  gender : TEXT&#xa;  blood_group : TEXT&#xa;  health_insurance_no : TEXT" style="shape=table;startSize=30;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#f0fdf4;strokeColor=#16a34a;strokeWidth=2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="340" y="80" width="200" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- 3. DOCTORS TABLE -->
+        <mxCell id="t_doctors" value="doctors&#xa;---------------------------------&#xa;+ id : INTEGER [PK]&#xa;# user_id : INTEGER [FK]&#xa;  title : TEXT&#xa;  experience_years : INTEGER&#xa;  consultation_fee : REAL&#xa;  rating : REAL&#xa;  room_number : TEXT" style="shape=table;startSize=30;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#ccfbf1;strokeColor=#0d9488;strokeWidth=2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="620" y="80" width="200" height="160" as="geometry" />
+        </mxCell>
+
+        <!-- 4. SPECIALTIES TABLE -->
+        <mxCell id="t_specialties" value="specialties&#xa;---------------------------------&#xa;+ id : INTEGER [PK]&#xa;  name : TEXT&#xa;  slug : TEXT [UQ]&#xa;  description : TEXT&#xa;  icon : TEXT" style="shape=table;startSize=30;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#fef9c3;strokeColor=#ca8a04;strokeWidth=2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="920" y="80" width="180" height="130" as="geometry" />
+        </mxCell>
+
+        <!-- 5. SERVICES TABLE -->
+        <mxCell id="t_services" value="services&#xa;---------------------------------&#xa;+ id : INTEGER [PK]&#xa;# specialty_id : INTEGER [FK]&#xa;  name : TEXT&#xa;  price : REAL&#xa;  duration_minutes : INTEGER" style="shape=table;startSize=30;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#fef9c3;strokeColor=#ca8a04;strokeWidth=1.5;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1180" y="80" width="190" height="130" as="geometry" />
+        </mxCell>
+
+        <!-- 6. APPOINTMENTS TABLE -->
+        <mxCell id="t_appointments" value="appointments&#xa;---------------------------------&#xa;+ id : INTEGER [PK]&#xa;  appointment_code : TEXT [UQ]&#xa;# patient_id : INTEGER [FK]&#xa;# doctor_id : INTEGER [FK]&#xa;# service_id : INTEGER [FK]&#xa;  appointment_date : TEXT&#xa;  appointment_time : TEXT&#xa;  status : TEXT&#xa;  symptoms : TEXT" style="shape=table;startSize=30;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#e0e7ff;strokeColor=#4338ca;strokeWidth=2.5;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="480" y="320" width="220" height="190" as="geometry" />
+        </mxCell>
+
+        <!-- 7. EXAMINATION QUEUES -->
+        <mxCell id="t_queues" value="examination_queues&#xa;---------------------------------&#xa;+ id : INTEGER [PK]&#xa;# appointment_id : INT [FK]&#xa;# doctor_id : INT [FK]&#xa;  queue_number : INTEGER&#xa;  queue_date : TEXT&#xa;  status : TEXT" style="shape=table;startSize=30;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#ffedd5;strokeColor=#ea580c;strokeWidth=1.5;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="150" y="340" width="200" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- 8. PAYMENTS TABLE -->
+        <mxCell id="t_payments" value="payments&#xa;---------------------------------&#xa;+ id : INTEGER [PK]&#xa;# appointment_id : INT [FK]&#xa;# patient_id : INT [FK]&#xa;  amount : REAL&#xa;  payment_method : TEXT&#xa;  status : TEXT&#xa;  paid_at : DATETIME" style="shape=table;startSize=30;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#dcfce7;strokeColor=#15803d;strokeWidth=1.5;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="150" y="550" width="200" height="160" as="geometry" />
+        </mxCell>
+
+        <!-- 9. MEDICAL RECORDS TABLE -->
+        <mxCell id="t_records" value="medical_records&#xa;---------------------------------&#xa;+ id : INTEGER [PK]&#xa;# appointment_id : INT [FK]&#xa;# patient_id : INT [FK]&#xa;# doctor_id : INT [FK]&#xa;  pulse : TEXT&#xa;  blood_pressure : TEXT&#xa;  temperature : TEXT&#xa;  weight : TEXT&#xa;  diagnosis : TEXT&#xa;  treatment_plan : TEXT" style="shape=table;startSize=30;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#fae8ff;strokeColor=#a21caf;strokeWidth=2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="480" y="580" width="220" height="200" as="geometry" />
+        </mxCell>
+
+        <!-- 10. PRESCRIPTIONS TABLE -->
+        <mxCell id="t_prescriptions" value="prescriptions&#xa;---------------------------------&#xa;+ id : INTEGER [PK]&#xa;# medical_record_id : INT [FK]&#xa;  advice : TEXT&#xa;  created_at : DATETIME" style="shape=table;startSize=30;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#fae8ff;strokeColor=#a21caf;strokeWidth=1.5;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="800" y="600" width="200" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- 11. PRESCRIPTION ITEMS TABLE -->
+        <mxCell id="t_items" value="prescription_items&#xa;---------------------------------&#xa;+ id : INTEGER [PK]&#xa;# prescription_id : INT [FK]&#xa;# medicine_id : INT [FK]&#xa;  quantity : INTEGER&#xa;  dosage : TEXT" style="shape=table;startSize=30;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#fae8ff;strokeColor=#a21caf;strokeWidth=1.5;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="600" width="190" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- 12. MEDICINES TABLE -->
+        <mxCell id="t_medicines" value="medicines&#xa;---------------------------------&#xa;+ id : INTEGER [PK]&#xa;  name : TEXT&#xa;  unit : TEXT&#xa;  price : REAL&#xa;  stock_quantity : INTEGER&#xa;  status : TEXT" style="shape=table;startSize=30;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#fef2f2;strokeColor=#dc2626;strokeWidth=1.5;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="380" width="190" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- RELATIONSHIPS -->
+        <!-- Users -> Patients -->
+        <mxCell id="rel_u_p" edge="1" parent="1" source="t_users" target="t_patients" style="endArrow=ERoneToMany;startArrow=ERmandOne;html=1;strokeWidth=1.5;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <!-- Users -> Doctors -->
+        <mxCell id="rel_u_d" edge="1" parent="1" source="t_users" target="t_doctors" style="endArrow=ERoneToMany;startArrow=ERmandOne;html=1;strokeWidth=1.5;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <!-- Specialties -> Services -->
+        <mxCell id="rel_s_ser" edge="1" parent="1" source="t_specialties" target="t_services" style="endArrow=ERoneToMany;startArrow=ERmandOne;html=1;strokeWidth=1.5;"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- Patients -> Appointments -->
+        <mxCell id="rel_p_a" edge="1" parent="1" source="t_patients" target="t_appointments" style="endArrow=ERoneToMany;startArrow=ERmandOne;html=1;strokeWidth=2;strokeColor=#0284c7;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <!-- Doctors -> Appointments -->
+        <mxCell id="rel_d_a" edge="1" parent="1" source="t_doctors" target="t_appointments" style="endArrow=ERoneToMany;startArrow=ERmandOne;html=1;strokeWidth=2;strokeColor=#0d9488;"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- Appointments -> Queues -->
+        <mxCell id="rel_a_q" edge="1" parent="1" source="t_appointments" target="t_queues" style="endArrow=ERmandOne;startArrow=ERmandOne;html=1;strokeWidth=1.5;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <!-- Appointments -> Payments -->
+        <mxCell id="rel_a_pay" edge="1" parent="1" source="t_appointments" target="t_payments" style="endArrow=ERmandOne;startArrow=ERmandOne;html=1;strokeWidth=1.5;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <!-- Appointments -> Medical Records -->
+        <mxCell id="rel_a_med" edge="1" parent="1" source="t_appointments" target="t_records" style="endArrow=ERmandOne;startArrow=ERmandOne;html=1;strokeWidth=2;strokeColor=#4338ca;"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- Medical Records -> Prescriptions -->
+        <mxCell id="rel_med_pres" edge="1" parent="1" source="t_records" target="t_prescriptions" style="endArrow=ERmandOne;startArrow=ERmandOne;html=1;strokeWidth=1.5;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <!-- Prescriptions -> Prescription Items -->
+        <mxCell id="rel_pres_item" edge="1" parent="1" source="t_prescriptions" target="t_items" style="endArrow=ERoneToMany;startArrow=ERmandOne;html=1;strokeWidth=1.5;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <!-- Medicines -> Prescription Items -->
+        <mxCell id="rel_med_item" edge="1" parent="1" source="t_medicines" target="t_items" style="endArrow=ERoneToMany;startArrow=ERmandOne;html=1;strokeWidth=1.5;"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
