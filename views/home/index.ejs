@@ -223,15 +223,21 @@
         </div>
         <div class="doctor-card-body">
           <h3 class="doctor-name"><%= doc.name %></h3>
-          <div class="doctor-specialty"><%= doc.specialty_names || 'Chuyên khoa Nội' %></div>
+          <div class="doctor-specialty"><%= doc.specialty_names || 'Chuyên khoa Nội' %> &bull; <%= doc.room_number || 'P.101' %></div>
           
+          <p style="font-size:13px; color:#64748b; line-height:1.45; margin-bottom:12px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+            <%= doc.bio || 'Bác sĩ giàu kinh nghiệm, chu đáo, đồng hành tận tâm cùng bệnh nhân.' %>
+          </p>
+
           <div class="doctor-meta">
             <div class="doctor-rating">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
               <span><%= Number(doc.rating).toFixed(1) %></span>
               <span class="doctor-reviews-count">(<%= doc.rating_count %> đánh giá)</span>
             </div>
-            <span class="doctor-badge-exp"><%= doc.experience_years %>+ năm kinh nghiệm</span>
+            <div style="font-size:12.5px; font-weight:700; color:#0d9488;">
+              <%= doc.consultation_fee ? new Intl.NumberFormat('vi-VN').format(doc.consultation_fee) + ' ₫' : '200.000 ₫' %>
+            </div>
           </div>
 
           <div style="margin-top:16px;">
@@ -280,6 +286,101 @@
         <div class="step-content">
           <h4>Đến phòng khám</h4>
           <p>Đến đúng giờ hẹn, quét mã tiếp đón và gặp bác sĩ thăm khám theo số thứ tự.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7. SECTION BỔ SUNG: CƠ SỞ VẬT CHẤT & TRANG THIẾT BỊ HIỆN ĐẠI -->
+<section class="container section" data-animate="fade-up">
+  <div style="background: #ffffff; border-radius: 20px; padding: 45px 35px; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
+    <div style="text-align: center; max-width: 720px; margin: 0 auto 35px;">
+      <span class="badge badge-primary" style="margin-bottom: 8px; display: inline-block;">TIÊU CHUẨN QUỐC TẾ</span>
+      <h2 class="section-title" style="margin-bottom: 8px;">Cơ sở vật chất & Công nghệ y khoa tân tiến</h2>
+      <p style="color: var(--text-muted); font-size: 14.5px;">MediBook đầu tư đồng bộ hệ thống máy móc nhập khẩu từ Đức, Mỹ và Nhật Bản phục vụ chẩn đoán chính xác.</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:20px; text-align:center;">
+        <div style="font-size:32px; margin-bottom:10px;">🔬</div>
+        <h4 style="font-size:15.5px; font-weight:700; margin-bottom:6px; color:#0f172a;">Xét nghiệm tự động</h4>
+        <p style="font-size:12.5px; color:#64748b; line-height:1.4;">Hệ thống sinh hóa, miễn dịch tự động trả kết quả nhanh chóng trong 30-45 phút.</p>
+      </div>
+
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:20px; text-align:center;">
+        <div style="font-size:32px; margin-bottom:10px;">🩺</div>
+        <h4 style="font-size:15.5px; font-weight:700; margin-bottom:6px; color:#0f172a;">Nội soi kỹ thuật số</h4>
+        <p style="font-size:12.5px; color:#64748b; line-height:1.4;">Đầu dò nội soi mềm HD thế hệ mới, tầm soát tổn thương vi mô không gây đau hay khó chịu.</p>
+      </div>
+
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:20px; text-align:center;">
+        <div style="font-size:32px; margin-bottom:10px;">⚡</div>
+        <h4 style="font-size:15.5px; font-weight:700; margin-bottom:6px; color:#0f172a;">Siêu âm màu 4D/5D</h4>
+        <p style="font-size:12.5px; color:#64748b; line-height:1.4;">Hình ảnh siêu âm rõ nét hỗ trợ chẩn đoán thai kỳ, tim mạch và cơ quan ổ bụng.</p>
+      </div>
+
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:20px; text-align:center;">
+        <div style="font-size:32px; margin-bottom:10px;">🛡️</div>
+        <h4 style="font-size:15.5px; font-weight:700; margin-bottom:6px; color:#0f172a;">Phòng vô trùng Class 100</h4>
+        <p style="font-size:12.5px; color:#64748b; line-height:1.4;">Khử khuẩn áp lực dương, đảm bảo an toàn tuyệt đối chống nhiễm khuẩn chéo.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8. SECTION BỔ SUNG: ĐÁNH GIÁ TỪ BỆNH NHÂN THỰC TẾ -->
+<section class="container section" data-animate="fade-up" style="padding-bottom: 70px;">
+  <div class="section-header">
+    <div>
+      <h2 class="section-title">Khách hàng nói gì về MediBook?</h2>
+      <p style="color:var(--text-muted); font-size:14px;">Hơn 50,000+ lượt khám chữa bệnh và nhận phản hồi tích cực từ cộng đồng</p>
+    </div>
+    <div style="display:flex; align-items:center; gap:6px; color:#f59e0b; font-weight:700;">
+      <span>⭐ 4.9 / 5.0</span>
+      <span style="color:#64748b; font-weight:500;">(từ hơn 3,500+ đánh giá xác thực)</span>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;">
+    <div class="card-box" style="padding: 24px;">
+      <div style="color:#f59e0b; font-size:14px; margin-bottom:8px;">⭐⭐⭐⭐⭐</div>
+      <p style="font-size:13.5px; color:#334155; line-height:1.6; margin-bottom:14px;">
+        "Tôi đặt lịch trước trên web nên đến quầy chỉ cần đọc mã là được số khám ngay, không phải chen chúc 4-5 tiếng như ở bệnh viện lớn. Bác sĩ Đức khám rất kỹ và dặn dò chu đáo!"
+      </p>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div style="width:36px; height:36px; background:#e0f2fe; color:#0284c7; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px;">TN</div>
+        <div>
+          <div style="font-weight:700; font-size:13.5px; color:#0f172a;">Trần Văn Nam</div>
+          <div style="font-size:11.5px; color:#64748b;">Khám Nội tổng quát định kỳ</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-box" style="padding: 24px;">
+      <div style="color:#f59e0b; font-size:14px; margin-bottom:8px;">⭐⭐⭐⭐⭐</div>
+      <p style="font-size:13.5px; color:#334155; line-height:1.6; margin-bottom:14px;">
+        "Bác sĩ Mai khoa Nhi rất khéo, con trai mình bình thường sợ bác sĩ mà vào phòng cười suốt. Thuốc kê uống 2 ngày là đỡ sốt hẳn. Rất cảm ơn đội ngũ MediBook!"
+      </p>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div style="width:36px; height:36px; background:#ccfbf1; color:#0f766e; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px;">LH</div>
+        <div>
+          <div style="font-weight:700; font-size:13.5px; color:#0f172a;">Lê Hoàng Yến</div>
+          <div style="font-size:11.5px; color:#64748b;">Phụ huynh bé Bo (3 tuổi)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-box" style="padding: 24px;">
+      <div style="color:#f59e0b; font-size:14px; margin-bottom:8px;">⭐⭐⭐⭐⭐</div>
+      <p style="font-size:13.5px; color:#334155; line-height:1.6; margin-bottom:14px;">
+        "Giao diện web trực quan, rõ ràng minh bạch từng bảng giá dịch vụ. Toa thuốc sau khám được lưu ngay trên tài khoản, rất tiện để theo dõi liều lượng uống mỗi ngày."
+      </p>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div style="width:36px; height:36px; background:#fef08a; color:#a16207; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px;">HQ</div>
+        <div>
+          <div style="font-weight:700; font-size:13.5px; color:#0f172a;">Hoàng Quốc Bảo</div>
+          <div style="font-size:11.5px; color:#64748b;">Khám Tim mạch & Đo điện tim</div>
         </div>
       </div>
     </div>

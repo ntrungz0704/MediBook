@@ -34,12 +34,18 @@
           </h3>
           <div class="doctor-specialty"><%= doc.specialty_names || 'Nội tổng quát' %> &bull; <%= doc.room_number %></div>
 
+          <p style="font-size:13px; color:#64748b; line-height:1.45; margin-bottom:12px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+            <%= doc.bio || 'Bác sĩ chuyên khoa giàu kinh nghiệm, tận tâm, cam kết đồng hành cùng sức khỏe bệnh nhân.' %>
+          </p>
+
           <div class="doctor-meta">
             <div class="doctor-rating">
               ⭐ <%= Number(doc.rating).toFixed(1) %>
               <span class="doctor-reviews-count">(<%= doc.rating_count %>)</span>
             </div>
-            <span class="doctor-badge-exp"><%= doc.experience_years %>+ năm KN</span>
+            <div style="font-size:12px; font-weight:700; color:#0d9488;">
+              <%= doc.consultation_fee ? new Intl.NumberFormat('vi-VN').format(doc.consultation_fee) + ' ₫' : '200.000 ₫' %>
+            </div>
           </div>
 
           <div style="display:flex;gap:8px;margin-top:16px;">
@@ -49,5 +55,48 @@
         </div>
       </div>
     <% }); %>
+  </div>
+
+  <!-- SECTION BỔ SUNG 1: TIÊU CHUẨN ĐỘI NGŨ BÁC SĨ -->
+  <div style="margin-top: 60px; background:#ffffff; border-radius:20px; padding:35px 30px; border:1px solid var(--border);" data-animate="fade-up">
+    <div style="text-align:center; max-width:680px; margin:0 auto 30px;">
+      <h2 style="font-size:24px; font-weight:800; color:#0f172a; margin-bottom:8px;">Tiêu chuẩn tuyển chọn Bác sĩ tại MediBook</h2>
+      <p style="color:#64748b; font-size:14px;">100% y bác sĩ đều có chứng chỉ hành nghề và tuân thủ chuẩn mực y đức khắt khe</p>
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:24px;">
+      <div style="background:#f8fafc; padding:22px; border-radius:14px; border:1px solid #e2e8f0;">
+        <div style="font-size:24px; margin-bottom:10px;">🎓</div>
+        <h4 style="font-size:16px; font-weight:700; color:#0f172a; margin-bottom:6px;">Trình độ chuyên môn cao</h4>
+        <p style="font-size:13px; color:#64748b; line-height:1.5;">Tốt nghiệp các trường Đại học Y Dược hàng đầu, đạt học vị Thạc sĩ, Bác sĩ Chuyên khoa I, II.</p>
+      </div>
+
+      <div style="background:#f8fafc; padding:22px; border-radius:14px; border:1px solid #e2e8f0;">
+        <div style="font-size:24px; margin-bottom:10px;">⏱️</div>
+        <h4 style="font-size:16px; font-weight:700; color:#0f172a; margin-bottom:6px;">Tối thiểu 5+ năm kinh nghiệm</h4>
+        <p style="font-size:13px; color:#64748b; line-height:1.5;">Từng công tác tại các bệnh viện tuyến đầu, xử lý chính xác hàng ngàn ca bệnh lâm sàng phức tạp.</p>
+      </div>
+
+      <div style="background:#f8fafc; padding:22px; border-radius:14px; border:1px solid #e2e8f0;">
+        <div style="font-size:24px; margin-bottom:10px;">❤️</div>
+        <h4 style="font-size:16px; font-weight:700; color:#0f172a; margin-bottom:6px;">Lương y như từ mẫu</h4>
+        <p style="font-size:13px; color:#64748b; line-height:1.5;">Lắng nghe tận tình, giải thích cặn kẽ kết quả bệnh án và tư vấn phác đồ điều trị an toàn, tiết kiệm.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION BỔ SUNG 2: CÂU HỎI THƯỜNG GẶP -->
+  <div style="margin-top: 40px; background:#f1f5f9; border-radius:20px; padding:35px 30px;" data-animate="fade-up">
+    <h3 style="font-size:20px; font-weight:800; color:#0f172a; margin-bottom:18px; text-align:center;">Câu hỏi thường gặp khi chọn Bác sĩ</h3>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+      <div style="background:#fff; padding:18px 20px; border-radius:12px;">
+        <h5 style="font-size:14.5px; font-weight:700; color:#0f172a; margin-bottom:6px;">❓ Tôi có được chọn bác sĩ khám theo yêu cầu không?</h5>
+        <p style="font-size:13px; color:#64748b; line-height:1.5;">Hoàn toàn có! Bạn có thể xem hồ sơ kinh nghiệm và chọn đích danh bác sĩ mình mong muốn khi đặt lịch.</p>
+      </div>
+      <div style="background:#fff; padding:18px 20px; border-radius:12px;">
+        <h5 style="font-size:14.5px; font-weight:700; color:#0f172a; margin-bottom:6px;">❓ Nếu bác sĩ có lịch mổ đột xuất thì sao?</h5>
+        <p style="font-size:13px; color:#64748b; line-height:1.5;">Hệ thống MediBook sẽ gửi thông báo và nhân viên lễ tân sẽ liên hệ hỗ trợ bạn đổi sang bác sĩ cùng chuyên khoa hoặc dời giờ phù hợp.</p>
+      </div>
+    </div>
   </div>
 </div>
