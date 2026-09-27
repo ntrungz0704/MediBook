@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>HÓA ĐƠN VIỆN PHÍ - <%= payment.invoice_code %></title>
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; color: #1e293b; padding: 30px; margin: 0; background: #fff; }
+    .receipt-box { max-width: 680px; margin: 0 auto; border: 1px solid #cbd5e1; padding: 30px; border-radius: 8px; }
+    .header-table { width: 100%; border-bottom: 2px solid #0d9488; padding-bottom: 15px; margin-bottom: 20px; }
+    .title { text-align: center; margin: 20px 0; font-size: 22px; font-weight: 800; color: #0f172a; text-transform: uppercase; }
+    .info-grid { width: 100%; margin-bottom: 20px; }
+    .info-grid td { padding: 5px 0; font-size: 13.5px; }
+    .items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    .items-table th, .items-table td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; }
+    .items-table th { background: #f8fafc; font-weight: 700; }
+    .total-section { text-align: right; margin-top: 15px; font-size: 15px; }
+    .signatures { display: flex; justify-content: space-between; margin-top: 40px; text-align: center; }
+    @media print {
+      body { padding: 0; }
+      .receipt-box { border: none; }
+      .no-print { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div style="text-align: right; max-width: 680px; margin: 0 auto 10px;" class="no-print">
+    <button onclick="window.print()" style="padding: 8px 16px; background: #0d9488; color: #fff; border: none; border-radius: 6px; font-weight: 700; cursor: pointer;">
+      🖨️ In hóa đơn
+    </button>
+  </div>
+
+  <div class="receipt-box">
+    <table class="header-table">
+      <tr>
+        <td style="width: 60%;">
+          <strong style="font-size: 16px; color: #0d9488;">PHÒNG KHÁM ĐA KHOA QUỐC TẾ MEDIBOOK</strong><br>
+          <span style="font-size: 12px; color: #64748b;">
+            Địa chỉ: 123 Đường Nguyễn Tri Phương, Quận 5, TP. Hồ Chí Minh<br>
+            Hotline: 0901 888 999 - Email: contact@medibook.vn
+          </span>
+        </td>
+        <td style="text-align: right; font-size: 12px;">
+          Số HĐ: <strong><%= payment.invoice_code %></strong><br>
+          Mã đặt khám: <strong><%= appointment.booking_code %></strong><br>
+          Ngày in: <%= new Date().toLocaleDateString('vi-VN') %>
+        </td>
+      </tr>
+    </table>
+
+    <div class="title">HÓA ĐƠN THU TIỀN VIỆN PHÍ</div>
+
+    <table class="info-grid">
+      <tr>
+        <td style="width: 50%;">Họ tên bệnh nhân: <strong><%= appointment.patient_name %></strong></td>
+        <td>Số điện thoại: <strong><%= appointment.patient_phone %></strong></td>
+      </tr>
+      <tr>
+        <td>Bác sĩ điều trị: <strong><%= appointment.doctor_name %></strong></td>
+        <td>Phòng khám: <strong><%= appointment.room_number %> (<%= appointment.specialty_name %>)</strong></td>
+      </tr>
+      <tr>
+        <td>Chẩn đoán: <strong><%= appointment.clinical_diagnosis || 'Khám lâm sàng định kỳ' %></strong></td>
+        <td>Hình thức thanh toán: <strong><%= (payment.payment_method || 'CASH').toUpperCase() %></strong></td>
+      </tr>
+    </table>
+
+    <table class="items-table">
+      <thead>
+        <tr>
+          <th>STT</th>
+          <th>Nội dung thanh toán</th>
+          <th>ĐVT</th>
+          <th>SL</th>
+          <th>Đơn giá</th>
+          <th>Thành tiền</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><strong>Phí khám & Chẩn đoán chuyên khoa</strong> (<%= appointment.specialty_name %>)</td>
+          <td>Lượt</td>
+          <td>1</td>
+          <td><%= formatCurrency(payment.service_fee) %></td>
+          <td><%= formatCurrency(payment.service_fee) %></td>
+        </tr>
+
+        <% if (prescription && prescription.items) { %>
+          <% prescription.items.forEach((med, idx) => { %>
+            <tr>
+              <td><%= idx + 2 %></td>
+              <td><%= med.medicine_name %> (<%= med.dosage %>)</td>
+              <td><%= med.unit %></td>
+              <td><%= med.quantity %></td>
+              <td><%= formatCurrency(med.unit_price) %></td>
+              <td><%= formatCurrency(med.amount) %></td>
+            </tr>
+          <% }); %>
+        <% } %>
+      </tbody>
+    </table>
+
+    <div class="total-section">
+      <div style="margin-bottom: 6px;">Tổng chi phí dịch vụ: <strong><%= formatCurrency(payment.total_amount) %></strong></div>
+      <div style="margin-bottom: 6px;">Miễn giảm / BHYT: <strong><%= formatCurrency(payment.discount) %></strong></div>
+      <div style="font-size: 18px; font-weight: 800; color: #0d9488;">
+        SỐ TIỀN THỰC THU: <%= formatCurrency(payment.final_amount) %>
+      </div>
+      <div style="font-size: 12px; color: #64748b; font-style: italic; margin-top: 4px;">
+        (Đã bao gồm thuế GTGT và tiền thuốc theo đơn)
+      </div>
+    </div>
+
+    <div class="signatures">
+      <div>
+        <strong>Người nộp tiền</strong><br>
+        <span style="font-size: 12px; color: #64748b;">(Ký và ghi rõ họ tên)</span>
+      </div>
+      <div>
+        <strong>Thu ngân lập hóa đơn</strong><br>
+        <span style="font-size: 12px; color: #64748b;">(Đã ký điện tử & thu đủ tiền)</span><br><br>
+        <strong><%= payment.cashier_name || 'Lễ tân' %></strong>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

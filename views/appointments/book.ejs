@@ -1,0 +1,210 @@
+<div class="container" style="padding: 40px 20px 80px;">
+  <div style="margin-bottom: 28px;">
+    <h1 style="font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 6px;">Đặt lịch khám trực tuyến</h1>
+    <p style="color: var(--text-muted);">Hoàn thành thông tin 3 bước bên dưới để được ưu tiên thăm khám theo giờ hẹn</p>
+  </div>
+
+  <form action="/appointments/book" method="POST" id="booking_form">
+    <div style="display: grid; grid-template-columns: 1.8fr 1.2fr; gap: 30px; align-items: start;">
+      <!-- Left Column: Form Steps -->
+      <div style="display: flex; flex-direction: column; gap: 24px;">
+
+        <!-- STEP 1: CHUYÊN KHOA & BÁC SĨ -->
+        <div class="card-box" style="padding: 24px;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;border-bottom:1px solid var(--border-light);padding-bottom:14px;">
+            <div class="step-badge-num" style="width:32px;height:32px;font-size:14px;">1</div>
+            <h3 style="font-size: 18px; font-weight: 700; margin:0;">Chọn Chuyên khoa & Bác sĩ</h3>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div class="form-group">
+              <label for="booking_specialty">Chuyên khoa khám <span style="color:red;">*</span></label>
+              <select name="specialty_id" id="booking_specialty" class="form-control" required>
+                <option value="">-- Vui lòng chọn chuyên khoa --</option>
+                <% specialties.forEach(sp => { %>
+                  <option value="<%= sp.id %>" <%= selectedSpecialtyId == sp.id ? 'selected' : '' %>>
+                    <%= sp.name %>
+                  </option>
+                <% }); %>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="booking_doctor">Bác sĩ phụ trách <span style="color:red;">*</span></label>
+              <select name="doctor_id" id="booking_doctor" class="form-control" required>
+                <option value="">-- Vui lòng chọn bác sĩ --</option>
+                <% doctors.forEach(doc => { %>
+                  <option value="<%= doc.id %>" <%= selectedDoctorId == doc.id ? 'selected' : '' %>>
+                    <%= doc.name %> (<%= doc.room_number %>)
+                  </option>
+                <% }); %>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="booking_service">Dịch vụ khám (Tùy chọn)</label>
+              <select name="service_id" id="booking_service" class="form-control">
+                <option value="">-- Khám chuyên khoa tiêu chuẩn --</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: NGÀY KHÁM & KHUNG GIỜ -->
+        <div class="card-box" style="padding: 24px;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;border-bottom:1px solid var(--border-light);padding-bottom:14px;">
+            <div class="step-badge-num" style="width:32px;height:32px;font-size:14px;">2</div>
+            <h3 style="font-size: 18px; font-weight: 700; margin:0;">Chọn Ngày khám & Khung giờ</h3>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 20px;">
+            <label for="booking_date">Ngày khám <span style="color:red;">*</span></label>
+            <input type="date" name="appointment_date" id="booking_date" class="form-control" 
+                   value="<%= selectedDate %>" min="<%= today %>" required>
+          </div>
+
+          <div>
+            <label style="font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 8px; display: block;">
+              Khung giờ khả dụng (Chọn 1 khung giờ) <span style="color:red;">*</span>
+            </label>
+
+            <div id="slots_loading" style="display:none; text-align:center; padding: 16px; color: var(--primary);">
+              Đang tải khung giờ bác sĩ...
+            </div>
+
+            <div id="slots_error" class="alert alert-error" style="display:none; font-size:13px; padding:10px 14px;"></div>
+
+            <input type="hidden" name="start_time" id="selected_time_slot" required>
+
+            <div id="slots_container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px;">
+              <p class="text-muted" style="grid-column: 1/-1; text-align: center; padding: 20px;">
+                Vui lòng chọn bác sĩ và ngày khám để xem các khung giờ trống.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3: THÔNG TIN BỆNH NHÂN & TRIỆU CHỨNG -->
+        <div class="card-box" style="padding: 24px;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;border-bottom:1px solid var(--border-light);padding-bottom:14px;">
+            <div class="step-badge-num" style="width:32px;height:32px;font-size:14px;">3</div>
+            <h3 style="font-size: 18px; font-weight: 700; margin:0;">Thông tin người khám bệnh</h3>
+          </div>
+
+          <% if (!currentUser) { %>
+            <div style="background:#eff6ff;padding:12px 16px;border-radius:8px;font-size:13.5px;color:#1e40af;margin-bottom:16px;">
+              💡 <em>Tài khoản sẽ được tự động tạo với mật khẩu mặc định là <code>password</code> sau khi đặt lịch thành công.</em>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+              <div class="form-group">
+                <label>Họ và tên bệnh nhân <span style="color:red;">*</span></label>
+                <input type="text" name="patient_name" class="form-control" placeholder="Nguyễn Văn A" required>
+              </div>
+              <div class="form-group">
+                <label>Số điện thoại <span style="color:red;">*</span></label>
+                <input type="tel" name="patient_phone" class="form-control" placeholder="0901234567" required>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label>Địa chỉ Email (Nhận thông báo lịch) <span style="color:red;">*</span></label>
+              <input type="email" name="patient_email" class="form-control" placeholder="patient@example.com" required>
+            </div>
+          <% } else { %>
+            <div style="background: #f8fafc; padding: 14px 18px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 16px;">
+              <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">
+                Bệnh nhân: <%= currentUser.name %>
+              </div>
+              <div style="font-size: 13.5px; color: var(--text-muted);">
+                Email: <%= currentUser.email %> &bull; 
+                SĐT: <%= (patient && patient.phone) || currentUser.phone || 'Chưa cập nhật' %>
+              </div>
+            </div>
+          <% } %>
+
+          <div class="form-group">
+            <label for="symptoms">Lý do khám / Triệu chứng bệnh (Nếu có)</label>
+            <textarea name="symptoms" id="symptoms" rows="3" class="form-control" style="height:auto;padding:10px 14px;" placeholder="Ví dụ: Đau đầu, sốt nhẹ 2 ngày nay, cần tái khám huyết áp..."></textarea>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Booking Summary Card -->
+      <div style="position: sticky; top: 100px;">
+        <div class="card-box" style="padding: 26px;">
+          <h3 style="font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 18px; border-bottom: 1px solid var(--border); padding-bottom: 12px;">
+            Tóm tắt lịch khám
+          </h3>
+
+          <div style="display:flex;flex-direction:column;gap:14px;font-size:14px;margin-bottom:24px;">
+            <div style="display:flex;justify-content:space-between;">
+              <span class="text-muted">Cơ sở khám:</span>
+              <span style="font-weight:600;text-align:right;">Phòng khám MediBook (Q.1, TP.HCM)</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;">
+              <span class="text-muted">Thời lượng khám:</span>
+              <span style="font-weight:600;">30 phút</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;">
+              <span class="text-muted">Hình thức:</span>
+              <span style="font-weight:600;color:var(--primary);">Khám trực tiếp tại phòng khám</span>
+            </div>
+            <div style="border-top:1px dashed var(--border);padding-top:14px;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-weight:700;font-size:15px;">Phí khám ban đầu:</span>
+              <span style="font-size:18px;font-weight:800;color:var(--primary);">200.000 ₫</span>
+            </div>
+            <div style="font-size:12px;color:var(--text-muted);">
+              * Chi phí thuốc và dịch vụ cận lâm sàng (nếu có) sẽ được bác sĩ chỉ định và thanh toán sau khi khám.
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn_submit_booking">
+            Xác nhận đặt lịch ngay &rarr;
+          </button>
+
+          <div style="margin-top: 14px; text-align: center; font-size: 12px; color: var(--text-muted);">
+            🔒 Thông tin bệnh nhân được bảo mật tuyệt đối theo tiêu chuẩn y tế.
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+<style>
+.slot-btn {
+  padding: 10px 8px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: #ffffff;
+  font-weight: 600;
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #334155;
+  text-align: center;
+}
+
+.slot-btn.available:hover {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.slot-btn.selected {
+  background: var(--primary) !important;
+  color: #ffffff !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 4px 10px rgba(13, 148, 136, 0.3);
+}
+
+.slot-btn.disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+  border-color: #e2e8f0;
+  text-decoration: line-through;
+}
+</style>

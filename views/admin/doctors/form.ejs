@@ -1,0 +1,56 @@
+<div class="card-box" style="max-width: 720px; padding: 30px; margin: 0 auto;">
+  <h2 style="font-size: 20px; font-weight: 800; margin-bottom: 20px; border-bottom: 1px solid var(--border-light); padding-bottom: 12px;">
+    Cấu hình hồ sơ bác sĩ: <%= doctor.name %>
+  </h2>
+
+  <form action="/admin/doctors/update/<%= doctor.id %>" method="POST">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+      <div class="form-group">
+        <label>Học vị / Chức danh <span style="color:red;">*</span></label>
+        <input type="text" name="title" class="form-control" value="<%= doctor.title %>" placeholder="VD: BS. CKII, ThS. BS..." required>
+      </div>
+
+      <div class="form-group">
+        <label>Phòng khám phụ trách <span style="color:red;">*</span></label>
+        <input type="text" name="room_number" class="form-control" value="<%= doctor.room_number %>" placeholder="VD: P.101" required>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+      <div class="form-group">
+        <label>Số năm kinh nghiệm <span style="color:red;">*</span></label>
+        <input type="number" name="experience_years" class="form-control" value="<%= doctor.experience_years %>" required min="0">
+      </div>
+
+      <div class="form-group">
+        <label>Phí khám ban đầu (VNĐ) <span style="color:red;">*</span></label>
+        <input type="number" name="consultation_fee" class="form-control" value="<%= doctor.consultation_fee %>" required step="10000">
+      </div>
+    </div>
+
+    <!-- Specialties Assignment Checkboxes -->
+    <div class="form-group" style="margin-bottom: 18px;">
+      <label>Phân công Chuyên khoa phụ trách:</label>
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; background: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid var(--border);">
+        <% allSpecialties.forEach(sp => { %>
+          <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; cursor:pointer;">
+            <input type="checkbox" name="specialty_ids[]" value="<%= sp.id %>" <%= selectedSpecialtyIds.includes(sp.id) || selectedSpecialtyIds.includes(String(sp.id)) ? 'checked' : '' %>>
+            <%= sp.name %>
+          </label>
+        <% }); %>
+      </div>
+    </div>
+
+    <div class="form-group" style="margin-bottom: 24px;">
+      <label>Tiểu sử & Quá trình công tác</label>
+      <textarea name="bio" rows="4" class="form-control" style="height:auto;"><%= doctor.bio || '' %></textarea>
+    </div>
+
+    <div style="display: flex; justify-content: flex-end; gap: 12px;">
+      <a href="/admin/doctors" class="btn btn-secondary">Quay lại</a>
+      <button type="submit" class="btn btn-primary">
+        Lưu cấu hình bác sĩ
+      </button>
+    </div>
+  </form>
+</div>

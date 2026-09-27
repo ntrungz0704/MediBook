@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof pageTitle !== 'undefined' ? pageTitle : 'Lễ tân - MediBook' %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/app.css">
+  <link rel="stylesheet" href="/assets/css/dashboard.css">
+</head>
+<body>
+  <div class="dashboard-container">
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-header">
+        <span>MediBook</span>
+        <span class="sidebar-role-badge role-receptionist">Lễ tân</span>
+      </div>
+
+      <ul class="sidebar-nav">
+        <li><a href="/receptionist/dashboard" class="<%= currentPath.includes('/receptionist/dashboard') ? 'active' : '' %>">📊 Bàn làm việc lễ tân</a></li>
+        <li><a href="/receptionist/checkin" class="<%= currentPath.includes('/receptionist/checkin') ? 'active' : '' %>">📋 Tiếp đón & Điểm danh</a></li>
+        <li><a href="/receptionist/booking" class="<%= currentPath.includes('/receptionist/booking') ? 'active' : '' %>">➕ Đặt lịch tại quầy</a></li>
+        <li><a href="/receptionist/payments" class="<%= currentPath.includes('/receptionist/payments') ? 'active' : '' %>">💳 Thu ngân & Viện phí</a></li>
+        <li><a href="/receptionist/live-board" target="_blank">📺 Màn hình gọi số sảnh</a></li>
+        <li style="margin-top:20px;"><a href="/" target="_blank">🌐 Xem trang chủ</a></li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <span style="font-size:13px;"><%= currentUser ? currentUser.name : 'Lễ tân' %></span>
+        <a href="/logout" style="color:#ef4444;font-size:13px;font-weight:700;">Đăng xuất</a>
+      </div>
+    </aside>
+
+    <div class="dashboard-main">
+      <header class="dashboard-topbar">
+        <div class="topbar-title">
+          <h2><%= typeof pageTitle !== 'undefined' ? pageTitle : 'Bàn làm việc Lễ tân' %></h2>
+        </div>
+        <div class="topbar-user">
+          <div class="user-avatar-circle" style="background:#e0f2fe;color:#0369a1;">LT</div>
+          <span style="font-weight:600;"><%= currentUser ? currentUser.name : 'Lễ tân' %></span>
+        </div>
+      </header>
+
+      <% if (flashSuccess || flashError || flashInfo) { %>
+        <div style="padding: 20px 30px 0;">
+          <% if (flashSuccess) { %>
+            <div class="alert alert-success"><%= flashSuccess %></div>
+          <% } %>
+          <% if (flashError) { %>
+            <div class="alert alert-error"><%= flashError %></div>
+          <% } %>
+          <% if (flashInfo) { %>
+            <div class="alert alert-info"><%= flashInfo %></div>
+          <% } %>
+        </div>
+      <% } %>
+
+      <main class="dashboard-content">
+        <%- body %>
+      </main>
+    </div>
+  </div>
+
+  <script src="/assets/js/app.js"></script>
+</body>
+</html>

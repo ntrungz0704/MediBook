@@ -1,0 +1,51 @@
+<?php
+use App\Core\Csrf;
+?>
+<div class="container" style="max-width: 480px; padding: 60px 20px;">
+  <div class="card-box" style="padding: 36px 30px;">
+    <div style="text-align: center; margin-bottom: 28px;">
+      <div class="brand-icon" style="margin: 0 auto 12px; width: 48px; height: 48px;">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M12 5v14M5 12h14" stroke="#ffffff" stroke-width="3"/>
+        </svg>
+      </div>
+      <h2 style="font-size: 24px; font-weight: 800; color: #0f172a; margin-bottom: 6px;">Đăng nhập MediBook</h2>
+      <p style="color: var(--text-muted); font-size: 14px;">Truy cập vào tài khoản để theo dõi lịch khám và hồ sơ bệnh án</p>
+    </div>
+
+    <form action="/login" method="POST">
+      <?= Csrf::field() ?>
+
+      <div class="form-group" style="margin-bottom: 18px;">
+        <label for="email">Địa chỉ Email</label>
+        <input type="email" name="email" id="email" class="form-control" placeholder="example@medibook.local" required autofocus>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 22px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <label for="password">Mật khẩu</label>
+        </div>
+        <input type="password" name="password" id="password" class="form-control" placeholder="Nhập mật khẩu..." required>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-bottom: 20px;">
+        Đăng nhập
+      </button>
+
+      <!-- Quick Demo Account Credentials Helper -->
+      <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px; padding: 14px; font-size: 12.5px; color: #475569; line-height: 1.5; margin-bottom: 20px;">
+        <strong style="color: #0f172a;">Tài khoản demo sẵn có (mật khẩu: <code>password</code>):</strong>
+        <div style="margin-top: 6px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+          <div>👑 <strong>Admin:</strong> admin@medibook.local</div>
+          <div>👩‍⚕️ <strong>Bác sĩ:</strong> doctor@medibook.local</div>
+          <div>💁‍♀️ <strong>Lễ tân:</strong> receptionist@medibook.local</div>
+          <div>🧑‍🦱 <strong>Bệnh nhân:</strong> patient@medibook.local</div>
+        </div>
+      </div>
+
+      <div style="text-align: center; font-size: 14px; color: var(--text-muted);">
+        Chưa có tài khoản? <a href="/register" style="color: var(--primary); font-weight: 700;">Đăng ký bệnh nhân mới &rarr;</a>
+      </div>
+    </form>
+  </div>
+</div>

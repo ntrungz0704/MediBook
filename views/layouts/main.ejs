@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof pageTitle !== 'undefined' ? pageTitle : 'MediBook - Chăm sóc sức khỏe chủ động' %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/app.css">
+  <link rel="stylesheet" href="/assets/css/dashboard.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container navbar">
+      <!-- Brand Logo -->
+      <a href="/" class="brand-logo">
+        <div class="brand-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" fill="currentColor"/>
+            <path d="M12 5v14M5 12h14" stroke="#ffffff" stroke-width="3"/>
+          </svg>
+        </div>
+        <div style="display:flex; align-items:baseline;">
+          <span class="brand-text">Medi<span>Book</span></span>
+          <span class="brand-tagline">Khỏe hơn mỗi ngày</span>
+        </div>
+      </a>
+
+      <!-- Nav Links -->
+      <ul class="nav-links">
+        <li><a href="/" class="<%= currentPath === '/' ? 'active' : '' %>">Trang chủ</a></li>
+        <li><a href="/specialties" class="<%= currentPath.startsWith('/specialties') ? 'active' : '' %>">Chuyên khoa</a></li>
+        <li><a href="/doctors" class="<%= currentPath.startsWith('/doctors') ? 'active' : '' %>">Bác sĩ</a></li>
+        <li><a href="/appointments/book" class="<%= currentPath.startsWith('/appointments/book') ? 'active' : '' %>">Dịch vụ</a></li>
+        <li><a href="/contact" class="<%= currentPath === '/contact' ? 'active' : '' %>">Liên hệ</a></li>
+      </ul>
+
+      <!-- Header Actions -->
+      <div class="nav-actions">
+        <a href="/doctors" class="btn-icon-search" title="Tìm bác sĩ, chuyên khoa">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </a>
+
+        <% if (currentUser) { %>
+          <% if (currentUser.role === 'admin') { %>
+            <a href="/admin/dashboard" class="btn btn-secondary btn-sm">Quản trị</a>
+          <% } else if (currentUser.role === 'doctor') { %>
+            <a href="/doctor/dashboard" class="btn btn-secondary btn-sm">Bác sĩ</a>
+          <% } else if (currentUser.role === 'receptionist') { %>
+            <a href="/receptionist/dashboard" class="btn btn-secondary btn-sm">Lễ tân</a>
+          <% } else { %>
+            <a href="/my-appointments" class="btn btn-secondary btn-sm">Lịch của tôi</a>
+          <% } %>
+          
+          <a href="/profile" class="btn btn-outline btn-sm">Tài khoản</a>
+          <a href="/logout" class="btn btn-secondary btn-sm" title="Đăng xuất">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+          </a>
+        <% } else { %>
+          <a href="/login" class="btn btn-outline">Đăng nhập</a>
+        <% } %>
+
+        <a href="/appointments/book" class="btn btn-primary">Đặt lịch</a>
+      </div>
+    </div>
+  </header>
+
+  <% if (flashSuccess || flashError || flashInfo) { %>
+    <div class="container flash-container" style="margin-top: 15px;">
+      <% if (flashSuccess) { %>
+        <div class="alert alert-success"><%= flashSuccess %></div>
+      <% } %>
+      <% if (flashError) { %>
+        <div class="alert alert-error"><%= flashError %></div>
+      <% } %>
+      <% if (flashInfo) { %>
+        <div class="alert alert-info"><%= flashInfo %></div>
+      <% } %>
+    </div>
+  <% } %>
+
+  <main>
+    <%- body %>
+  </main>
+
+  <footer class="site-footer" id="footer-contact">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <div class="brand-icon" style="width:34px;height:34px;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 5v14M5 12h14" stroke="#ffffff" stroke-width="3"/>
+              </svg>
+            </div>
+            <h4 style="margin:0;font-size:22px;color:#fff;">Medi<span style="color:#14b8a6;">Book</span></h4>
+          </div>
+          <p>Hệ thống đặt lịch khám bệnh thông minh kết nối đội ngũ bác sĩ uy tín tại các phòng khám hàng đầu Việt Nam.</p>
+          <div style="font-size:13.5px;color:#cbd5e1;line-height:1.7;">
+            <div>📍 123 Đường Nguyễn Tri Phương, Quận 5, TP. Hồ Chí Minh</div>
+            <div>📞 Tổng đài: <strong>1900 8888</strong> - Hotline: <strong>0901 888 999</strong></div>
+            <div>✉️ Email: contact@medibook.vn</div>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h5>Chuyên khoa</h5>
+          <ul class="footer-links">
+            <li><a href="/specialties/noi-tong-quat">Nội tổng quát</a></li>
+            <li><a href="/specialties/nhi-khoa">Nhi khoa</a></li>
+            <li><a href="/specialties/san-phu-khoa">Sản phụ khoa</a></li>
+            <li><a href="/specialties/tim-mach">Tim mạch</a></li>
+            <li><a href="/specialties/da-lieu">Da liễu</a></li>
+            <li><a href="/specialties">Xem tất cả chuyên khoa &rarr;</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h5>Liên kết nhanh</h5>
+          <ul class="footer-links">
+            <li><a href="/">Trang chủ</a></li>
+            <li><a href="/doctors">Đội ngũ bác sĩ</a></li>
+            <li><a href="/appointments/book">Đặt lịch khám</a></li>
+            <li><a href="/contact">Thông tin liên hệ & Hỗ trợ</a></li>
+            <li><a href="/receptionist/live-board" target="_blank">Màn hình gọi số sảnh chờ</a></li>
+            <li><a href="/login">Đăng nhập tài khoản</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h5>Thời gian phục vụ</h5>
+          <div style="background:#1e293b;padding:16px;border-radius:12px;font-size:13px;color:#cbd5e1;line-height:1.6;">
+            <div style="font-weight:700;color:#fff;margin-bottom:6px;">⏰ Giờ mở cửa:</div>
+            <div>Thứ Hai - Thứ Bảy: 07:30 - 20:00 | Chủ Nhật: 08:00 - 12:00</div>
+            <div style="margin-top:10px;color:#2dd4bf;font-weight:600;">Ưu tiên tiếp đón bệnh nhân đã đặt lịch trước qua website.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; 2026 MediBook Healthcare Platform. Bảo lưu mọi quyền.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MOBILE BOTTOM NAVIGATION -->
+  <nav class="mobile-bottom-nav">
+    <div class="mobile-bottom-nav-inner">
+      <a href="/" class="nav-bottom-item <%= currentPath === '/' ? 'active' : '' %>">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+        <span>Trang chủ</span>
+      </a>
+
+      <a href="/doctors" class="nav-bottom-item <%= currentPath.startsWith('/doctors') ? 'active' : '' %>">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        <span>Bác sĩ</span>
+      </a>
+
+      <a href="/appointments/book" class="nav-bottom-item" style="overflow:visible;">
+        <div class="nav-bottom-fab">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </div>
+        <span style="margin-top:-6px;">Đặt lịch</span>
+      </a>
+
+      <a href="/my-appointments" class="nav-bottom-item <%= currentPath.startsWith('/my-appointments') ? 'active' : '' %>">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        <span>Lịch của tôi</span>
+      </a>
+
+      <a href="<%= currentUser ? '/profile' : '/login' %>" class="nav-bottom-item <%= currentPath.startsWith('/profile') || currentPath.startsWith('/login') ? 'active' : '' %>">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        <span>Tài khoản</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Require Login Modal Dialog -->
+  <div id="login-modal" class="custom-modal-overlay">
+    <div class="custom-modal-card">
+      <div class="custom-modal-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+        </svg>
+      </div>
+      <h3 style="font-size: 20px; font-weight: 800; color: #0f172a; margin-bottom: 8px;">Yêu cầu Đăng nhập</h3>
+      <p style="font-size: 14.5px; color: #64748b; line-height: 1.6; margin-bottom: 24px;">
+        Vui lòng đăng nhập hoặc tạo tài khoản MediBook để lưu bác sĩ vào danh sách yêu thích và nhận thông báo lịch khám!
+      </p>
+      <div style="display: flex; gap: 12px; justify-content: center;">
+        <button type="button" class="btn btn-secondary" onclick="closeLoginModal()">Để sau</button>
+        <a href="/login" class="btn btn-primary">Đăng nhập ngay &rarr;</a>
+      </div>
+    </div>
+  </div>
+
+  <script id="medibook-user-data" type="application/json">
+    <%- currentUser ? JSON.stringify({ id: currentUser.id, name: currentUser.name, role: currentUser.role }) : 'null' %>
+  </script>
+  <script>
+    try {
+      var userDataEl = document.getElementById('medibook-user-data');
+      window.MEDIBOOK_USER = userDataEl ? JSON.parse(userDataEl.textContent) : null;
+    } catch(e) {
+      window.MEDIBOOK_USER = null;
+    }
+  </script>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/booking.js"></script>
+  <script src="/assets/js/queue.js"></script>
+</body>
+</html>

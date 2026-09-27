@@ -1,0 +1,43 @@
+<div class="card-box">
+  <div class="card-header-bar">
+    <h3>Danh mục chuyên khoa (<%= specialties ? specialties.length : 0 %> chuyên khoa)</h3>
+    <a href="/admin/specialties/create" class="btn btn-primary btn-sm">➕ Thêm chuyên khoa mới</a>
+  </div>
+
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Tên chuyên khoa</th>
+          <th>Đường dẫn (Slug)</th>
+          <th>Mô tả tóm tắt</th>
+          <th>Số bác sĩ</th>
+          <th>Trạng thái</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (!specialties || specialties.length === 0) { %>
+          <tr><td colspan="7" style="text-align:center;padding:20px;">Không có chuyên khoa nào.</td></tr>
+        <% } else { %>
+          <% specialties.forEach(s => { %>
+            <tr>
+              <td><%= s.id %></td>
+              <td><strong><%= s.name %></strong></td>
+              <td><code><%= s.slug %></code></td>
+              <td><%= s.description %></td>
+              <td><%= s.doctor_count || 0 %> bác sĩ</td>
+              <td>
+                <span class="badge badge-success"><%= s.status %></span>
+              </td>
+              <td>
+                <a href="/admin/specialties/edit/<%= s.id %>" class="btn btn-secondary btn-sm">Sửa</a>
+              </td>
+            </tr>
+          <% }); %>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 380" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgDoc2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef2f2" />
+      <stop offset="100%" stop-color="#e0e7ff" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="380" rx="20" fill="url(#bgDoc2)" />
+  <!-- Hair back -->
+  <path d="M130 140 Q130 240 140 280 Q200 290 260 280 Q270 240 270 140 Z" fill="#1e1b4b" />
+  <!-- Body / Lab Coat -->
+  <path d="M125 380 L125 260 Q200 235 275 260 L275 380 Z" fill="#ffffff" />
+  <path d="M185 260 L185 380" stroke="#e2e8f0" stroke-width="2" />
+  <!-- Stethoscope -->
+  <path d="M155 260 Q155 330 190 335 Q225 330 225 260" fill="none" stroke="#0d9488" stroke-width="6" stroke-linecap="round" />
+  <circle cx="190" cy="342" r="10" fill="#ccfbf1" stroke="#0d9488" stroke-width="3" />
+  <!-- Neck -->
+  <rect x="180" y="215" width="40" height="40" fill="#fde68a" rx="6" />
+  <!-- Face -->
+  <ellipse cx="200" cy="165" rx="50" ry="60" fill="#fef08a" />
+  <!-- Hair Front -->
+  <path d="M140 145 Q150 90 200 90 Q250 90 260 145 Q235 125 200 125 Q165 125 140 145 Z" fill="#1e1b4b" />
+  <!-- Eyes & Eyebrows -->
+  <ellipse cx="178" cy="155" rx="4" ry="5" fill="#1e293b" />
+  <ellipse cx="222" cy="155" rx="4" ry="5" fill="#1e293b" />
+  <!-- Bright Friendly Smile -->
+  <path d="M182 188 Q200 208 218 188" fill="#ffffff" stroke="#e11d48" stroke-width="3" stroke-linecap="round" />
+</svg>

@@ -1,0 +1,43 @@
+<div class="card-box">
+  <div class="card-header-bar">
+    <h3>Danh sách bác sĩ hệ thống (<%= doctors ? doctors.length : 0 %> bác sĩ)</h3>
+  </div>
+
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Bác sĩ</th>
+          <th>Phòng khám</th>
+          <th>Chuyên khoa</th>
+          <th>Kinh nghiệm</th>
+          <th>Đánh giá</th>
+          <th>Phí khám</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (!doctors || doctors.length === 0) { %>
+          <tr><td colspan="7" style="text-align:center;padding:20px;">Chưa có bác sĩ nào.</td></tr>
+        <% } else { %>
+          <% doctors.forEach(d => { %>
+            <tr>
+              <td>
+                <strong><%= d.name %></strong><br>
+                <small class="text-muted"><%= d.email %></small>
+              </td>
+              <td><span class="badge badge-info"><%= d.room_number %></span></td>
+              <td><%= d.specialty_names || 'Chưa phân chuyên khoa' %></td>
+              <td><%= d.experience_years %> năm</td>
+              <td>⭐ <%= Number(d.rating).toFixed(1) %> (<%= d.rating_count %>)</td>
+              <td><strong style="color:var(--primary);"><%= formatCurrency(d.consultation_fee) %></strong></td>
+              <td>
+                <a href="/admin/doctors/edit/<%= d.id %>" class="btn btn-secondary btn-sm">Thiết lập & Chuyên khoa</a>
+              </td>
+            </tr>
+          <% }); %>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>

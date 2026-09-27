@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof pageTitle !== 'undefined' ? pageTitle : 'Quản trị hệ thống - MediBook' %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/app.css">
+  <link rel="stylesheet" href="/assets/css/dashboard.css">
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- Sidebar -->
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-header">
+        <span>MediBook</span>
+        <span class="sidebar-role-badge role-admin">Admin</span>
+      </div>
+
+      <ul class="sidebar-nav">
+        <li><a href="/admin/dashboard" class="<%= currentPath.includes('/admin/dashboard') ? 'active' : '' %>">📊 Bảng điều khiển</a></li>
+        <li><a href="/admin/users" class="<%= currentPath.includes('/admin/users') ? 'active' : '' %>">👥 Quản lý người dùng</a></li>
+        <li><a href="/admin/doctors" class="<%= currentPath.includes('/admin/doctors') ? 'active' : '' %>">🩺 Quản lý bác sĩ</a></li>
+        <li><a href="/admin/specialties" class="<%= currentPath.includes('/admin/specialties') ? 'active' : '' %>">🏥 Quản lý chuyên khoa</a></li>
+        <li><a href="/admin/services" class="<%= currentPath.includes('/admin/services') ? 'active' : '' %>">📋 Quản lý dịch vụ</a></li>
+        <li><a href="/admin/medicines" class="<%= currentPath.includes('/admin/medicines') ? 'active' : '' %>">💊 Kho thuốc phòng khám</a></li>
+        <li><a href="/admin/schedules" class="<%= currentPath.includes('/admin/schedules') ? 'active' : '' %>">📅 Ca trực & Nghỉ phép</a></li>
+        <li><a href="/admin/appointments" class="<%= currentPath.includes('/admin/appointments') ? 'active' : '' %>">🗓️ Lịch hẹn khám</a></li>
+        <li><a href="/admin/reports" class="<%= currentPath.includes('/admin/reports') ? 'active' : '' %>">📈 Báo cáo doanh thu</a></li>
+        <li><a href="/admin/logs" class="<%= currentPath.includes('/admin/logs') ? 'active' : '' %>">🔒 Nhật ký hoạt động</a></li>
+        <li style="margin-top:20px;"><a href="/" target="_blank">🌐 Xem trang chủ</a></li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <span style="font-size:13px;"><%= currentUser ? currentUser.name : 'Admin' %></span>
+        <a href="/logout" style="color:#ef4444;font-size:13px;font-weight:700;">Đăng xuất</a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="dashboard-main">
+      <header class="dashboard-topbar">
+        <div class="topbar-title">
+          <h2><%= typeof pageTitle !== 'undefined' ? pageTitle : 'Quản trị hệ thống' %></h2>
+        </div>
+        <div class="topbar-user">
+          <div class="user-avatar-circle">AD</div>
+          <span style="font-weight:600;"><%= currentUser ? currentUser.name : 'Quản trị viên' %></span>
+        </div>
+      </header>
+
+      <% if (flashSuccess || flashError || flashInfo) { %>
+        <div style="padding: 20px 30px 0;">
+          <% if (flashSuccess) { %>
+            <div class="alert alert-success"><%= flashSuccess %></div>
+          <% } %>
+          <% if (flashError) { %>
+            <div class="alert alert-error"><%= flashError %></div>
+          <% } %>
+          <% if (flashInfo) { %>
+            <div class="alert alert-info"><%= flashInfo %></div>
+          <% } %>
+        </div>
+      <% } %>
+
+      <main class="dashboard-content">
+        <%- body %>
+      </main>
+    </div>
+  </div>
+
+  <script src="/assets/js/app.js"></script>
+</body>
+</html>

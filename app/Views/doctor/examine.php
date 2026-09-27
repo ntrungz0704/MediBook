@@ -1,0 +1,318 @@
+<?php
+use App\Core\Helper;
+use App\Core\Csrf;
+
+$vitals = [];
+if (!empty($currentRecord['vital_signs'])) {
+    $vitals = json_decode($currentRecord['vital_signs'], true) ?: [];
+}
+?>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+  <div>
+    <a href="/doctor/queue" style="color: var(--primary); font-weight: 600; font-size: 14px;">&larr; Quay lại hàng đợi</a>
+    <h1 style="font-size: 24px; font-weight: 800; color: #0f172a; margin-top: 4px;">
+      Thăm khám & Kê toa bệnh nhân: <?= htmlspecialchars($app['patient_name']) ?>
+    </h1>
+  </div>
+
+  <div>
+    <span class="badge badge-primary" style="font-size:14px; padding:6px 14px;">
+      Mã hồ sơ: <?= htmlspecialchars($app['booking_code']) ?>
+    </span>
+  </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 2.6fr; gap: 24px; align-items: start;">
+  
+  <!-- Left Side: Patient Background & Past History -->
+  <div style="display: flex; flex-direction: column; gap: 20px;">
+    
+    <!-- Patient Info Card -->
+    <div class="card-box" style="padding: 20px;">
+      <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 14px; border-bottom: 1px solid var(--border-light); padding-bottom: 8px;">
+        👤 Thông tin bệnh nhân
+      </h3>
+
+      <div style="display:flex; flex-direction:column; gap:10px; font-size: 13.5px;">
+        <div>Họ và tên: <strong><?= htmlspecialchars($app['patient_name']) ?></strong></div>
+        <div>SĐT: <strong><?= htmlspecialchars($app['patient_phone']) ?></strong></div>
+        <div>
+          Giới tính: <strong><?= $app['patient_gender'] === 'male' ? 'Nam' : ($app['patient_gender'] === 'female' ? 'Nữ' : 'Khác') ?></strong> &bull;
+          Ngày sinh: <strong><?= Helper::formatDate($app['patient_dob']) ?></strong>
+        </div>
+        <div>Thẻ BHYT: <strong><?= htmlspecialchars($app['health_insurance_no'] ?: 'Không có') ?></strong></div>
+        <div>Địa chỉ: <?= htmlspecialchars($app['patient_address'] ?: 'Chưa cập nhật') ?></div>
+      </div>
+
+      <div style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border);">
+        <strong style="color: #ef4444; font-size: 13px;">⚠️ Tiền sử bệnh & Dị ứng:</strong>
+        <p style="font-size: 13px; color: #475569; margin-top: 4px; background: #fef2f2; padding: 8px; border-radius: 6px;">
+          <?= htmlspecialchars($app['medical_history'] ?: 'Không ghi nhận dị ứng đặc biệt') ?>
+        </p>
+      </div>
+
+      <div style="margin-top: 12px;">
+        <strong style="color: #0369a1; font-size: 13px;">Triệu chứng khi đặt lịch:</strong>
+        <p style="font-size: 13px; color: #334155; margin-top: 4px; background: #f0fdfa; padding: 8px; border-radius: 6px;">
+          <?= htmlspecialchars($app['symptoms'] ?: 'Khám định kỳ') ?>
+        </p>
+      </div>
+    </div>
+
+    <!-- Past Visit Records -->
+    <div class="card-box" style="padding: 20px;">
+      <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px; border-bottom: 1px solid var(--border-light); padding-bottom: 8px;">
+        📜 Lịch sử các lần khám trước
+      </h3>
+
+      <?php if (empty($pastRecords)): ?>
+        <p style="font-size: 13px; color: var(--text-muted);">Đây là lần đầu bệnh nhân đến khám tại MediBook.</p>
+      <?php else: ?>
+        <div style="display:flex; flex-direction:column; gap:12px; font-size: 13px;">
+          <?php foreach ($pastRecords as $pr): ?>
+            <div style="border-left: 3px solid var(--primary); padding-left: 10px;">
+              <div style="font-weight: 700; color: #0f172a;"><?= Helper::formatDate($pr['created_at']) ?></div>
+              <div style="color: #334155;">Chẩn đoán: <?= htmlspecialchars($pr['clinical_diagnosis']) ?></div>
+            </div>
+          <?php endforeach; ?>
+        </div>
+      <?php endif; ?>
+    </div>
+
+  </div>
+
+  <!-- Right Side: Clinical Exam Form -->
+  <form action="/doctor/examine/<?= $app['id'] ?>" method="POST" id="exam_form">
+    <?= Csrf::field() ?>
+
+    <div class="card-box" style="padding: 24px; margin-bottom: 24px;">
+      <h3 style="font-size: 17px; font-weight: 700; margin-bottom: 16px; color: #0f172a;">
+        1. Đo lường chỉ số sinh tồn (Vital Signs)
+      </h3>
+
+      <div class="vitals-grid">
+        <div class="form-group">
+          <label>Huyết áp (mmHg)</label>
+          <input type="text" name="blood_pressure" class="form-control" placeholder="120/80" value="<?= htmlspecialchars($vitals['blood_pressure'] ?? '120/80') ?>">
+        </div>
+
+        <div class="form-group">
+          <label>Nhịp tim (bpm)</label>
+          <input type="number" name="heart_rate" class="form-control" placeholder="75" value="<?= htmlspecialchars($vitals['heart_rate'] ?? '75') ?>">
+        </div>
+
+        <div class="form-group">
+          <label>Thân nhiệt (°C)</label>
+          <input type="number" step="0.1" name="temperature" class="form-control" placeholder="37.0" value="<?= htmlspecialchars($vitals['temperature'] ?? '36.8') ?>">
+        </div>
+
+        <div class="form-group">
+          <label>Cân nặng (kg)</label>
+          <input type="number" step="0.1" name="weight" id="vital_weight" class="form-control" placeholder="65" value="<?= htmlspecialchars($vitals['weight'] ?? '65') ?>">
+        </div>
+
+        <div class="form-group">
+          <label>Chiều cao (cm)</label>
+          <input type="number" name="height" id="vital_height" class="form-control" placeholder="170" value="<?= htmlspecialchars($vitals['height'] ?? '170') ?>">
+        </div>
+
+        <div class="form-group">
+          <label>Chỉ số BMI</label>
+          <input type="text" name="bmi" id="vital_bmi" class="form-control" readonly style="background:#e2e8f0; font-weight:700;" value="<?= htmlspecialchars($vitals['bmi'] ?? '22.5') ?>">
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label>Bệnh sử & Thăm khám thực thể (Anamnesis & Physical exam)</label>
+        <textarea name="anamnesis" rows="2" class="form-control" placeholder="Khám tim đều, phổi trong, họng không loét..."><?= htmlspecialchars($currentRecord['anamnesis'] ?? '') ?></textarea>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 2.5fr 1fr; gap: 16px; margin-bottom: 16px;">
+        <div class="form-group">
+          <label>Chẩn đoán lâm sàng <span style="color:red;">*</span></label>
+          <input type="text" name="clinical_diagnosis" class="form-control" placeholder="Chẩn đoán bệnh lý chính..." required value="<?= htmlspecialchars($currentRecord['clinical_diagnosis'] ?? '') ?>">
+        </div>
+
+        <div class="form-group">
+          <label>Mã bệnh ICD-10 (Nếu có)</label>
+          <input type="text" name="icd10_code" class="form-control" placeholder="VD: J06.9" value="<?= htmlspecialchars($currentRecord['icd10_code'] ?? '') ?>">
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 16px;">
+        <div class="form-group">
+          <label>Lời dặn & Hướng dẫn điều trị của bác sĩ</label>
+          <textarea name="doctor_notes" rows="2" class="form-control" placeholder="Chế độ ăn uống, tập luyện, theo dõi triệu chứng..."><?= htmlspecialchars($currentRecord['doctor_notes'] ?? '') ?></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Ngày hẹn tái khám (Nếu cần)</label>
+          <input type="date" name="re_examination_date" class="form-control" min="<?= date('Y-m-d') ?>" value="<?= htmlspecialchars($currentRecord['re_examination_date'] ?? '') ?>">
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Electronic Prescription Builder -->
+    <div class="card-box" style="padding: 24px; margin-bottom: 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="font-size: 17px; font-weight: 700; color: #0f172a; margin: 0;">
+          2. Kê đơn thuốc điện tử
+        </h3>
+
+        <button type="button" class="btn btn-outline btn-sm" id="btn_add_medicine">
+          ➕ Thêm thuốc vào toa
+        </button>
+      </div>
+
+      <!-- Quick Medicine Selector dropdown -->
+      <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 14px; display: flex; align-items: center; gap: 10px;">
+        <label style="font-size: 13px; font-weight: 600; white-space: nowrap;">Chọn nhanh từ kho thuốc:</label>
+        <select id="quick_med_select" class="form-control" style="font-size:13.5px;">
+          <option value="">-- Chọn thuốc trong danh mục kho --</option>
+          <?php foreach ($medicines as $m): ?>
+            <option value="<?= $m['id'] ?>" data-name="<?= htmlspecialchars($m['name']) ?>" data-unit="<?= htmlspecialchars($m['unit']) ?>" data-price="<?= (float)$m['unit_price'] ?>" data-instruct="<?= htmlspecialchars($m['usage_instruction'] ?? '') ?>">
+              <?= htmlspecialchars($m['code'] . ' - ' . $m['name'] . ' (' . Helper::formatCurrency((float)$m['unit_price']) . ' / ' . $m['unit'] . ')') ?>
+            </option>
+          <?php endforeach; ?>
+        </select>
+        <button type="button" class="btn btn-secondary btn-sm" id="btn_quick_insert" style="white-space:nowrap;">Chèn vào đơn</button>
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-table" id="prescription_table">
+          <thead>
+            <tr>
+              <th style="width: 25%;">Tên thuốc & Hàm lượng</th>
+              <th style="width: 12%;">Liều dùng</th>
+              <th style="width: 8%;">Đơn vị</th>
+              <th style="width: 10%;">Số lượng</th>
+              <th style="width: 18%;">Chia cữ (S - T - C - Tối)</th>
+              <th style="width: 15%;">Hướng dẫn</th>
+              <th style="width: 12%;">Đơn giá</th>
+              <th style="width: 12%;">Thành tiền</th>
+              <th style="width: 4%;">Xóa</th>
+            </tr>
+          </thead>
+          <tbody id="prescription_table_body">
+            <?php if (!empty($currentPrescription['items'])): ?>
+              <?php foreach ($currentPrescription['items'] as $item): ?>
+                <tr class="prescription-row">
+                  <td>
+                    <input type="text" name="med_name[]" class="form-control form-control-sm" value="<?= htmlspecialchars($item['medicine_name']) ?>" required>
+                    <input type="hidden" name="med_id[]" value="<?= (int)($item['medicine_id'] ?? 0) ?>">
+                  </td>
+                  <td><input type="text" name="med_dosage[]" class="form-control form-control-sm" value="<?= htmlspecialchars($item['dosage']) ?>"></td>
+                  <td><input type="text" name="med_unit[]" class="form-control form-control-sm" value="<?= htmlspecialchars($item['unit']) ?>"></td>
+                  <td><input type="number" name="med_quantity[]" class="form-control form-control-sm med-qty" value="<?= (int)$item['quantity'] ?>" min="1"></td>
+                  <td>
+                    <div style="display:flex;gap:4px;">
+                      <input type="text" name="med_morning[]" title="Sáng" class="form-control form-control-sm" value="<?= htmlspecialchars($item['morning']) ?>" style="width:36px;text-align:center;">
+                      <input type="text" name="med_noon[]" title="Trưa" class="form-control form-control-sm" value="<?= htmlspecialchars($item['noon']) ?>" style="width:36px;text-align:center;">
+                      <input type="text" name="med_afternoon[]" title="Chiều" class="form-control form-control-sm" value="<?= htmlspecialchars($item['afternoon']) ?>" style="width:36px;text-align:center;">
+                      <input type="text" name="med_night[]" title="Tối" class="form-control form-control-sm" value="<?= htmlspecialchars($item['night']) ?>" style="width:36px;text-align:center;">
+                    </div>
+                  </td>
+                  <td><input type="text" name="med_instructions[]" class="form-control form-control-sm" value="<?= htmlspecialchars($item['instructions'] ?? '') ?>"></td>
+                  <td><input type="number" name="med_price[]" class="form-control form-control-sm med-price" value="<?= (float)$item['unit_price'] ?>"></td>
+                  <td class="med-subtotal" style="font-weight:700;color:var(--primary);"><?= Helper::formatCurrency((float)$item['amount']) ?></td>
+                  <td><button type="button" class="btn btn-sm btn-outline btn-remove-row" style="color:#ef4444;border-color:#fca5a5;">&times;</button></td>
+                </tr>
+              <?php endforeach; ?>
+            <?php endif; ?>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border);">
+        <span style="font-weight: 700; font-size: 15px;">Tổng tiền thuốc:</span>
+        <span id="total_med_fee" style="font-size: 18px; font-weight: 800; color: var(--primary);">
+          <?= !empty($currentPrescription['total_amount']) ? Helper::formatCurrency((float)$currentPrescription['total_amount']) : '0 ₫' ?>
+        </span>
+      </div>
+
+      <div class="form-group" style="margin-top: 16px;">
+        <label>Lưu ý đặc biệt cho toa thuốc</label>
+        <input type="text" name="prescription_notes" class="form-control" placeholder="Dùng thuốc sau bữa ăn 15-30 phút, kiêng rượu bia..." value="<?= htmlspecialchars($currentPrescription['usage_instructions'] ?? '') ?>">
+      </div>
+    </div>
+
+    <!-- Submit Section -->
+    <div style="display: flex; justify-content: flex-end; gap: 14px;">
+      <a href="/doctor/queue" class="btn btn-secondary btn-lg">Hủy / Quay lại</a>
+      <button type="submit" class="btn btn-primary btn-lg" style="background:#059669; border-color:#059669;">
+        💾 Hoàn tất khám & Lưu bệnh án
+      </button>
+    </div>
+
+  </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const quickSelect = document.getElementById('quick_med_select');
+  const quickInsertBtn = document.getElementById('btn_quick_insert');
+  const tableBody = document.getElementById('prescription_table_body');
+
+  if (quickInsertBtn && quickSelect && tableBody) {
+    quickInsertBtn.addEventListener('click', () => {
+      const selectedOpt = quickSelect.options[quickSelect.selectedIndex];
+      if (!selectedOpt || !selectedOpt.value) return;
+
+      const medId = selectedOpt.value;
+      const medName = selectedOpt.dataset.name;
+      const unit = selectedOpt.dataset.unit || 'Viên';
+      const price = parseFloat(selectedOpt.dataset.price) || 0;
+      const instructions = selectedOpt.dataset.instruct || '';
+
+      const row = document.createElement('tr');
+      row.className = 'prescription-row';
+      row.innerHTML = `
+        <td>
+          <input type="text" name="med_name[]" class="form-control form-control-sm" value="${medName}" required>
+          <input type="hidden" name="med_id[]" value="${medId}">
+        </td>
+        <td><input type="text" name="med_dosage[]" class="form-control form-control-sm" value="Theo chỉ dẫn"></td>
+        <td><input type="text" name="med_unit[]" class="form-control form-control-sm" value="${unit}"></td>
+        <td><input type="number" name="med_quantity[]" class="form-control form-control-sm med-qty" value="10" min="1"></td>
+        <td>
+          <div style="display:flex;gap:4px;">
+            <input type="text" name="med_morning[]" title="Sáng" class="form-control form-control-sm" value="1" style="width:36px;text-align:center;">
+            <input type="text" name="med_noon[]" title="Trưa" class="form-control form-control-sm" value="0" style="width:36px;text-align:center;">
+            <input type="text" name="med_afternoon[]" title="Chiều" class="form-control form-control-sm" value="1" style="width:36px;text-align:center;">
+            <input type="text" name="med_night[]" title="Tối" class="form-control form-control-sm" value="0" style="width:36px;text-align:center;">
+          </div>
+        </td>
+        <td><input type="text" name="med_instructions[]" class="form-control form-control-sm" value="${instructions}"></td>
+        <td><input type="number" name="med_price[]" class="form-control form-control-sm med-price" value="${price}"></td>
+        <td class="med-subtotal" style="font-weight:700;color:var(--primary);">${new Intl.NumberFormat('vi-VN').format(price * 10)} ₫</td>
+        <td><button type="button" class="btn btn-sm btn-outline btn-remove-row" style="color:#ef4444;border-color:#fca5a5;">&times;</button></td>
+      `;
+
+      tableBody.appendChild(row);
+
+      row.querySelector('.med-qty').addEventListener('input', updateSubtotal);
+      row.querySelector('.med-price').addEventListener('input', updateSubtotal);
+      row.querySelector('.btn-remove-row').addEventListener('click', () => {
+        row.remove();
+        updateSubtotal();
+      });
+
+      function updateSubtotal() {
+        let sum = 0;
+        document.querySelectorAll('.prescription-row').forEach(r => {
+          const q = parseFloat(r.querySelector('.med-qty')?.value || 1);
+          const p = parseFloat(r.querySelector('.med-price')?.value || 0);
+          const st = q * p;
+          const stEl = r.querySelector('.med-subtotal');
+          if (stEl) stEl.textContent = new Intl.NumberFormat('vi-VN').format(st) + ' ₫';
+          sum += st;
+        });
+        document.getElementById('total_med_fee').textContent = new Intl.NumberFormat('vi-VN').format(sum) + ' ₫';
+      }
+
+      updateSubtotal();
+    });
+  }
+});
+</script>

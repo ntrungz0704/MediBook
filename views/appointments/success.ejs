@@ -1,0 +1,63 @@
+<div class="container" style="max-width: 640px; padding: 60px 20px 80px;">
+  <div class="card-box" style="padding: 40px 36px; text-align: center;">
+    
+    <!-- Success Icon -->
+    <div style="width: 72px; height: 72px; border-radius: var(--radius-full); background: #dcfce7; color: #16a34a; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+    </div>
+
+    <h1 style="font-size: 26px; font-weight: 800; color: #0f172a; margin-bottom: 8px;">Đặt lịch khám thành công!</h1>
+    <p style="color: var(--text-muted); font-size: 15px; margin-bottom: 24px;">
+      Lịch hẹn của bạn đã được ghi nhận trên hệ thống MediBook. Vui lòng lưu mã đặt lịch bên dưới khi đến phòng khám.
+    </p>
+
+    <!-- Booking Code Card -->
+    <div style="background: var(--primary-soft); border: 2px dashed var(--primary); border-radius: var(--radius-md); padding: 20px; margin-bottom: 28px;">
+      <div style="font-size: 13px; font-weight: 700; color: var(--primary-dark); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">
+        MÃ ĐẶT LỊCH KHÁM CỦA BẠN
+      </div>
+      <div style="font-size: 32px; font-weight: 900; font-family: monospace; color: #0f172a; letter-spacing: 2px;">
+        <%= app.booking_code %>
+      </div>
+    </div>
+
+    <!-- Appointment Voucher Details -->
+    <div style="background: #f8fafc; border-radius: var(--radius-md); border: 1px solid var(--border); padding: 20px; text-align: left; margin-bottom: 30px; font-size: 14px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="display:flex; justify-content:space-between; border-bottom: 1px solid var(--border-light); padding-bottom: 8px;">
+        <span class="text-muted">Bệnh nhân:</span>
+        <strong style="color:#0f172a;"><%= app.patient_name %></strong>
+      </div>
+      <div style="display:flex; justify-content:space-between; border-bottom: 1px solid var(--border-light); padding-bottom: 8px;">
+        <span class="text-muted">Bác sĩ phụ trách:</span>
+        <strong style="color:var(--primary);"><%= app.doctor_title %> <%= app.doctor_name %></strong>
+      </div>
+      <div style="display:flex; justify-content:space-between; border-bottom: 1px solid var(--border-light); padding-bottom: 8px;">
+        <span class="text-muted">Chuyên khoa:</span>
+        <span><%= app.specialty_name %></span>
+      </div>
+      <div style="display:flex; justify-content:space-between; border-bottom: 1px solid var(--border-light); padding-bottom: 8px;">
+        <span class="text-muted">Ngày khám:</span>
+        <strong><%= formatDate(app.appointment_date) %></strong>
+      </div>
+      <div style="display:flex; justify-content:space-between; border-bottom: 1px solid var(--border-light); padding-bottom: 8px;">
+        <span class="text-muted">Giờ hẹn:</span>
+        <strong style="color:#0f172a;"><%= app.start_time %> - <%= app.end_time %></strong>
+      </div>
+      <div style="display:flex; justify-content:space-between;">
+        <span class="text-muted">Địa điểm:</span>
+        <span><%= app.room_number %> - Phòng khám Đa khoa MediBook</span>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 14px; justify-content: center;">
+      <a href="/appointments/<%= app.booking_code %>" class="btn btn-primary">
+        Xem phiếu khám & Chi tiết
+      </a>
+      <a href="/" class="btn btn-secondary">
+        Về trang chủ
+      </a>
+    </div>
+  </div>
+</div>

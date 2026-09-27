@@ -1,0 +1,49 @@
+<div class="card-box">
+  <div class="card-header-bar">
+    <h3>Quản lý kho dược & Danh mục thuốc (<%= medicines ? medicines.length : 0 %> loại thuốc)</h3>
+    <a href="/admin/medicines/create" class="btn btn-primary btn-sm">➕ Thêm thuốc vào kho</a>
+  </div>
+
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Mã thuốc</th>
+          <th>Tên biệt dược & hàm lượng</th>
+          <th>Phân loại</th>
+          <th>Đơn vị</th>
+          <th>Đơn giá</th>
+          <th>Tồn kho</th>
+          <th>Trạng thái</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (!medicines || medicines.length === 0) { %>
+          <tr><td colspan="8" style="text-align:center;padding:20px;">Kho thuốc đang trống.</td></tr>
+        <% } else { %>
+          <% medicines.forEach(m => { %>
+            <tr>
+              <td><code><%= m.code %></code></td>
+              <td><strong><%= m.name %></strong></td>
+              <td><%= m.category || '-' %></td>
+              <td><%= m.unit %></td>
+              <td><strong style="color:var(--primary);"><%= formatCurrency(m.unit_price) %></strong></td>
+              <td>
+                <% if (m.stock_quantity < 50) { %>
+                  <span style="color:#ef4444;font-weight:700;"><%= m.stock_quantity %> (Sắp hết)</span>
+                <% } else { %>
+                  <%= m.stock_quantity %>
+                <% } %>
+              </td>
+              <td><span class="badge badge-success"><%= m.status %></span></td>
+              <td>
+                <a href="/admin/medicines/edit/<%= m.id %>" class="btn btn-secondary btn-sm">Sửa</a>
+              </td>
+            </tr>
+          <% }); %>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>

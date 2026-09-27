@@ -1,0 +1,45 @@
+<div class="card-box">
+  <div class="card-header-bar">
+    <h3>Nhật ký hoạt động bảo mật & kiểm toán (Audit Trail)</h3>
+  </div>
+
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Thời gian</th>
+          <th>Tài khoản</th>
+          <th>Hành động</th>
+          <th>Đối tượng</th>
+          <th>Chi tiết</th>
+          <th>IP & Trình duyệt</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (!logs || logs.length === 0) { %>
+          <tr><td colspan="6" style="text-align:center;padding:20px;">Chưa có nhật ký hoạt động nào.</td></tr>
+        <% } else { %>
+          <% logs.forEach(l => { %>
+            <tr>
+              <td style="white-space:nowrap; font-size:12.5px;"><%= formatDateTime(l.created_at) %></td>
+              <td>
+                <% if (l.user_name) { %>
+                  <strong><%= l.user_name %></strong><br>
+                  <small class="text-muted"><%= l.user_role %></small>
+                <% } else { %>
+                  <span class="text-muted">Khách vãng lai / Hệ thống</span>
+                <% } %>
+              </td>
+              <td><code><%= l.action %></code></td>
+              <td><%= (l.entity_type || '') + ' #' + (l.entity_id || '') %></td>
+              <td><%= l.details || '-' %></td>
+              <td style="font-size:12px; color:var(--text-muted);">
+                <%= l.ip_address || '' %>
+              </td>
+            </tr>
+          <% }); %>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>

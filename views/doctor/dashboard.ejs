@@ -1,0 +1,103 @@
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon stat-icon-teal">👥</div>
+    <div class="stat-details">
+      <h4><%= totalToday %></h4>
+      <p>Tổng bệnh nhân hôm nay</p>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon stat-icon-amber">⏳</div>
+    <div class="stat-details">
+      <h4><%= waitingCount %></h4>
+      <p>Bệnh nhân đang chờ</p>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon stat-icon-green">✅</div>
+    <div class="stat-details">
+      <h4><%= completedToday %></h4>
+      <p>Đã khám xong hôm nay</p>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon stat-icon-blue">🚪</div>
+    <div class="stat-details">
+      <h4><%= doctor.room_number %></h4>
+      <p>Phòng khám phụ trách</p>
+    </div>
+  </div>
+</div>
+
+<div class="card-box">
+  <div class="card-header-bar">
+    <h3>Danh sách bệnh nhân tiếp đón hôm nay</h3>
+    <a href="/doctor/queue" class="btn btn-primary btn-sm">Xem hàng đợi chi tiết &rarr;</a>
+  </div>
+
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>STT</th>
+          <th>Mã lịch</th>
+          <th>Họ tên bệnh nhân</th>
+          <th>Giờ hẹn</th>
+          <th>Triệu chứng ban đầu</th>
+          <th>Trạng thái</th>
+          <th>Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (!todayQueue || todayQueue.length === 0) { %>
+          <tr>
+            <td colspan="7" style="text-align: center; padding: 30px; color: var(--text-muted);">
+              Hiện chưa có bệnh nhân nào trong hàng đợi phòng khám hôm nay.
+            </td>
+          </tr>
+        <% } else { %>
+          <% todayQueue.forEach(item => { %>
+            <tr>
+              <td><strong style="color:var(--primary);"><%= item.queue_number %></strong></td>
+              <td><code><%= item.booking_code %></code></td>
+              <td><strong><%= item.patient_name %></strong></td>
+              <td><%= item.start_time ? item.start_time.slice(0, 5) : '' %></td>
+              <td><%= item.symptoms || 'Khám định kỳ' %></td>
+              <td>
+                <% if (item.status === 'waiting') { %>
+                  <span class="badge badge-warning">Đang chờ</span>
+                <% } else if (item.status === 'calling') { %>
+                  <span class="badge badge-primary">Đang gọi</span>
+                <% } else if (item.status === 'in_room') { %>
+                  <span class="badge badge-info">Đang trong phòng</span>
+                <% } else if (item.status === 'completed') { %>
+                  <span class="badge badge-success">Đã hoàn thành</span>
+                <% } else { %>
+                  <span class="badge badge-secondary"><%= item.status %></span>
+                <% } %>
+              </td>
+              <td>
+                <% if (item.status === 'waiting') { %>
+                  <form action="/doctor/queue/call/<%= item.id %>" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-primary btn-sm">Gọi vào khám</button>
+                  </form>
+                <% } else if (item.status === 'calling') { %>
+                  <form action="/doctor/queue/start/<%= item.id %>" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-primary btn-sm">Bắt đầu khám</button>
+                  </form>
+                <% } else if (item.status === 'in_room') { %>
+                  <a href="/doctor/examine/<%= item.appointment_id %>" class="btn btn-primary btn-sm">Tiếp tục khám</a>
+                <% } else { %>
+                  <a href="/appointments/<%= item.booking_code %>" class="btn btn-secondary btn-sm" target="_blank">Xem bệnh án</a>
+                <% } %>
+              </td>
+            </tr>
+          <% }); %>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>

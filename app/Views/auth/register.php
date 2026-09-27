@@ -1,0 +1,53 @@
+<?php
+use App\Core\Csrf;
+?>
+<div class="container" style="max-width: 520px; padding: 50px 20px;">
+  <div class="card-box" style="padding: 36px 30px;">
+    <div style="text-align: center; margin-bottom: 24px;">
+      <div class="brand-icon" style="margin: 0 auto 12px; width: 48px; height: 48px;">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M12 5v14M5 12h14" stroke="#ffffff" stroke-width="3"/>
+        </svg>
+      </div>
+      <h2 style="font-size: 24px; font-weight: 800; color: #0f172a; margin-bottom: 6px;">Đăng ký tài khoản Bệnh nhân</h2>
+      <p style="color: var(--text-muted); font-size: 14px;">Tạo tài khoản nhanh chóng để lưu thông tin và đặt khám thuận tiện</p>
+    </div>
+
+    <form action="/register" method="POST">
+      <?= Csrf::field() ?>
+
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label for="reg_name">Họ và tên <span style="color:red;">*</span></label>
+        <input type="text" name="name" id="reg_name" class="form-control" placeholder="Nguyễn Văn A" required>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label for="reg_phone">Số điện thoại <span style="color:red;">*</span></label>
+        <input type="tel" name="phone" id="reg_phone" class="form-control" placeholder="0901234567" required>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label for="reg_email">Địa chỉ Email <span style="color:red;">*</span></label>
+        <input type="email" name="email" id="reg_email" class="form-control" placeholder="email@example.com" required>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label for="reg_password">Mật khẩu (ít nhất 6 ký tự) <span style="color:red;">*</span></label>
+        <input type="password" name="password" id="reg_password" class="form-control" placeholder="••••••••" required minlength="6">
+      </div>
+
+      <div class="form-group" style="margin-bottom: 22px;">
+        <label for="reg_password_confirmation">Xác nhận mật khẩu <span style="color:red;">*</span></label>
+        <input type="password" name="password_confirmation" id="reg_password_confirmation" class="form-control" placeholder="••••••••" required minlength="6">
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-bottom: 18px;">
+        Đăng ký tài khoản
+      </button>
+
+      <div style="text-align: center; font-size: 14px; color: var(--text-muted);">
+        Đã có tài khoản? <a href="/login" style="color: var(--primary); font-weight: 700;">Đăng nhập ngay &rarr;</a>
+      </div>
+    </form>
+  </div>
+</div>

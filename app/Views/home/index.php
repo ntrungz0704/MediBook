@@ -1,0 +1,293 @@
+<?php
+use App\Core\Helper;
+?>
+
+<!-- 1. HERO SECTION (MATCHING DESKTOP 16:9 MOCKUP) -->
+<section class="hero-section">
+  <div class="container hero-grid">
+    <!-- Left Hero Column -->
+    <div class="hero-content">
+      <div class="hero-pill-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        CHỦ ĐỘNG HÔM NAY, KHỎE MẠNH NGÀY MAI
+      </div>
+
+      <h1 class="hero-title">
+        Đặt lịch khám dễ dàng,<br>
+        chăm sóc sức khỏe chủ động
+      </h1>
+
+      <p class="hero-subtitle">
+        MediBook giúp bạn kết nối với đội ngũ bác sĩ uy tín tại các phòng khám tư nhân, đặt lịch nhanh chóng, tiết kiệm thời gian và chăm sóc sức khỏe toàn diện hơn.
+      </p>
+
+      <div class="hero-ctas">
+        <a href="/appointments/book" class="btn btn-primary btn-lg">
+          Đặt lịch ngay &rarr;
+        </a>
+
+        <a href="#quick-search" class="btn btn-play">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="#0d9488" stroke="#0d9488" stroke-width="1.5">
+            <circle cx="12" cy="12" r="10" fill="none" stroke="#0d9488"></circle>
+            <polygon points="10 8 16 12 10 16 10 8" fill="#0d9488"></polygon>
+          </svg>
+          <span>Xem hướng dẫn</span>
+        </a>
+      </div>
+
+      <div class="hero-trust-badges">
+        <div class="trust-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          Bác sĩ uy tín
+        </div>
+        <div class="trust-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          Đặt lịch nhanh
+        </div>
+        <div class="trust-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          Bảo mật thông tin
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Hero Visual -->
+    <div class="hero-visual">
+      <div class="hero-image-wrapper">
+        <img src="/assets/images/doctor-hero.svg" alt="Bác sĩ MediBook" class="hero-doctor-img">
+        
+        <!-- Floating Quote Badge -->
+        <div class="hero-quote-badge">
+          “Sức khỏe tốt là nền tảng cho một cuộc sống hạnh phúc”
+          <span class="hero-quote-author">— Vì một Việt Nam khỏe mạnh hơn</span>
+        </div>
+
+        <!-- Floating Living Well Pill -->
+        <a href="/appointments/book" class="hero-floating-pill">
+          <div class="leaf-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path>
+              <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path>
+            </svg>
+          </div>
+          <span>Sống khỏe hơn mỗi ngày &rarr;</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2. QUICK SEARCH / BOOKING FILTER BAR (FLOATING CARD OVER HERO) -->
+<section class="container search-card-wrapper" id="quick-search">
+  <div class="quick-search-card">
+    <div class="search-header">
+      <div class="search-header-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+      </div>
+      <div class="search-header-text">
+        <h3>Đặt lịch khám</h3>
+        <p>Tìm bác sĩ phù hợp với nhu cầu của bạn</p>
+      </div>
+    </div>
+
+    <form action="/appointments/book" method="GET" class="search-form-grid">
+      <div class="form-group">
+        <label for="home_specialty">Chuyên khoa</label>
+        <select name="specialty_id" id="home_specialty" class="form-control">
+          <option value="">-- Chọn chuyên khoa --</option>
+          <?php foreach ($specialties as $sp): ?>
+            <option value="<?= $sp['id'] ?>"><?= htmlspecialchars($sp['name']) ?></option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="home_doctor">Bác sĩ</label>
+        <select name="doctor_id" id="home_doctor" class="form-control">
+          <option value="">-- Chọn bác sĩ (tùy chọn) --</option>
+          <?php foreach ($doctors as $doc): ?>
+            <option value="<?= $doc['id'] ?>"><?= htmlspecialchars($doc['title'] . ' ' . $doc['name']) ?></option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="home_date">Ngày khám</label>
+        <input type="date" name="date" id="home_date" class="form-control" value="<?= date('Y-m-d') ?>" min="<?= date('Y-m-d') ?>">
+      </div>
+
+      <div>
+        <button type="submit" class="btn btn-primary" style="height:48px;padding:0 28px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          Tìm lịch khám
+        </button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<!-- 3. UPCOMING APPOINTMENT WIDGET (IF LOGGED IN, MATCHING MOBILE MOCKUP) -->
+<?php if (!empty($upcomingAppointment)): ?>
+<section class="container" style="margin-bottom: 40px;">
+  <div class="section-header" style="margin-bottom: 16px;">
+    <h3 class="section-title" style="font-size:20px;">Lịch hẹn sắp tới</h3>
+    <a href="/my-appointments" class="section-link">Xem tất cả &rarr;</a>
+  </div>
+
+  <a href="/appointments/<?= $upcomingAppointment['booking_code'] ?>" class="upcoming-widget">
+    <div class="upcoming-left">
+      <div class="upcoming-icon-box">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+      </div>
+      <div class="upcoming-details">
+        <h4><?= htmlspecialchars($upcomingAppointment['service_name'] ?: 'Khám ' . $upcomingAppointment['specialty_name']) ?></h4>
+        <div style="font-size:13.5px;font-weight:600;color:#0d9488;margin-bottom:4px;">
+          <?= htmlspecialchars($upcomingAppointment['doctor_title'] . ' ' . $upcomingAppointment['doctor_name']) ?>
+        </div>
+        <div class="upcoming-meta">
+          <span>📅 <?= Helper::formatDateWithDayVi($upcomingAppointment['appointment_date']) ?></span>
+          <span>⏰ <?= Helper::formatTimeSlot($upcomingAppointment['start_time'], $upcomingAppointment['end_time']) ?></span>
+          <span>📍 <?= htmlspecialchars($upcomingAppointment['room_number'] . ' - MediBook') ?></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="upcoming-right">
+      <span class="badge badge-success">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        Đã xác nhận
+      </span>
+      <div class="booking-code-pill">
+        Mã: <?= htmlspecialchars($upcomingAppointment['booking_code']) ?>
+      </div>
+    </div>
+  </a>
+</section>
+<?php endif; ?>
+
+<!-- 4. CHUYÊN KHOA PHỔ BIẾN (POPULAR SPECIALTIES) -->
+<section class="container section">
+  <div class="section-header">
+    <h2 class="section-title">Chuyên khoa phổ biến</h2>
+    <a href="/specialties" class="section-link">Xem tất cả &rarr;</a>
+  </div>
+
+  <div class="specialties-grid">
+    <?php foreach ($specialties as $sp): ?>
+      <a href="/specialties/<?= $sp['slug'] ?>" class="specialty-card">
+        <div class="specialty-icon-circle">
+          <?php if ($sp['slug'] === 'tim-mach'): ?>
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.28"/></svg>
+          <?php elseif ($sp['slug'] === 'nhi-khoa'): ?>
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+          <?php elseif ($sp['slug'] === 'san-phu-khoa'): ?>
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="5"/><path d="M12 13v8"/><path d="M9 18h6"/></svg>
+          <?php else: ?>
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></svg>
+          <?php endif; ?>
+        </div>
+        <div class="specialty-info">
+          <h4><?= htmlspecialchars($sp['name']) ?></h4>
+          <p><?= htmlspecialchars($sp['description'] ?: 'Chăm sóc sức khỏe chuyên khoa') ?></p>
+        </div>
+      </a>
+    <?php endforeach; ?>
+  </div>
+</section>
+
+<!-- 5. BÁC SĨ NỔI BẬT (FEATURED DOCTORS) -->
+<section class="container section">
+  <div class="section-header">
+    <h2 class="section-title">Bác sĩ nổi bật</h2>
+    <a href="/doctors" class="section-link">Xem tất cả &rarr;</a>
+  </div>
+
+  <div class="doctors-grid">
+    <?php foreach (array_slice($doctors, 0, 4) as $index => $doc): ?>
+      <div class="doctor-card">
+        <div class="doctor-card-top">
+          <img src="/assets/images/avatar-doctor<?= (($index % 4) + 1) ?>.svg" alt="<?= htmlspecialchars($doc['name']) ?>" class="doctor-img">
+          <button type="button" class="btn-favorite" title="Lưu yêu thích">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+          </button>
+        </div>
+        <div class="doctor-card-body">
+          <h3 class="doctor-name"><?= htmlspecialchars($doc['title'] . ' ' . $doc['name']) ?></h3>
+          <div class="doctor-specialty"><?= htmlspecialchars($doc['specialty_names'] ?: 'Chuyên khoa Nội') ?></div>
+          
+          <div class="doctor-meta">
+            <div class="doctor-rating">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+              <span><?= number_format((float)$doc['rating'], 1) ?></span>
+              <span class="doctor-reviews-count">(<?= (int)$doc['rating_count'] ?> đánh giá)</span>
+            </div>
+            <span class="doctor-badge-exp"><?= (int)$doc['experience_years'] ?>+ năm kinh nghiệm</span>
+          </div>
+
+          <div style="margin-top:16px;">
+            <a href="/appointments/book?doctor_id=<?= $doc['id'] ?>" class="btn btn-outline btn-block btn-sm">
+              Đặt lịch khám
+            </a>
+          </div>
+        </div>
+      </div>
+    <?php endforeach; ?>
+  </div>
+</section>
+
+<!-- 6. CHỈ 3 BƯỚC ĐỂ ĐẶT LỊCH KHÁM (HOW IT WORKS) -->
+<section class="container section">
+  <div class="steps-section">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+      <div>
+        <h2 class="section-title" style="margin-bottom:4px;">Chỉ 3 bước để đặt lịch khám</h2>
+        <p style="color:var(--text-muted);font-size:14px;">Quy trình khám bệnh nhanh chóng, tiện lợi, không phải chờ đợi lâu.</p>
+      </div>
+      <div style="font-weight:700;color:#0d9488;font-size:14px;">
+        Sức khỏe tốt hơn bắt đầu từ hôm nay! 💚
+      </div>
+    </div>
+
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-badge-num">1</div>
+        <div class="step-content">
+          <h4>Tìm kiếm & Lựa chọn</h4>
+          <p>Chọn chuyên khoa, bác sĩ uy tín và thời gian thăm khám thuận tiện với bạn.</p>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-badge-num">2</div>
+        <div class="step-content">
+          <h4>Xác nhận lịch hẹn</h4>
+          <p>Điền thông tin và nhận mã đặt lịch khám tức thời qua hệ thống trực tuyến.</p>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-badge-num">3</div>
+        <div class="step-content">
+          <h4>Đến phòng khám</h4>
+          <p>Đến đúng giờ hẹn, quét mã tiếp đón và gặp bác sĩ thăm khám theo số thứ tự.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
