@@ -493,12 +493,31 @@ app.post('/appointments/book', (req, res) => {
     };
   }
 
+  // Validate past date
+  const today = new Date().toISOString().slice(0, 10);
+  if (appointment_date < today) {
+    req.flash('error', 'Không thể đặt lịch khám vào ngày trong quá khứ.');
+    return res.redirect('back');
+  }
+
   // Calculate end_time (30 mins after start_time)
   const [sH, sM] = start_time.split(':').map(Number);
   const endMinutes = sH * 60 + sM + 30;
   const eH = String(Math.floor(endMinutes / 60)).padStart(2, '0');
   const eM = String(endMinutes % 60).padStart(2, '0');
   const end_time = `${eH}:${eM}:00`;
+
+  // Check double-booking for doctor
+  const existingAppt = db.prepare(`
+    SELECT id FROM appointments
+    WHERE doctor_id = ? AND appointment_date = ? AND status NOT IN ('cancelled')
+      AND (start_time < ? AND end_time > ?)
+  `).get(doctor_id, appointment_date, end_time, start_time);
+
+  if (existingAppt) {
+    req.flash('error', 'Khung giờ này vừa có người khác đặt trước. Vui lòng chọn khung giờ khác.');
+    return res.redirect('back');
+  }
 
   // Generate unique booking code
   const codeDate = appointment_date.replace(/-/g, '').slice(2);
@@ -592,33 +611,84 @@ app.get('/appointments/:code', (req, res) => {
 });
 
 app.post('/appointments/:code/cancel', requireAuth, (req, res) => {
-  const appt = db.prepare('SELECT id, status FROM appointments WHERE booking_code = ?').get(req.params.code);
-  if (appt && ['pending', 'confirmed'].includes(appt.status)) {
+  const appt = db.prepare(`
+    SELECT a.id, a.status, a.patient_id, p.user_id as patient_user_id
+    FROM appointments a
+    JOIN patients p ON a.patient_id = p.id
+    WHERE a.booking_code = ?
+  `).get(req.params.code);
+
+  if (!appt) {
+    req.flash('error', 'Lịch khám không tồn tại.');
+    return res.redirect('back');
+  }
+
+  // Check authorization: Owner or staff/admin
+  const isOwner = req.session.user.role === 'patient' && req.session.user.id === appt.patient_user_id;
+  const isStaff = ['admin', 'receptionist'].includes(req.session.user.role);
+
+  if (!isOwner && !isStaff) {
+    req.flash('error', 'Bạn không có quyền hủy lịch khám của người khác.');
+    return res.redirect(`/appointments/${req.params.code}`);
+  }
+
+  if (['pending', 'confirmed'].includes(appt.status)) {
     db.prepare(`UPDATE appointments SET status = 'cancelled' WHERE id = ?`).run(appt.id);
     db.prepare(`
       INSERT INTO appointment_status_history (appointment_id, old_status, new_status, changed_by_user_id, note)
-      VALUES (?, ?, 'cancelled', ?, 'Bệnh nhân chủ động hủy lịch')
-    `).run(appt.id, appt.status, req.session.user.id);
+      VALUES (?, ?, 'cancelled', ?, ?)
+    `).run(appt.id, appt.status, req.session.user.id, isOwner ? 'Bệnh nhân chủ động hủy lịch' : 'Nhân viên hủy lịch');
     req.flash('success', 'Đã hủy lịch khám thành công.');
+  } else {
+    req.flash('error', 'Không thể hủy lịch khám ở trạng thái hiện tại.');
   }
   res.redirect(`/appointments/${req.params.code}`);
 });
 
 app.post('/appointments/:code/review', requireAuth, (req, res) => {
   const appt = db.prepare(`
-    SELECT a.id, a.doctor_id, a.patient_id 
+    SELECT a.id, a.doctor_id, a.patient_id, a.status, p.user_id as patient_user_id 
     FROM appointments a
+    JOIN patients p ON a.patient_id = p.id
     WHERE a.booking_code = ?
   `).get(req.params.code);
 
-  if (appt) {
-    const { rating, comment } = req.body;
-    db.prepare(`
-      INSERT OR REPLACE INTO reviews (appointment_id, patient_id, doctor_id, rating, comment)
-      VALUES (?, ?, ?, ?, ?)
-    `).run(appt.id, appt.patient_id, appt.doctor_id, parseInt(rating) || 5, comment || '');
-    req.flash('success', 'Cảm ơn bạn đã gửi đánh giá cho bác sĩ!');
+  if (!appt) {
+    req.flash('error', 'Lịch khám không tồn tại.');
+    return res.redirect('back');
   }
+
+  // Only the patient who booked this appointment can review, and only when completed
+  if (req.session.user.id !== appt.patient_user_id) {
+    req.flash('error', 'Bạn chỉ có thể đánh giá cho lịch khám của chính mình.');
+    return res.redirect(`/appointments/${req.params.code}`);
+  }
+
+  if (appt.status !== 'completed') {
+    req.flash('error', 'Bạn chỉ có thể gửi đánh giá sau khi cuộc khám đã hoàn thành.');
+    return res.redirect(`/appointments/${req.params.code}`);
+  }
+
+  const { rating, comment } = req.body;
+  const rateVal = Math.max(1, Math.min(5, parseInt(rating) || 5));
+  db.prepare(`
+    INSERT OR REPLACE INTO reviews (appointment_id, patient_id, doctor_id, rating, comment)
+    VALUES (?, ?, ?, ?, ?)
+  `).run(appt.id, appt.patient_id, appt.doctor_id, rateVal, comment || '');
+
+  // Recalculate doctor rating and rating_count
+  const stats = db.prepare(`
+    SELECT AVG(rating) as avg_rating, COUNT(*) as total_reviews
+    FROM reviews WHERE doctor_id = ?
+  `).get(appt.doctor_id);
+
+  if (stats && stats.total_reviews > 0) {
+    db.prepare(`
+      UPDATE doctors SET rating = ?, rating_count = ? WHERE id = ?
+    `).run(Number(stats.avg_rating.toFixed(1)), stats.total_reviews, appt.doctor_id);
+  }
+
+  req.flash('success', 'Cảm ơn bạn đã gửi đánh giá cho bác sĩ!');
   res.redirect(`/appointments/${req.params.code}`);
 });
 
@@ -1097,11 +1167,30 @@ app.post('/receptionist/booking', requireRole('receptionist', 'admin'), (req, re
   }
   const pat = db.prepare('SELECT id FROM patients WHERE user_id = ?').get(user.id);
 
+  // Validate past date
+  const today = new Date().toISOString().slice(0, 10);
+  if (appointment_date < today) {
+    req.flash('error', 'Không thể tạo lịch khám vào ngày trong quá khứ.');
+    return res.redirect('back');
+  }
+
   const [sH, sM] = start_time.split(':').map(Number);
   const endMinutes = sH * 60 + sM + 30;
   const eH = String(Math.floor(endMinutes / 60)).padStart(2, '0');
   const eM = String(endMinutes % 60).padStart(2, '0');
   const end_time = `${eH}:${eM}:00`;
+
+  // Check double-booking for doctor
+  const existingAppt = db.prepare(`
+    SELECT id FROM appointments
+    WHERE doctor_id = ? AND appointment_date = ? AND status NOT IN ('cancelled')
+      AND (start_time < ? AND end_time > ?)
+  `).get(doctor_id, appointment_date, end_time, start_time);
+
+  if (existingAppt) {
+    req.flash('error', 'Khung giờ này của bác sĩ đã có cuộc hẹn khác trùng. Vui lòng chọn khung giờ khác.');
+    return res.redirect('back');
+  }
 
   const codeDate = appointment_date.replace(/-/g, '').slice(2);
   const bookingCode = `MB${codeDate}-${Math.floor(1000 + Math.random() * 9000)}`;

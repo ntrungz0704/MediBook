@@ -3,5 +3,7 @@
     "*.ejs": "html"
   },
   "html.validate.scripts": false,
-  "html.customData": []
+  "html.validate.styles": false,
+  "html.customData": [],
+  "cSpell.enabled": false
 }
