@@ -231,6 +231,10 @@ app.get('/contact', (req, res) => {
   renderWithLayout(res, 'contact/index', { pageTitle: 'Liên hệ & Hỗ trợ - MediBook' });
 });
 
+app.get('/for-doctors', (req, res) => {
+  renderWithLayout(res, 'for-doctors/index', { pageTitle: 'Dành cho Bác sĩ - MediBook' });
+});
+
 app.post('/contact', (req, res) => {
   const { name, phone, email, subject, message } = req.body;
   if (!name || !phone || !email || !message) {
