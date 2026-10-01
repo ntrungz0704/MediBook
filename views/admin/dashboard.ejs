@@ -1,36 +1,45 @@
-<!-- KPI Cards -->
+<div style="margin-bottom: 20px;">
+  <h1 style="font-size: 22px; font-weight: 800; color: #0f172a; margin-bottom: 4px;">Bảng điều khiển quản trị hệ thống</h1>
+  <p style="font-size: 13.5px; color: #64748b; margin: 0;">Tổng hợp chỉ số vận hành và tình hình tiếp đón người bệnh</p>
+</div>
+
+<!-- KPI Cards with Direct Navigation & Enhanced UI/UX -->
 <div class="stats-grid">
-  <div class="stat-card">
+  <a href="/admin/reports" class="stat-card stat-card-link" title="Xem Báo cáo doanh thu chi tiết">
     <div class="stat-icon stat-icon-amber">💰</div>
     <div class="stat-details">
       <h4><%= formatCurrency((revenueStats && revenueStats.total_revenue) || 0) %></h4>
       <p>Tổng doanh thu phòng khám</p>
     </div>
-  </div>
+    <div class="stat-arrow">&rarr;</div>
+  </a>
 
-  <div class="stat-card">
+  <a href="/admin/appointments" class="stat-card stat-card-link" title="Xem Danh sách Lịch hẹn khám">
     <div class="stat-icon stat-icon-teal">🗓️</div>
     <div class="stat-details">
       <h4><%= totalAppointments %></h4>
       <p>Tổng lượt đặt khám</p>
     </div>
-  </div>
+    <div class="stat-arrow">&rarr;</div>
+  </a>
 
-  <div class="stat-card">
+  <a href="/admin/users?role=patient" class="stat-card stat-card-link" title="Xem Danh sách Hồ sơ bệnh nhân">
     <div class="stat-icon stat-icon-blue">👥</div>
     <div class="stat-details">
       <h4><%= totalPatients %></h4>
       <p>Hồ sơ bệnh nhân</p>
     </div>
-  </div>
+    <div class="stat-arrow">&rarr;</div>
+  </a>
 
-  <div class="stat-card">
+  <a href="/admin/doctors" class="stat-card stat-card-link" title="Xem Danh sách & Phân công Bác sĩ">
     <div class="stat-icon stat-icon-green">🩺</div>
     <div class="stat-details">
       <h4><%= totalDoctors %></h4>
       <p>Bác sĩ đang công tác</p>
     </div>
-  </div>
+    <div class="stat-arrow">&rarr;</div>
+  </a>
 </div>
 
 <!-- Status Distribution Row -->
@@ -73,42 +82,109 @@
     </div>
   </div>
 
-  <!-- Appointment Status Breakdown Card -->
+  <!-- Appointment Status Breakdown & Donut Chart Card -->
   <div class="card-box" style="padding: 24px;">
-    <h3 style="font-size: 17px; font-weight: 700; margin-bottom: 16px; border-bottom: 1px solid var(--border-light); padding-bottom: 10px;">
-      Tỷ lệ trạng thái lịch khám
-    </h3>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; border-bottom: 1px solid var(--border-light); padding-bottom: 10px;">
+      <h3 style="font-size: 17px; font-weight: 700; color:#0f172a; margin:0;">
+        Tỷ lệ trạng thái lịch khám
+      </h3>
+      <span style="font-size:12px; font-weight:700; color:var(--primary); background:var(--primary-soft); padding:3px 8px; border-radius:12px;">Biểu đồ tròn</span>
+    </div>
 
-    <div style="display: flex; flex-direction: column; gap: 14px; font-size: 14px;">
+    <!-- Donut / Pie Chart Container -->
+    <div style="position: relative; height: 180px; width: 100%; margin-bottom: 18px; display:flex; justify-content:center; align-items:center;">
+      <canvas id="statusPieChart"></canvas>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px; font-size: 13.5px;">
       <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span class="badge badge-warning">Chờ xác nhận</span>
+        <span style="display:flex; align-items:center; gap:6px;">
+          <span style="width:10px; height:10px; border-radius:50%; background:#f59e0b;"></span> Chờ xác nhận
+        </span>
         <strong><%= (statusCounts && statusCounts['pending']) || 0 %></strong>
       </div>
       <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span class="badge badge-info">Đã xác nhận</span>
+        <span style="display:flex; align-items:center; gap:6px;">
+          <span style="width:10px; height:10px; border-radius:50%; background:#3b82f6;"></span> Đã xác nhận
+        </span>
         <strong><%= (statusCounts && statusCounts['confirmed']) || 0 %></strong>
       </div>
       <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span class="badge badge-primary">Đã tiếp đón (Check-in)</span>
+        <span style="display:flex; align-items:center; gap:6px;">
+          <span style="width:10px; height:10px; border-radius:50%; background:#0d9488;"></span> Đã tiếp đón
+        </span>
         <strong><%= (statusCounts && statusCounts['checked_in']) || 0 %></strong>
       </div>
       <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span class="badge badge-purple">Đang khám</span>
+        <span style="display:flex; align-items:center; gap:6px;">
+          <span style="width:10px; height:10px; border-radius:50%; background:#8b5cf6;"></span> Đang khám
+        </span>
         <strong><%= (statusCounts && statusCounts['in_consultation']) || 0 %></strong>
       </div>
       <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span class="badge badge-success">Đã hoàn thành</span>
+        <span style="display:flex; align-items:center; gap:6px;">
+          <span style="width:10px; height:10px; border-radius:50%; background:#10b981;"></span> Đã hoàn thành
+        </span>
         <strong><%= (statusCounts && statusCounts['completed']) || 0 %></strong>
       </div>
       <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span class="badge badge-danger">Đã hủy</span>
+        <span style="display:flex; align-items:center; gap:6px;">
+          <span style="width:10px; height:10px; border-radius:50%; background:#ef4444;"></span> Đã hủy
+        </span>
         <strong><%= (statusCounts && statusCounts['cancelled']) || 0 %></strong>
       </div>
     </div>
 
-    <div style="margin-top: 24px; padding-top: 14px; border-top: 1px dashed var(--border); text-align: center;">
-      <a href="/admin/reports" class="btn btn-outline btn-block btn-sm">Xem phân tích doanh thu</a>
+    <div style="margin-top: 20px; padding-top: 14px; border-top: 1px dashed var(--border); text-align: center;">
+      <a href="/admin/reports" class="btn btn-outline btn-block btn-sm">Xem phân tích doanh thu &rarr;</a>
     </div>
   </div>
 
 </div>
+
+<!-- Chart.js CDN & Render Script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('statusPieChart');
+    if (!ctx) return;
+
+    const pending = <%= (statusCounts && statusCounts['pending']) || 0 %>;
+    const confirmed = <%= (statusCounts && statusCounts['confirmed']) || 0 %>;
+    const checked_in = <%= (statusCounts && statusCounts['checked_in']) || 0 %>;
+    const in_consultation = <%= (statusCounts && statusCounts['in_consultation']) || 0 %>;
+    const completed = <%= (statusCounts && statusCounts['completed']) || 0 %>;
+    const cancelled = <%= (statusCounts && statusCounts['cancelled']) || 0 %>;
+
+    const total = pending + confirmed + checked_in + in_consultation + completed + cancelled;
+
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Chờ xác nhận', 'Đã xác nhận', 'Đã tiếp đón', 'Đang khám', 'Đã hoàn thành', 'Đã hủy'],
+        datasets: [{
+          data: total === 0 ? [1] : [pending, confirmed, checked_in, in_consultation, completed, cancelled],
+          backgroundColor: total === 0 
+            ? ['#e2e8f0'] 
+            : ['#f59e0b', '#3b82f6', '#0d9488', '#8b5cf6', '#10b981', '#ef4444'],
+          borderWidth: 2,
+          borderColor: '#ffffff',
+          hoverOffset: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            enabled: total > 0
+          }
+        },
+        cutout: '68%'
+      }
+    });
+  });
+</script>

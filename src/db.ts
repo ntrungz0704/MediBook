@@ -272,6 +272,16 @@ function initDb() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE SET NULL
     );
+
+    CREATE TABLE IF NOT EXISTS favorite_doctors (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      patient_id INTEGER NOT NULL,
+      doctor_id INTEGER NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(patient_id, doctor_id),
+      FOREIGN KEY (patient_id) REFERENCES patients (id) ON DELETE CASCADE,
+      FOREIGN KEY (doctor_id) REFERENCES doctors (id) ON DELETE CASCADE
+    );
   `);
 }
 

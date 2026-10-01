@@ -1,13 +1,14 @@
-<div class="container" style="padding: 40px 20px 80px;" data-animate="fade-up">
-  <div style="margin-bottom: 36px; text-align: center; max-width: 650px; margin-left: auto; margin-right: auto;">
-    <span class="badge badge-primary" style="font-size: 13px; padding: 6px 14px; margin-bottom: 12px; display: inline-block;">
-      TRUNG TÂM HỖ TRỢ & CHĂM SÓC KHÁCH HÀNG
-    </span>
-    <h1 class="section-title" style="font-size: 32px; margin-bottom: 8px;">Liên hệ với MediBook</h1>
-    <p style="color: var(--text-muted); font-size: 15px; line-height: 1.6;">
-      Chúng tôi luôn sẵn sàng lắng nghe, tư vấn đặt lịch và giải đáp mọi thắc mắc về dịch vụ y tế của phòng khám 24/7.
-    </p>
+<div class="youmed-page-header">
+  <div class="container">
+    <div class="breadcrumbs-bar">
+      <a href="/">Trang chủ</a> <span>&bull;</span> <span>Trợ lý y khoa & Liên hệ</span>
+    </div>
+    <h1 class="page-title">Liên hệ với MediBook - Trợ lý y khoa</h1>
+    <p class="page-subtitle">Đội ngũ trợ lý y khoa sẵn sàng tư vấn, giải đáp thắc mắc và hỗ trợ người bệnh 24/7</p>
   </div>
+</div>
+
+<div class="container" style="padding: 30px 20px 80px;" data-animate="fade-up">
 
   <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 32px; align-items: start;">
     
@@ -53,8 +54,12 @@
           <textarea name="message" rows="4" class="form-control" style="height:auto;" placeholder="Mô tả chi tiết câu hỏi hoặc yêu cầu hỗ trợ của bạn..." required></textarea>
         </div>
 
-        <button type="submit" class="btn btn-primary btn-block btn-lg" style="height: 50px;">
-          ✉️ Gửi thông tin liên hệ ngay &rarr;
+        <button type="submit" class="btn btn-primary btn-block btn-lg" style="height: 48px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+          </svg>
+          Gửi thông tin liên hệ ngay
         </button>
       </form>
     </div>
@@ -125,5 +130,36 @@
 
     </div>
 
+  </div>
+
+  <!-- Dedicated Section: Dành cho Bác sĩ & Đối tác Phòng khám -->
+  <div id="bac-si" class="card-box interactive-hover" style="margin-top: 48px; padding: 40px; border-top: 4px solid var(--primary); background: linear-gradient(180deg, #f0fdfa 0%, #ffffff 100%);">
+    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 24px;">
+      <div style="max-width: 650px;">
+        <span class="badge badge-primary" style="font-size: 13px; padding: 6px 14px; margin-bottom: 12px; display: inline-block;">
+          🩺 Cổng Hợp Tác Chuyên Môn
+        </span>
+        <h2 style="font-size: 24px; font-weight: 800; color: #0f172a; margin-bottom: 10px;">
+          Khu vực Dành cho Bác sĩ & Nhân viên Y tế
+        </h2>
+        <p style="font-size: 14.5px; color: #475569; line-height: 1.6; margin-bottom: 16px;">
+          MediBook cung cấp nền tảng quản lý phòng khám thông minh, giúp bác sĩ chủ động theo dõi lịch trực, gọi số hàng đợi thời gian thực, quản lý bệnh án điện tử và kê đơn thuốc chuẩn quốc tế.
+        </p>
+        <div style="display: flex; gap: 16px; flex-wrap: wrap; font-size: 13.5px; color: #334155;">
+          <div>✅ Quản lý ca trực linh hoạt</div>
+          <div>✅ Màn hình gọi số sảnh chờ tự động</div>
+          <div>✅ Kê đơn thuốc điện tử & kho dược</div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 12px; min-width: 220px;">
+        <a href="/doctor/dashboard" class="btn btn-primary btn-lg" style="text-align: center; font-weight: 700;">
+          Truy cập Bàn làm việc Bác sĩ &rarr;
+        </a>
+        <a href="/login" class="btn btn-outline btn-lg" style="text-align: center;">
+          Đăng nhập tài khoản Bác sĩ
+        </a>
+      </div>
+    </div>
   </div>
 </div>

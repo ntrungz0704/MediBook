@@ -98,4 +98,43 @@
       </button>
     </form>
   </div>
+
+  <% if (user.role === 'patient') { %>
+    <!-- Favorite Doctors Section -->
+    <div class="card-box" style="padding: 30px; margin-top: 30px;">
+      <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 20px; border-bottom: 1px solid var(--border-light); padding-bottom: 10px; display:flex; justify-content:space-between; align-items:center;">
+        <span>❤️ Bác sĩ yêu thích của bạn</span>
+        <span style="font-size:13px; font-weight:600; color:var(--text-muted);"><%= (typeof favoriteDoctors !== 'undefined' && favoriteDoctors) ? favoriteDoctors.length : 0 %> bác sĩ</span>
+      </h3>
+
+      <% if (typeof favoriteDoctors === 'undefined' || !favoriteDoctors || favoriteDoctors.length === 0) { %>
+        <div style="text-align: center; padding: 30px 10px; color: var(--text-muted);">
+          <div style="font-size: 32px; margin-bottom: 8px;">🩺</div>
+          <p style="margin: 0; font-size: 14px;">Bạn chưa lưu bác sĩ nào vào danh sách yêu thích.</p>
+          <a href="/doctors" class="btn btn-outline btn-sm" style="margin-top: 14px;">Khám phá đội ngũ bác sĩ &rarr;</a>
+        </div>
+      <% } else { %>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px;">
+          <% favoriteDoctors.forEach(doc => { %>
+            <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; align-items: center; text-align: center;">
+              <img src="/assets/images/doctor-<%= doc.id %>.jpg" alt="<%= doc.name %>" style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.08);">
+              <h4 style="font-size: 15px; font-weight: 700; color: #0f172a; margin-bottom: 4px;">
+                <a href="/doctors/<%= doc.id %>" style="color:inherit;"><%= doc.name %></a>
+              </h4>
+              <div style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 8px;">
+                <%= doc.specialty_names || 'Nội tổng quát' %> &bull; <%= doc.room_number %>
+              </div>
+              <div style="font-size: 12px; font-weight: 700; color: #0d9488; margin-bottom: 12px;">
+                ⭐ <%= Number(doc.rating).toFixed(1) %> &bull; <%= formatCurrency(doc.consultation_fee) %>
+              </div>
+              <div style="display: flex; gap: 8px; width: 100%;">
+                <a href="/doctors/<%= doc.id %>" class="btn btn-secondary btn-sm" style="flex: 1; padding: 6px 8px; font-size: 12px;">Hồ sơ</a>
+                <a href="/appointments/book?doctor_id=<%= doc.id %>" class="btn btn-primary btn-sm" style="flex: 1; padding: 6px 8px; font-size: 12px;">Đặt lịch</a>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      <% } %>
+    </div>
+  <% } %>
 </div>

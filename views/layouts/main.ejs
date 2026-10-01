@@ -6,34 +6,32 @@
   <title><%= typeof pageTitle !== 'undefined' ? pageTitle : 'MediBook - Chăm sóc sức khỏe chủ động' %></title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/app.css">
   <link rel="stylesheet" href="/assets/css/dashboard.css">
 </head>
 <body>
   <header class="site-header">
     <div class="container navbar">
-      <!-- Brand Logo -->
+      <!-- Brand Logo YouMed Style -->
       <a href="/" class="brand-logo">
         <div class="brand-icon">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" fill="rgba(255,255,255,0.2)"/>
-            <path d="M12 8v8M8 12h8" stroke="#ffffff" stroke-width="3"/>
-          </svg>
+          <img src="/assets/images/logo.png" alt="MediBook Logo" class="brand-img">
         </div>
-        <div style="display:flex; flex-direction:column; line-height:1.2;">
-          <span class="brand-text">Medi<span style="color:var(--primary);">Book</span></span>
-          <span class="brand-subtext" style="font-size:11px;font-weight:600;color:var(--text-muted);letter-spacing:0.3px;">HEALTHCARE PLATFORM</span>
+        <div class="brand-text-wrap">
+          <div class="brand-main">Medi<span class="brand-accent" style="color:var(--primary);">Book</span></div>
+          <div class="brand-sub" style="font-size:11px;font-weight:600;color:var(--text-muted);letter-spacing:0.3px;">PHÒNG KHÁM ĐA KHOA</div>
         </div>
       </a>
 
       <!-- Nav Links -->
       <ul class="nav-links">
         <li><a href="/" class="<%= currentPath === '/' ? 'active' : '' %>">Trang chủ</a></li>
-        <li><a href="/specialties" class="<%= currentPath.startsWith('/specialties') ? 'active' : '' %>">Chuyên khoa</a></li>
-        <li><a href="/doctors" class="<%= currentPath.startsWith('/doctors') ? 'active' : '' %>">Bác sĩ</a></li>
-        <li><a href="/appointments/book" class="<%= currentPath.startsWith('/appointments/book') ? 'active' : '' %>">Dịch vụ</a></li>
+        <li><a href="/specialties" class="<%= currentPath && currentPath.startsWith('/specialties') ? 'active' : '' %>">Chuyên khoa</a></li>
+        <li><a href="/doctors" class="<%= currentPath && currentPath.startsWith('/doctors') ? 'active' : '' %>">Bác sĩ</a></li>
+        <li><a href="/appointments/book" class="<%= currentPath && currentPath.startsWith('/appointments/book') ? 'active' : '' %>">Dịch vụ</a></li>
         <li><a href="/contact" class="<%= currentPath === '/contact' ? 'active' : '' %>">Liên hệ</a></li>
+        <li><a href="/contact#bac-si" class="<%= currentPath && currentPath.includes('bac-si') ? 'active' : '' %>">Dành cho Bác sĩ</a></li>
       </ul>
 
       <!-- Header Actions -->
@@ -56,7 +54,7 @@
             <a href="/my-appointments" class="btn btn-secondary btn-sm">Lịch của tôi</a>
           <% } %>
           
-          <a href="/profile" class="btn btn-outline btn-sm">Tài khoản</a>
+          <a href="/profile" class="btn btn-outline btn-sm">Hồ sơ</a>
           <a href="/logout" class="btn btn-secondary btn-sm" title="Đăng xuất">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -95,58 +93,62 @@
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-            <div class="brand-icon" style="width:34px;height:34px;">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 5v14M5 12h14" stroke="#ffffff" stroke-width="3"/>
-              </svg>
+          <div class="footer-brand-header">
+            <div class="brand-icon" style="width:38px; height:38px; background:#fff; padding:2px; border-radius:8px;">
+              <img src="/assets/images/logo.png" alt="MediBook Logo" class="brand-img">
             </div>
-            <h4 style="margin:0;font-size:22px;color:#fff;">Medi<span style="color:#14b8a6;">Book</span></h4>
+            <div class="brand-main" style="color:#fff; font-size:22px;">Medi<span style="color:#00b0ff;">Book</span></div>
           </div>
-          <p>Hệ thống đặt lịch khám bệnh thông minh kết nối đội ngũ bác sĩ uy tín tại các phòng khám hàng đầu Việt Nam.</p>
-          <div style="font-size:13.5px;color:#cbd5e1;line-height:1.7;">
+          <p style="color:#94a3b8; font-size:14px; line-height:1.6; margin-bottom:16px;">
+            Ứng dụng đặt khám thông minh kết nối hơn 1.000 bác sĩ, 25 bệnh viện và phòng khám uy tín trên toàn quốc. Đặt lịch chuẩn xác, nhận số thứ tự và khung giờ khám trước.
+          </p>
+          <div style="font-size:13.5px;color:#cbd5e1;line-height:1.8;">
             <div>📍 123 Đường Nguyễn Tri Phương, Quận 5, TP. Hồ Chí Minh</div>
-            <div>📞 Tổng đài: <strong>1900 8888</strong> - Hotline: <strong>0901 888 999</strong></div>
-            <div>✉️ Email: contact@medibook.vn</div>
+            <div>📞 Tổng đài đặt khám: <strong style="color:#38bdf8;">1900 8888</strong> &bull; Hotline: <strong>0901 888 999</strong></div>
+            <div>✉️ Email hỗ trợ: contact@medibook.vn</div>
           </div>
         </div>
 
         <div class="footer-col">
-          <h5>Chuyên khoa</h5>
+          <h5>Đặt khám theo Chuyên khoa</h5>
           <ul class="footer-links">
             <li><a href="/specialties/noi-tong-quat">Nội tổng quát</a></li>
             <li><a href="/specialties/nhi-khoa">Nhi khoa</a></li>
             <li><a href="/specialties/san-phu-khoa">Sản phụ khoa</a></li>
             <li><a href="/specialties/tim-mach">Tim mạch</a></li>
             <li><a href="/specialties/da-lieu">Da liễu</a></li>
-            <li><a href="/specialties">Xem tất cả chuyên khoa &rarr;</a></li>
+            <li><a href="/specialties">Tất cả chuyên khoa &rarr;</a></li>
           </ul>
         </div>
 
         <div class="footer-col">
-          <h5>Liên kết nhanh</h5>
+          <h5>Dịch vụ & Tính năng</h5>
           <ul class="footer-links">
             <li><a href="/">Trang chủ</a></li>
-            <li><a href="/doctors">Đội ngũ bác sĩ</a></li>
-            <li><a href="/appointments/book">Đặt lịch khám</a></li>
-            <li><a href="/contact">Thông tin liên hệ & Hỗ trợ</a></li>
+            <li><a href="/doctors">Đặt khám Bác sĩ</a></li>
+            <li><a href="/appointments/book">Đặt lịch trực tuyến</a></li>
+            <li><a href="/contact">Tư vấn trực tuyến & Trợ lý y khoa</a></li>
             <li><a href="/receptionist/live-board" target="_blank">Màn hình gọi số sảnh chờ</a></li>
-            <li><a href="/login">Đăng nhập tài khoản</a></li>
+            <li><a href="/login">Dành cho nhân viên & Bác sĩ</a></li>
           </ul>
         </div>
 
         <div class="footer-col">
-          <h5>Thời gian phục vụ</h5>
-          <div style="background:#1e293b;padding:16px;border-radius:12px;font-size:13px;color:#cbd5e1;line-height:1.6;">
-            <div style="font-weight:700;color:#fff;margin-bottom:6px;">⏰ Giờ mở cửa:</div>
-            <div>Thứ Hai - Thứ Bảy: 07:30 - 20:00 | Chủ Nhật: 08:00 - 12:00</div>
-            <div style="margin-top:10px;color:#2dd4bf;font-weight:600;">Ưu tiên tiếp đón bệnh nhân đã đặt lịch trước qua website.</div>
+          <h5>Tiêu chuẩn Y tế</h5>
+          <div class="footer-cert-card">
+            <div style="font-weight:700;color:#fff;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+              <span>🛡️</span> Chuẩn Bộ Y Tế & Bảo Mật
+            </div>
+            <p style="font-size:12.5px;color:#94a3b8;line-height:1.5;margin-bottom:10px;">
+              Hệ thống mã hoá bảo mật dữ liệu sức khỏe, thanh toán trực tuyến nhanh gọn và hỗ trợ hoàn cước theo chính sách phòng khám.
+            </p>
+            <div style="color:#00c853; font-weight:700; font-size:13px;">⏰ Hỗ trợ tiếp đón: 07:30 - 20:00</div>
           </div>
         </div>
       </div>
 
       <div class="footer-bottom">
-        <p>&copy; 2026 MediBook Healthcare Platform. Bảo lưu mọi quyền.</p>
+        <p>&copy; 2026 MediBook - Nền tảng đặt khám thông minh chuẩn YouMed. Bản quyền thuộc về MediBook Healthcare Platform.</p>
       </div>
     </div>
   </footer>
@@ -197,7 +199,7 @@
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
           <circle cx="12" cy="7" r="4"></circle>
         </svg>
-        <span>Tài khoản</span>
+        <span>Hồ sơ</span>
       </a>
     </div>
   </nav>
@@ -238,5 +240,18 @@
   <script src="/assets/js/app.js"></script>
   <script src="/assets/js/booking.js"></script>
   <script src="/assets/js/queue.js"></script>
+  <script>
+    // Ensure active nav link is always highlighted regardless of routing or query params
+    (function() {
+      const currentUrl = window.location.pathname;
+      const navLinks = document.querySelectorAll('.nav-links a');
+      navLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        if (href === currentUrl || (href !== '/' && currentUrl.startsWith(href))) {
+          link.classList.add('active');
+        }
+      });
+    })();
+  </script>
 </body>
 </html>

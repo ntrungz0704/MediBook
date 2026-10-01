@@ -1,101 +1,78 @@
-<!-- 1. HERO SECTION -->
-<section class="hero-section">
-  <div class="container hero-grid">
-    <!-- Left Hero Column -->
-    <div class="hero-content">
-      <div class="hero-pill-badge">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-          <circle cx="12" cy="12" r="10"></circle>
-          <polyline points="12 6 12 12 16 14"></polyline>
-        </svg>
-        CHỦ ĐỘNG HÔM NAY, KHỎE MẠNH NGÀY MAI
+<!-- 1. YOUMED STYLE BLUE HERO BANNER -->
+<section class="youmed-hero">
+  <div class="container youmed-hero-inner">
+    <div class="youmed-hero-content">
+      <div class="youmed-hero-tag">
+        <span class="live-dot"></span>
+        HỆ THỐNG Y TẾ SỐ ĐẠT CHUẨN
       </div>
-
-      <h1 class="hero-title">
-        Đặt lịch khám dễ dàng,<br>
-        chăm sóc sức khỏe chủ động
+      <h1 class="youmed-hero-title">
+        Ứng dụng đặt khám thông minh
       </h1>
-
-      <p class="hero-subtitle">
-        MediBook giúp bạn kết nối với đội ngũ bác sĩ uy tín tại các phòng khám tư nhân, đặt lịch nhanh chóng, tiết kiệm thời gian và chăm sóc sức khỏe toàn diện hơn.
+      <p class="youmed-hero-sub">
+        Đặt khám với hơn <strong>1.000 bác sĩ</strong>, <strong>25 bệnh viện</strong>, <strong>100 phòng khám</strong> trên MediBook để có số thứ tự và khung giờ khám trước.
       </p>
 
-      <div class="hero-ctas">
-        <a href="/appointments/book" class="btn btn-primary btn-lg">
-          Đặt lịch ngay &rarr;
-        </a>
-
-        <a href="#quick-search" class="btn btn-play">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="#0d9488" stroke="#0d9488" stroke-width="1.5">
-            <circle cx="12" cy="12" r="10" fill="none" stroke="#0d9488"></circle>
-            <polygon points="10 8 16 12 10 16 10 8" fill="#0d9488"></polygon>
+      <!-- Large Center Search Bar (YouMed Signature) -->
+      <form action="/doctors" method="GET" class="youmed-search-bar">
+        <div class="search-input-wrap">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
-          <span>Xem hướng dẫn</span>
-        </a>
-      </div>
+          <input type="text" name="search" placeholder="Triệu chứng, tên bác sĩ, chuyên khoa, phòng khám..." autocomplete="off">
+        </div>
+        <button type="submit" class="youmed-search-btn">
+          <span>Tìm kiếm</span>
+        </button>
+      </form>
 
-      <div class="hero-trust-badges">
-        <div class="trust-item">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          Bác sĩ uy tín
-        </div>
-        <div class="trust-item">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-          Đặt lịch nhanh
-        </div>
-        <div class="trust-item">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-          Bảo mật thông tin
-        </div>
+      <!-- Quick Fast Search Tags -->
+      <div class="youmed-quick-tags">
+        <span>Gợi ý:</span>
+        <a href="/doctors?search=nhi">Bác sĩ Nhi khoa</a>
+        <a href="/doctors?search=tim">Khám Tim mạch</a>
+        <a href="/doctors?search=da%20li%E1%BB%85u">Trị mụn Da liễu</a>
+        <a href="/specialties/san-phu-khoa">Khám thai định kỳ</a>
       </div>
     </div>
 
-    <!-- Right Hero Visual -->
-    <div class="hero-visual" data-animate="fade-left">
-      <div class="hero-image-wrapper">
-        <img src="/assets/images/doctor-hero.jpg" alt="Đội ngũ Bác sĩ MediBook" class="hero-doctor-img" style="border-radius:24px;box-shadow:0 20px 40px -15px rgba(13,148,136,0.3);object-fit:cover;">
-        
-        <div class="hero-quote-badge floating-item">
-          “Sức khỏe tốt là nền tảng cho một cuộc sống hạnh phúc”
-          <span class="hero-quote-author">— Vì một Việt Nam khỏe mạnh hơn</span>
-        </div>
-
-        <a href="/appointments/book" class="hero-floating-pill">
-          <div class="leaf-icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path>
-              <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path>
-            </svg>
-          </div>
-          <span>Sống khỏe hơn mỗi ngày &rarr;</span>
-        </a>
+    <!-- Hero Right Illustration -->
+    <div class="youmed-hero-graphic">
+      <div class="heart-avatar-backdrop">
+        <img src="/assets/images/doctor-hero.jpg" alt="Đội ngũ bác sĩ MediBook" class="youmed-hero-photo">
       </div>
     </div>
   </div>
 </section>
 
-<!-- 2. QUICK SEARCH / BOOKING FILTER BAR -->
-<section class="container search-card-wrapper" id="quick-search" data-animate="fade-up">
-  <div class="quick-search-card">
-    <div class="search-header">
-      <div class="search-header-icon">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-          <line x1="16" y1="2" x2="16" y2="6"></line>
-          <line x1="8" y1="2" x2="8" y2="6"></line>
-          <line x1="3" y1="10" x2="21" y2="10"></line>
-        </svg>
+<!-- 2. QUICK BOOKING FILTER BAR (DIRECT BOOKING) -->
+<section class="container youmed-booking-box-wrap" id="quick-search">
+  <div class="youmed-filter-card">
+    <div class="filter-card-head">
+      <div class="filter-card-title">
+        <div class="filter-icon-box">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+        </div>
+        <div>
+          <h4>Đặt lịch khám nhanh theo hẹn</h4>
+          <p>Chọn thông tin để lấy số thứ tự ưu tiên khám đúng khung giờ</p>
+        </div>
       </div>
-      <div class="search-header-text">
-        <h3>Đặt lịch khám</h3>
-        <p>Tìm bác sĩ phù hợp với nhu cầu của bạn</p>
+      <div class="filter-head-badge">
+        Ưu tiên không chờ đợi
       </div>
     </div>
 
-    <form action="/appointments/book" method="GET" class="search-form-grid">
+    <form action="/appointments/book" method="GET" class="youmed-filter-grid">
       <div class="form-group">
-        <label for="home_specialty">Chuyên khoa</label>
-        <select name="specialty_id" id="home_specialty" class="form-control">
+        <label for="home_specialty">Chuyên khoa khám</label>
+        <select name="specialty_id" id="home_specialty" class="form-control form-control-clean">
           <option value="">-- Chọn chuyên khoa --</option>
           <% specialties.forEach(sp => { %>
             <option value="<%= sp.id %>"><%= sp.name %></option>
@@ -104,9 +81,9 @@
       </div>
 
       <div class="form-group">
-        <label for="home_doctor">Bác sĩ</label>
-        <select name="doctor_id" id="home_doctor" class="form-control">
-          <option value="">-- Chọn bác sĩ (tùy chọn) --</option>
+        <label for="home_doctor">Bác sĩ tiếp nhận</label>
+        <select name="doctor_id" id="home_doctor" class="form-control form-control-clean">
+          <option value="">-- Bất kỳ bác sĩ nào --</option>
           <% doctors.forEach(doc => { %>
             <option value="<%= doc.id %>"><%= doc.name %></option>
           <% }); %>
@@ -114,12 +91,12 @@
       </div>
 
       <div class="form-group">
-        <label for="home_date">Ngày khám</label>
-        <input type="date" name="date" id="home_date" class="form-control" value="<%= today %>" min="<%= today %>">
+        <label for="home_date">Ngày dự kiến khám</label>
+        <input type="date" name="date" id="home_date" class="form-control form-control-clean" value="<%= today %>" min="<%= today %>">
       </div>
 
       <div>
-        <button type="submit" class="btn btn-primary" style="height:48px;padding:0 28px;">
+        <button type="submit" class="btn btn-primary-youmed btn-book-submit">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -134,253 +111,326 @@
 <!-- 3. UPCOMING APPOINTMENT WIDGET (IF ANY) -->
 <% if (upcomingAppointment) { %>
 <section class="container" style="margin-bottom: 40px;" data-animate="fade-up">
-  <div class="section-header" style="margin-bottom: 16px;">
-    <h3 class="section-title" style="font-size:20px;">Lịch hẹn sắp tới</h3>
-    <a href="/my-appointments" class="section-link">Xem tất cả &rarr;</a>
+  <div class="section-header-youmed">
+    <div>
+      <h3 class="title-main">Lịch hẹn khám sắp tới</h3>
+      <p class="title-sub">Phiếu khám và khung giờ của bạn đã sẵn sàng</p>
+    </div>
+    <a href="/my-appointments" class="youmed-view-more">Xem chi tiết tất cả &rarr;</a>
   </div>
 
-  <a href="/appointments/<%= upcomingAppointment.booking_code %>" class="upcoming-widget">
-    <div class="upcoming-left">
-      <div class="upcoming-icon-box">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+  <a href="/appointments/<%= upcomingAppointment.booking_code %>" class="youmed-ticket-card">
+    <div class="ticket-left">
+      <div class="ticket-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0088ff" stroke-width="2.5">
           <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
           <line x1="16" y1="2" x2="16" y2="6"></line>
           <line x1="8" y1="2" x2="8" y2="6"></line>
           <line x1="3" y1="10" x2="21" y2="10"></line>
         </svg>
       </div>
-      <div class="upcoming-details">
+      <div class="ticket-info">
         <h4><%= upcomingAppointment.service_name || ('Khám ' + upcomingAppointment.specialty_name) %></h4>
-        <div style="font-size:13.5px;font-weight:600;color:#0d9488;margin-bottom:4px;">
-          <%= upcomingAppointment.doctor_name %>
-        </div>
-        <div class="upcoming-meta">
+        <div class="ticket-doc"><%= upcomingAppointment.doctor_name %></div>
+        <div class="ticket-meta">
           <span>📅 <%= upcomingAppointment.appointment_date %></span>
           <span>⏰ <%= upcomingAppointment.start_time %> - <%= upcomingAppointment.end_time %></span>
-          <span>📍 <%= upcomingAppointment.room_number %> - MediBook</span>
+          <span>📍 Phòng: <%= upcomingAppointment.room_number %></span>
         </div>
       </div>
     </div>
-
-    <div class="upcoming-right">
-      <span class="badge badge-success">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
-        Đã xác nhận
-      </span>
-      <div class="booking-code-pill">
-        Mã: <%= upcomingAppointment.booking_code %>
-      </div>
+    <div class="ticket-right">
+      <span class="badge-status-confirmed">ĐÃ XÁC NHẬN</span>
+      <div class="ticket-code">Mã: <strong><%= upcomingAppointment.booking_code %></strong></div>
     </div>
   </a>
 </section>
 <% } %>
 
-<!-- 4. CHUYÊN KHOA PHỔ BIẾN -->
-<section class="container section" data-animate="fade-up">
-  <div class="section-header">
-    <h2 class="section-title">Chuyên khoa phổ biến</h2>
-    <a href="/specialties" class="section-link">Xem tất cả &rarr;</a>
+<!-- 4. SECTION: ĐẶT LỊCH KHÁM TRỰC TUYẾN / ĐẶT KHÁM BÁC SĨ (YOUMED STYLE CIRCULAR AVATARS) -->
+<section class="container youmed-section" data-animate="fade-up">
+  <div class="section-header-youmed">
+    <div>
+      <h2 class="title-main">Đặt khám bác sĩ</h2>
+      <p class="title-sub">Phiếu khám kèm số thứ tự và thời gian của bạn được xác nhận.</p>
+    </div>
+    <a href="/doctors" class="youmed-btn-pill">
+      <span>Xem thêm</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+    </a>
   </div>
 
-  <div class="specialties-grid">
+  <div class="youmed-doctors-carousel">
+    <% doctors.slice(0, 4).forEach((doc, idx) => { %>
+      <div class="youmed-doctor-item">
+        <div class="doc-avatar-wrap">
+          <img src="/assets/images/doctor-<%= doc.id %>.jpg" alt="<%= doc.name %>" class="doc-circle-img" onerror="this.onerror=null;this.src='/assets/images/doctor-1.jpg';">
+        </div>
+        <h3 class="doc-item-name">
+          <a href="/doctors/<%= doc.id %>"><%= doc.name %></a>
+        </h3>
+        <div class="doc-item-spec">
+          <%= doc.specialty_names || 'Chuyên khoa Tổng quát' %>
+        </div>
+        <div class="doc-item-hosp">
+          Bệnh viện Đa khoa MediBook
+        </div>
+
+        <div class="doc-item-footer">
+          <a href="/appointments/book?doctor_id=<%= doc.id %>" class="btn-doc-book-link">
+            <span>Đặt lịch khám</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </a>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+</section>
+
+<!-- 5. SECTION: ĐẶT KHÁM BỆNH VIỆN & CƠ SỞ Y TẾ (YOUMED CARD STYLE) -->
+<section class="container youmed-section" data-animate="fade-up">
+  <div class="section-header-youmed">
+    <div>
+      <h2 class="title-main">Đặt khám bệnh viện</h2>
+      <p class="title-sub">Đặt khám và thanh toán để có phiếu khám (thời gian, số thứ tự) trước khi đi khám các bệnh viện kết nối chính thức.</p>
+    </div>
+    <a href="/doctors" class="youmed-btn-pill">
+      <span>Xem thêm</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+    </a>
+  </div>
+
+  <div class="youmed-hospital-grid">
+    <div class="hospital-card">
+      <div class="hosp-banner">
+        <img src="/assets/images/doctor-hero.jpg" alt="Bệnh viện Nhi Đồng" class="hosp-cover-img">
+        <div class="hosp-logo-badge">
+          <span style="font-size:24px;">👶</span>
+        </div>
+      </div>
+      <div class="hosp-body">
+        <h4 class="hosp-title">Bệnh viện Nhi Đồng Thành Phố</h4>
+        <div class="hosp-address">14 Lý Tự Trọng, Bến Nghé, Quận 1, TP. Hồ Chí Minh</div>
+        <div class="hosp-schedule">
+          <div class="sched-row">
+            <span>Thứ 2 đến Thứ 6 (Sáng):</span>
+            <strong>07h00 - 11h30</strong>
+          </div>
+          <div class="sched-row">
+            <span>Thứ 2 đến Thứ 6 (Chiều):</span>
+            <strong>13h00 - 16h30</strong>
+          </div>
+        </div>
+        <a href="/appointments/book" class="hosp-book-btn">Đặt khám ngay &rarr;</a>
+      </div>
+    </div>
+
+    <div class="hospital-card">
+      <div class="hosp-banner">
+        <img src="/assets/images/doctor-1.jpg" alt="Bệnh viện Quân Y" class="hosp-cover-img">
+        <div class="hosp-logo-badge">
+          <span style="font-size:24px;">🏥</span>
+        </div>
+      </div>
+      <div class="hosp-body">
+        <h4 class="hosp-title">Bệnh viện Đa Khoa MediBook Sài Gòn</h4>
+        <div class="hosp-address">123 Đường Nguyễn Tri Phương, Phường 7, Quận 5, TP.HCM</div>
+        <div class="hosp-schedule">
+          <div class="sched-row">
+            <span>Thứ 2 đến Thứ 7 (Cả ngày):</span>
+            <strong>07h30 - 20h00</strong>
+          </div>
+          <div class="sched-row">
+            <span>Chủ Nhật (Buổi sáng):</span>
+            <strong>08h00 - 12h00</strong>
+          </div>
+        </div>
+        <a href="/appointments/book" class="hosp-book-btn">Đặt khám ngay &rarr;</a>
+      </div>
+    </div>
+
+    <div class="hospital-card">
+      <div class="hosp-banner">
+        <img src="/assets/images/doctor-2.jpg" alt="Bệnh viện Chợ Rẫy đối tác" class="hosp-cover-img">
+        <div class="hosp-logo-badge">
+          <span style="font-size:24px;">⚕️</span>
+        </div>
+      </div>
+      <div class="hosp-body">
+        <h4 class="hosp-title">Viện Tim & Chuyên khoa Lâm sàng</h4>
+        <div class="hosp-address">520 Nguyễn Chí Thanh, Phường 7, Quận 11, TP. Hồ Chí Minh</div>
+        <div class="hosp-schedule">
+          <div class="sched-row">
+            <span>Khám Giáo sư, Chuyên gia:</span>
+            <strong>07h00 - 16h00</strong>
+          </div>
+          <div class="sched-row">
+            <span>Cấp cứu & Lưu bệnh:</span>
+            <strong style="color:#00c853;">Phục vụ 24/7</strong>
+          </div>
+        </div>
+        <a href="/appointments/book" class="hosp-book-btn">Đặt khám ngay &rarr;</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6. SECTION: ĐẶT LỊCH THEO CHUYÊN KHOA (CIRCULAR COLOR ICONS) -->
+<section class="container youmed-section" data-animate="fade-up">
+  <div class="section-header-youmed">
+    <div>
+      <h2 class="title-main">Đặt lịch theo Chuyên khoa</h2>
+      <p class="title-sub">Danh sách bác sĩ, bệnh viện, phòng khám phân chia theo chuyên khoa chuẩn xác</p>
+    </div>
+    <a href="/specialties" class="youmed-btn-pill">
+      <span>Tất cả</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+    </a>
+  </div>
+
+  <div class="youmed-specialty-circles">
     <% specialties.forEach(sp => { %>
-      <a href="/specialties/<%= sp.slug %>" class="specialty-card interactive-hover">
-        <div class="specialty-icon-circle">
+      <a href="/specialties/<%= sp.slug %>" class="specialty-circle-card">
+        <div class="spec-circle-icon spec-bg-<%= sp.slug %>">
           <% if (sp.slug === 'tim-mach') { %>
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.28"/></svg>
+            🫀
           <% } else if (sp.slug === 'nhi-khoa') { %>
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+            👶
           <% } else if (sp.slug === 'san-phu-khoa') { %>
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="5"/><path d="M12 13v8"/><path d="M9 18h6"/></svg>
+            🤰
+          <% } else if (sp.slug === 'da-lieu') { %>
+            🧴
+          <% } else if (sp.slug === 'tai-mui-hong') { %>
+            👂
+          <% } else if (sp.slug === 'co-xuong-khop') { %>
+            🦴
+          <% } else if (sp.slug === 'tieu-hoa') { %>
+            🥗
           <% } else { %>
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></svg>
+            🩺
           <% } %>
         </div>
-        <div class="specialty-info">
-          <h4><%= sp.name %></h4>
-          <p><%= sp.description || 'Chăm sóc sức khỏe chuyên khoa' %></p>
-        </div>
+        <div class="spec-circle-name"><%= sp.name %></div>
+        <div class="spec-circle-count"><%= sp.doctor_count || 1 %> BS</div>
       </a>
     <% }); %>
   </div>
 </section>
 
-<!-- 5. BÁC SĨ NỔI BẬT -->
-<section class="container section" data-animate="fade-up">
-  <div class="section-header">
-    <h2 class="section-title">Bác sĩ nổi bật</h2>
-    <a href="/doctors" class="section-link">Xem tất cả &rarr;</a>
-  </div>
+<!-- 7. SECTION: TIN Y TẾ - CHÍNH THỐNG & MINH BẠCH (YOUMED ARTICLE TABS) -->
+<section class="container youmed-section" data-animate="fade-up">
+  <div class="youmed-articles-header">
+    <h2 class="articles-big-title">Tin Y tế</h2>
+    <div class="articles-sub-title">Chính thống - Minh bạch - Trung lập</div>
 
-  <div class="doctors-grid">
-    <% doctors.slice(0, 4).forEach(doc => { %>
-      <div class="doctor-card interactive-hover">
-        <div class="doctor-card-top">
-          <img src="/assets/images/doctor-<%= doc.id %>.jpg" alt="<%= doc.name %>" class="doctor-img" style="object-fit:cover;object-position:top center;">
-          <button type="button" class="btn-favorite" data-doctor-id="<%= doc.id %>" data-doctor-name="<%= doc.name %>" title="Lưu yêu thích">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-          </button>
-        </div>
-        <div class="doctor-card-body">
-          <h3 class="doctor-name"><%= doc.name %></h3>
-          <div class="doctor-specialty"><%= doc.specialty_names || 'Chuyên khoa Nội' %> &bull; <%= doc.room_number || 'P.101' %></div>
-          
-          <p style="font-size:13px; color:#64748b; line-height:1.45; margin-bottom:12px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
-            <%= doc.bio || 'Bác sĩ giàu kinh nghiệm, chu đáo, đồng hành tận tâm cùng bệnh nhân.' %>
-          </p>
-
-          <div class="doctor-meta">
-            <div class="doctor-rating">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-              <span><%= Number(doc.rating).toFixed(1) %></span>
-              <span class="doctor-reviews-count">(<%= doc.rating_count %> đánh giá)</span>
-            </div>
-            <div style="font-size:12.5px; font-weight:700; color:#0d9488;">
-              <%= doc.consultation_fee ? new Intl.NumberFormat('vi-VN').format(doc.consultation_fee) + ' ₫' : '200.000 ₫' %>
-            </div>
-          </div>
-
-          <div style="margin-top:16px;">
-            <a href="/appointments/book?doctor_id=<%= doc.id %>" class="btn btn-outline btn-block btn-sm">
-              Đặt lịch khám
-            </a>
-          </div>
-        </div>
-      </div>
-    <% }); %>
-  </div>
-</section>
-
-<!-- 6. CHỈ 3 BƯỚC ĐỂ ĐẶT LỊCH KHÁM -->
-<section class="container section" data-animate="fade-up">
-  <div class="steps-section">
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-      <div>
-        <h2 class="section-title" style="margin-bottom:4px;">Chỉ 3 bước để đặt lịch khám</h2>
-        <p style="color:var(--text-muted);font-size:14px;">Quy trình khám bệnh nhanh chóng, tiện lợi, không phải chờ đợi lâu.</p>
-      </div>
-      <div style="font-weight:700;color:#0d9488;font-size:14px;">
-        Sức khỏe tốt hơn bắt đầu từ hôm nay! 💚
+    <div class="articles-tabs-bar">
+      <button type="button" class="article-tab active">Thuốc</button>
+      <button type="button" class="article-tab">Dược liệu</button>
+      <button type="button" class="article-tab">Bệnh</button>
+      <button type="button" class="article-tab">Cơ thể</button>
+      <div class="article-search-mini">
+        <input type="text" placeholder="Nhập tên thuốc, bệnh lý...">
       </div>
     </div>
+  </div>
 
-    <div class="steps-grid">
-      <div class="step-card">
-        <div class="step-badge-num">1</div>
-        <div class="step-content">
-          <h4>Tìm kiếm & Lựa chọn</h4>
-          <p>Chọn chuyên khoa, bác sĩ uy tín và thời gian thăm khám thuận tiện với bạn.</p>
+  <div class="youmed-news-grid">
+    <article class="news-card">
+      <div class="news-badge-brand">MediBook Y tế</div>
+      <div class="news-img-box">
+        <div class="news-pill-label">Thuốc điều trị</div>
+        <div style="font-size:48px; text-align:center; padding: 20px 0;">💊</div>
+      </div>
+      <div class="news-content">
+        <h4 class="news-title">Thuốc Ozempic: Thành phần, công dụng và lưu ý an toàn khi sử dụng</h4>
+        <div class="news-meta">
+          <span>Dược sĩ Nguyễn Lê Thu Trúc</span> &bull; <span>Cập nhật mới nhất</span>
         </div>
       </div>
+    </article>
 
-      <div class="step-card">
-        <div class="step-badge-num">2</div>
-        <div class="step-content">
-          <h4>Xác nhận lịch hẹn</h4>
-          <p>Điền thông tin và nhận mã đặt lịch khám tức thời qua hệ thống trực tuyến.</p>
+    <article class="news-card">
+      <div class="news-badge-brand">MediBook Y tế</div>
+      <div class="news-img-box">
+        <div class="news-pill-label">Kháng sinh & Kháng viêm</div>
+        <div style="font-size:48px; text-align:center; padding: 20px 0;">🧴</div>
+      </div>
+      <div class="news-content">
+        <h4 class="news-title">Viên ngậm kháng viêm Difflam: Công dụng, cách dùng và liều lượng</h4>
+        <div class="news-meta">
+          <span>Dược sĩ Phan Hữu Xuân Hạo</span> &bull; <span>Cập nhật mới nhất</span>
         </div>
       </div>
+    </article>
 
-      <div class="step-card">
-        <div class="step-badge-num">3</div>
-        <div class="step-content">
-          <h4>Đến phòng khám</h4>
-          <p>Đến đúng giờ hẹn, quét mã tiếp đón và gặp bác sĩ thăm khám theo số thứ tự.</p>
+    <article class="news-card">
+      <div class="news-badge-brand">MediBook Y tế</div>
+      <div class="news-img-box">
+        <div class="news-pill-label">Bệnh học lâm sàng</div>
+        <div style="font-size:48px; text-align:center; padding: 20px 0;">🩺</div>
+      </div>
+      <div class="news-content">
+        <h4 class="news-title">Thuốc Metronidazol là gì? Tác dụng phụ và những điều lưu ý đặc biệt</h4>
+        <div class="news-meta">
+          <span>Bác sĩ CKII Lê Thị Minh Hồng</span> &bull; <span>Cập nhật mới nhất</span>
         </div>
       </div>
-    </div>
+    </article>
   </div>
 </section>
 
-<!-- 7. SECTION BỔ SUNG: CƠ SỞ VẬT CHẤT & TRANG THIẾT BỊ HIỆN ĐẠI -->
-<section class="container section" data-animate="fade-up">
-  <div style="background: #ffffff; border-radius: 20px; padding: 45px 35px; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
-    <div style="text-align: center; max-width: 720px; margin: 0 auto 35px;">
-      <span class="badge badge-primary" style="margin-bottom: 8px; display: inline-block;">TIÊU CHUẨN QUỐC TẾ</span>
-      <h2 class="section-title" style="margin-bottom: 8px;">Cơ sở vật chất & Công nghệ y khoa tân tiến</h2>
-      <p style="color: var(--text-muted); font-size: 14.5px;">MediBook đầu tư đồng bộ hệ thống máy móc nhập khẩu từ Đức, Mỹ và Nhật Bản phục vụ chẩn đoán chính xác.</p>
-    </div>
-
-    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
-      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:20px; text-align:center;">
-        <div style="font-size:32px; margin-bottom:10px;">🔬</div>
-        <h4 style="font-size:15.5px; font-weight:700; margin-bottom:6px; color:#0f172a;">Xét nghiệm tự động</h4>
-        <p style="font-size:12.5px; color:#64748b; line-height:1.4;">Hệ thống sinh hóa, miễn dịch tự động trả kết quả nhanh chóng trong 30-45 phút.</p>
-      </div>
-
-      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:20px; text-align:center;">
-        <div style="font-size:32px; margin-bottom:10px;">🩺</div>
-        <h4 style="font-size:15.5px; font-weight:700; margin-bottom:6px; color:#0f172a;">Nội soi kỹ thuật số</h4>
-        <p style="font-size:12.5px; color:#64748b; line-height:1.4;">Đầu dò nội soi mềm HD thế hệ mới, tầm soát tổn thương vi mô không gây đau hay khó chịu.</p>
-      </div>
-
-      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:20px; text-align:center;">
-        <div style="font-size:32px; margin-bottom:10px;">⚡</div>
-        <h4 style="font-size:15.5px; font-weight:700; margin-bottom:6px; color:#0f172a;">Siêu âm màu 4D/5D</h4>
-        <p style="font-size:12.5px; color:#64748b; line-height:1.4;">Hình ảnh siêu âm rõ nét hỗ trợ chẩn đoán thai kỳ, tim mạch và cơ quan ổ bụng.</p>
-      </div>
-
-      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:20px; text-align:center;">
-        <div style="font-size:32px; margin-bottom:10px;">🛡️</div>
-        <h4 style="font-size:15.5px; font-weight:700; margin-bottom:6px; color:#0f172a;">Phòng vô trùng Class 100</h4>
-        <p style="font-size:12.5px; color:#64748b; line-height:1.4;">Khử khuẩn áp lực dương, đảm bảo an toàn tuyệt đối chống nhiễm khuẩn chéo.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- 8. SECTION BỔ SUNG: ĐÁNH GIÁ TỪ BỆNH NHÂN THỰC TẾ -->
-<section class="container section" data-animate="fade-up" style="padding-bottom: 70px;">
-  <div class="section-header">
+<!-- 8. SECTION: ĐÁNH GIÁ TỪ BỆNH NHÂN THỰC TẾ -->
+<section class="container youmed-section" style="padding-bottom: 70px;" data-animate="fade-up">
+  <div class="section-header-youmed">
     <div>
-      <h2 class="section-title">Khách hàng nói gì về MediBook?</h2>
-      <p style="color:var(--text-muted); font-size:14px;">Hơn 50,000+ lượt khám chữa bệnh và nhận phản hồi tích cực từ cộng đồng</p>
+      <h2 class="title-main">Bệnh nhân nói gì về MediBook?</h2>
+      <p class="title-sub">Hơn 50.000+ lượt khám chữa bệnh và nhận phản hồi tích cực từ cộng đồng người dùng</p>
     </div>
-    <div style="display:flex; align-items:center; gap:6px; color:#f59e0b; font-weight:700;">
-      <span>⭐ 4.9 / 5.0</span>
-      <span style="color:#64748b; font-weight:500;">(từ hơn 3,500+ đánh giá xác thực)</span>
+    <div class="youmed-rating-stars">
+      <span style="color:#ff9800; font-size:18px;">★ 4.9 / 5.0</span>
+      <span style="color:#64748b; font-size:13px; font-weight:600;">(hơn 3.500+ đánh giá xác thực)</span>
     </div>
   </div>
 
-  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;">
-    <div class="card-box" style="padding: 24px;">
-      <div style="color:#f59e0b; font-size:14px; margin-bottom:8px;">⭐⭐⭐⭐⭐</div>
-      <p style="font-size:13.5px; color:#334155; line-height:1.6; margin-bottom:14px;">
+  <div class="youmed-testimonials-grid">
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text">
         "Tôi đặt lịch trước trên web nên đến quầy chỉ cần đọc mã là được số khám ngay, không phải chen chúc 4-5 tiếng như ở bệnh viện lớn. Bác sĩ Đức khám rất kỹ và dặn dò chu đáo!"
       </p>
-      <div style="display:flex; align-items:center; gap:10px;">
-        <div style="width:36px; height:36px; background:#e0f2fe; color:#0284c7; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px;">TN</div>
+      <div class="testi-user">
+        <div class="user-avatar-tag" style="background:#e0f2fe; color:#0088ff;">TN</div>
         <div>
-          <div style="font-weight:700; font-size:13.5px; color:#0f172a;">Trần Văn Nam</div>
-          <div style="font-size:11.5px; color:#64748b;">Khám Nội tổng quát định kỳ</div>
+          <div class="user-name">Trần Văn Nam</div>
+          <div class="user-desc">Khám Nội tổng quát định kỳ</div>
         </div>
       </div>
     </div>
 
-    <div class="card-box" style="padding: 24px;">
-      <div style="color:#f59e0b; font-size:14px; margin-bottom:8px;">⭐⭐⭐⭐⭐</div>
-      <p style="font-size:13.5px; color:#334155; line-height:1.6; margin-bottom:14px;">
-        "Bác sĩ Mai khoa Nhi rất khéo, con trai mình bình thường sợ bác sĩ mà vào phòng cười suốt. Thuốc kê uống 2 ngày là đỡ sốt hẳn. Rất cảm ơn đội ngũ MediBook!"
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text">
+        "Bác sĩ Mai khoa Nhi rất khéo, con trai mình bình thường sợ bác sĩ mà vào phòng cười suốt. Thuốc kê uống 2 ngày là đỡ sốt hẳn. Rất cảm ơn đội ngũ bác sĩ MediBook!"
       </p>
-      <div style="display:flex; align-items:center; gap:10px;">
-        <div style="width:36px; height:36px; background:#ccfbf1; color:#0f766e; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px;">LH</div>
+      <div class="testi-user">
+        <div class="user-avatar-tag" style="background:#e8f5e9; color:#00c853;">LH</div>
         <div>
-          <div style="font-weight:700; font-size:13.5px; color:#0f172a;">Lê Hoàng Yến</div>
-          <div style="font-size:11.5px; color:#64748b;">Phụ huynh bé Bo (3 tuổi)</div>
+          <div class="user-name">Lê Hoàng Yến</div>
+          <div class="user-desc">Phụ huynh bé Bo (3 tuổi)</div>
         </div>
       </div>
     </div>
 
-    <div class="card-box" style="padding: 24px;">
-      <div style="color:#f59e0b; font-size:14px; margin-bottom:8px;">⭐⭐⭐⭐⭐</div>
-      <p style="font-size:13.5px; color:#334155; line-height:1.6; margin-bottom:14px;">
-        "Giao diện web trực quan, rõ ràng minh bạch từng bảng giá dịch vụ. Toa thuốc sau khám được lưu ngay trên tài khoản, rất tiện để theo dõi liều lượng uống mỗi ngày."
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text">
+        "Giao diện chuẩn như YouMed cực kỳ trực quan, rõ ràng minh bạch từng bảng giá dịch vụ. Toa thuốc sau khám được lưu ngay trên tài khoản, rất tiện để theo dõi liều lượng mỗi ngày."
       </p>
-      <div style="display:flex; align-items:center; gap:10px;">
-        <div style="width:36px; height:36px; background:#fef08a; color:#a16207; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px;">HQ</div>
+      <div class="testi-user">
+        <div class="user-avatar-tag" style="background:#fff8e1; color:#f57f17;">HQ</div>
         <div>
-          <div style="font-weight:700; font-size:13.5px; color:#0f172a;">Hoàng Quốc Bảo</div>
-          <div style="font-size:11.5px; color:#64748b;">Khám Tim mạch & Đo điện tim</div>
+          <div class="user-name">Hoàng Quốc Bảo</div>
+          <div class="user-desc">Khám Tim mạch & Đo điện tim</div>
         </div>
       </div>
     </div>

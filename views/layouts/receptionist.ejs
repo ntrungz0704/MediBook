@@ -6,25 +6,33 @@
   <title><%= typeof pageTitle !== 'undefined' ? pageTitle : 'Lễ tân - MediBook' %></title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/app.css">
   <link rel="stylesheet" href="/assets/css/dashboard.css">
 </head>
 <body>
   <div class="dashboard-container">
     <aside class="dashboard-sidebar">
-      <div class="sidebar-header">
-        <span>MediBook</span>
-        <span class="sidebar-role-badge role-receptionist">Lễ tân</span>
+      <div class="sidebar-header" style="padding: 0 16px;">
+        <a href="/receptionist/dashboard" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit;">
+          <div class="brand-icon" style="width: 36px; height: 36px; min-width: 36px; border-radius: 6px; background:#fff; padding:2px;">
+            <img src="/assets/images/logo.png" alt="MediBook Logo" class="brand-img">
+          </div>
+          <div style="display:flex; flex-direction:column; line-height:1.2;">
+            <span style="font-size: 17px; font-weight: 700; color: #ffffff; letter-spacing: -0.3px;">Medi<span style="color:#0284c7;">Book</span></span>
+            <span style="font-size: 10px; font-weight: 600; color: #94a3b8; letter-spacing: 0.5px;">QUẦY TIẾP ĐÓN</span>
+          </div>
+        </a>
+        <span class="sidebar-role-badge role-receptionist" style="margin-left: auto;">Lễ tân</span>
       </div>
 
       <ul class="sidebar-nav">
-        <li><a href="/receptionist/dashboard" class="<%= currentPath.includes('/receptionist/dashboard') ? 'active' : '' %>">📊 Bàn làm việc lễ tân</a></li>
-        <li><a href="/receptionist/checkin" class="<%= currentPath.includes('/receptionist/checkin') ? 'active' : '' %>">📋 Tiếp đón & Điểm danh</a></li>
-        <li><a href="/receptionist/booking" class="<%= currentPath.includes('/receptionist/booking') ? 'active' : '' %>">➕ Đặt lịch tại quầy</a></li>
-        <li><a href="/receptionist/payments" class="<%= currentPath.includes('/receptionist/payments') ? 'active' : '' %>">💳 Thu ngân & Viện phí</a></li>
-        <li><a href="/receptionist/live-board" target="_blank">📺 Màn hình gọi số sảnh</a></li>
-        <li style="margin-top:20px;"><a href="/" target="_blank">🌐 Xem trang chủ</a></li>
+        <li><a href="/receptionist/dashboard" class="<%= currentPath === '/receptionist/dashboard' || currentPath === '/receptionist' ? 'active' : '' %>"><span>📊</span> Bàn làm việc lễ tân</a></li>
+        <li><a href="/receptionist/checkin" class="<%= currentPath.startsWith('/receptionist/checkin') ? 'active' : '' %>"><span>📋</span> Tiếp đón & Điểm danh</a></li>
+        <li><a href="/receptionist/booking" class="<%= currentPath.startsWith('/receptionist/booking') ? 'active' : '' %>"><span>➕</span> Đặt lịch tại quầy</a></li>
+        <li><a href="/receptionist/payments" class="<%= currentPath.startsWith('/receptionist/payments') ? 'active' : '' %>"><span>💳</span> Thu ngân & Viện phí</a></li>
+        <li><a href="/receptionist/live-board" target="_blank"><span>📺</span> Màn hình gọi số sảnh</a></li>
+        <li style="margin-top:14px; border-top: 1px solid rgba(255,255,255,0.08); padding-top:10px;"><a href="/" target="_blank"><span>🌐</span> Xem trang chủ</a></li>
       </ul>
 
       <div class="sidebar-footer">

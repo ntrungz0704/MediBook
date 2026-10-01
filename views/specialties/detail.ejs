@@ -31,10 +31,15 @@
     <% doctors.forEach(doc => { %>
       <div class="doctor-card interactive-hover">
         <div class="doctor-card-top">
-          <img src="/assets/images/doctor-<%= doc.id %>.jpg" alt="<%= doc.name %>" class="doctor-img" style="object-fit:cover;object-position:top center;">
+          <img src="/assets/images/doctor-<%= doc.id %>.jpg" alt="<%= doc.name %>" class="doctor-img" style="object-fit:cover;object-position:top center;" onerror="this.onerror=null;this.src='/assets/images/doctor-1.jpg';">
+          <button type="button" class="btn-favorite" data-doctor-id="<%= doc.id %>" data-doctor-name="<%= doc.name %>" title="Lưu bác sĩ">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+          </button>
         </div>
         <div class="doctor-card-body">
-          <h3 class="doctor-name"><%= doc.name %></h3>
+          <h3 class="doctor-name">
+            <a href="/doctors/<%= doc.id %>" style="color:inherit;"><%= doc.name %></a>
+          </h3>
           <div class="doctor-specialty"><%= specialty.name %> &bull; <%= doc.room_number %></div>
           <div class="doctor-meta">
             <div class="doctor-rating">
@@ -42,10 +47,9 @@
             </div>
             <span class="doctor-badge-exp"><%= doc.experience_years %>+ năm kinh nghiệm</span>
           </div>
-          <div style="margin-top: 14px;">
-            <a href="/appointments/book?specialty_id=<%= specialty.id %>&doctor_id=<%= doc.id %>" class="btn btn-primary btn-block btn-sm">
-              Đặt lịch khám
-            </a>
+          <div style="display:flex;gap:8px;margin-top:14px;">
+            <a href="/doctors/<%= doc.id %>" class="btn btn-secondary btn-sm" style="flex:1;">Hồ sơ</a>
+            <a href="/appointments/book?specialty_id=<%= specialty.id %>&doctor_id=<%= doc.id %>" class="btn btn-primary btn-sm" style="flex:1;">Đặt lịch</a>
           </div>
         </div>
       </div>

@@ -110,6 +110,20 @@ async function runTests() {
   // Wait 1.5s for server to bind
   await new Promise(r => setTimeout(r, 1500));
 
+  // Cleanup test appointment from previous run if any
+  const tm = new Date();
+  tm.setDate(tm.getDate() + 1);
+  const tmStr = tm.toISOString().slice(0, 10);
+  const existingAppt = db.prepare('SELECT id FROM appointments WHERE appointment_date = ? AND start_time = ?').get(tmStr, '09:00:00');
+  if (existingAppt) {
+    db.prepare('DELETE FROM reviews WHERE appointment_id = ?').run(existingAppt.id);
+    db.prepare('DELETE FROM payments WHERE appointment_id = ?').run(existingAppt.id);
+    db.prepare('DELETE FROM prescriptions WHERE appointment_id = ?').run(existingAppt.id);
+    db.prepare('DELETE FROM medical_records WHERE appointment_id = ?').run(existingAppt.id);
+    db.prepare('DELETE FROM examination_queues WHERE appointment_id = ?').run(existingAppt.id);
+    db.prepare('DELETE FROM appointments WHERE id = ?').run(existingAppt.id);
+  }
+
   try {
     // -------------------------------------------------------------
     // TEST 1: Public Routes Accessibility (Khách vãng lai)

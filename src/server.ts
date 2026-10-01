@@ -52,6 +52,30 @@ app.use((req, res, next) => {
   res.locals.formatDateTime = helpers.formatDateTime;
   res.locals.getStatusBadge = helpers.getStatusBadge;
   res.locals.today = new Date().toISOString().slice(0, 10);
+
+  // Notifications for current user
+  if (req.session.user) {
+    try {
+      const notifs = db.prepare(`
+        SELECT * FROM notifications 
+        WHERE user_id = ? 
+        ORDER BY id DESC LIMIT 5
+      `).all(req.session.user.id);
+      const unreadCount = db.prepare(`
+        SELECT count(*) as c FROM notifications 
+        WHERE user_id = ? AND is_read = 0
+      `).get(req.session.user.id).c;
+      res.locals.recentNotifications = notifs;
+      res.locals.unreadNotificationCount = unreadCount;
+    } catch (e) {
+      res.locals.recentNotifications = [];
+      res.locals.unreadNotificationCount = 0;
+    }
+  } else {
+    res.locals.recentNotifications = [];
+    res.locals.unreadNotificationCount = 0;
+  }
+
   next();
 });
 
@@ -541,11 +565,30 @@ app.post('/appointments/book', (req, res) => {
       VALUES (?, 'pending', 'confirmed', 'Bệnh nhân hoàn tất đặt lịch trực tuyến')
     `).run(appointmentId);
 
-    // Notification
+    // 1. Notification cho bệnh nhân
     db.prepare(`
       INSERT INTO notifications (user_id, title, message, type, link)
       VALUES (?, 'Đặt lịch khám thành công', ?, 'appointment', ?)
     `).run(req.session.user.id, `Mã lịch hẹn: ${bookingCode}`, `/appointments/${bookingCode}`);
+
+    // 2. Notification cho bác sĩ phụ trách
+    const docUser = db.prepare('SELECT user_id FROM doctors WHERE id = ?').get(doctor_id);
+    if (docUser && docUser.user_id) {
+      db.prepare(`
+        INSERT INTO notifications (user_id, title, message, type, link)
+        VALUES (?, 'Lịch hẹn mới cần khám', ?, 'appointment', ?)
+      `).run(docUser.user_id, `Có bệnh nhân mới đặt lịch #${bookingCode} ngày ${appointment_date} (${start_time})`, '/doctor/queue');
+    }
+
+    // 3. Notification cho Admin / Lễ tân
+    const adminUsers = db.prepare("SELECT id FROM users WHERE role IN ('admin', 'receptionist')").all();
+    const notifStmt = db.prepare(`
+      INSERT INTO notifications (user_id, title, message, type, link)
+      VALUES (?, 'Có lịch đặt khám mới', ?, 'appointment', ?)
+    `);
+    for (const aUser of adminUsers) {
+      notifStmt.run(aUser.id, `Lịch mới #${bookingCode} - Bác sĩ ID ${doctor_id} ngày ${appointment_date}`, `/admin/appointments`);
+    }
 
     logActivity(req.session.user.id, 'BOOK_APPOINTMENT', 'Appointment', appointmentId, `Đặt lịch thành công: ${bookingCode}`, req);
 
@@ -714,7 +757,50 @@ app.get('/profile', requireAuth, (req, res) => {
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.session.user.id);
   const patient = db.prepare('SELECT * FROM patients WHERE user_id = ?').get(req.session.user.id);
 
-  renderWithLayout(res, 'profile/index', { pageTitle: 'Hồ sơ cá nhân - MediBook', user, patient });
+  let favoriteDoctors = [];
+  if (patient) {
+    favoriteDoctors = db.prepare(`
+      SELECT d.*, u.name, u.avatar,
+             GROUP_CONCAT(s.name, ', ') as specialty_names
+      FROM favorite_doctors fd
+      JOIN doctors d ON fd.doctor_id = d.id
+      JOIN users u ON d.user_id = u.id
+      LEFT JOIN doctor_specialties ds ON d.id = ds.doctor_id
+      LEFT JOIN specialties s ON ds.specialty_id = s.id
+      WHERE fd.patient_id = ?
+      GROUP BY d.id
+      ORDER BY fd.created_at DESC
+    `).all(patient.id);
+  }
+
+  renderWithLayout(res, 'profile/index', { pageTitle: 'Hồ sơ cá nhân - MediBook', user, patient, favoriteDoctors });
+});
+
+// API Toggle Favorite Doctor
+app.post('/api/favorite-doctor', requireAuth, (req, res) => {
+  if (req.session.user.role !== 'patient') {
+    return res.status(403).json({ success: false, message: 'Chỉ bệnh nhân mới có thể lưu bác sĩ yêu thích.' });
+  }
+
+  const patient = db.prepare('SELECT id FROM patients WHERE user_id = ?').get(req.session.user.id);
+  if (!patient) {
+    return res.status(404).json({ success: false, message: 'Hồ sơ bệnh nhân không tồn tại.' });
+  }
+
+  const doctorId = parseInt(req.body.doctor_id);
+  if (!doctorId) {
+    return res.status(400).json({ success: false, message: 'Thiếu ID bác sĩ.' });
+  }
+
+  const existing = db.prepare('SELECT id FROM favorite_doctors WHERE patient_id = ? AND doctor_id = ?').get(patient.id, doctorId);
+
+  if (existing) {
+    db.prepare('DELETE FROM favorite_doctors WHERE id = ?').run(existing.id);
+    return res.json({ success: true, is_favorite: false, message: 'Đã bỏ lưu bác sĩ.' });
+  } else {
+    db.prepare('INSERT INTO favorite_doctors (patient_id, doctor_id) VALUES (?, ?)').run(patient.id, doctorId);
+    return res.json({ success: true, is_favorite: true, message: 'Đã thêm bác sĩ vào danh sách yêu thích!' });
+  }
 });
 
 app.post('/profile', requireAuth, (req, res) => {
@@ -1371,6 +1457,12 @@ app.get('/admin/users/create', requireRole('admin'), (req, res) => {
 
 app.post('/admin/users/store', requireRole('admin'), (req, res) => {
   const { name, email, phone, role, status, password } = req.body;
+  // Policy: Tuyệt đối chỉ có 1 tài khoản Admin duy nhất trong hệ thống
+  if (role === 'admin') {
+    req.flash('error', 'Hệ thống tuân thủ chính sách: Chỉ có 1 Quản trị viên tối cao duy nhất. Không thể tạo thêm Admin!');
+    return res.redirect('/admin/users');
+  }
+
   const hash = bcrypt.hashSync(password || 'password', 10);
 
   const uRes = db.prepare(`
@@ -1400,20 +1492,34 @@ app.get('/admin/users/edit/:id', requireRole('admin'), (req, res) => {
 
 app.post('/admin/users/update/:id', requireRole('admin'), (req, res) => {
   const { name, email, phone, role, status, password } = req.body;
+  const existingUser = db.prepare('SELECT role FROM users WHERE id = ?').get(req.params.id);
+
+  // Bảo đảm admin duy nhất không bị đổi role, và tài khoản khác không được nâng cấp thành admin
+  let targetRole = role;
+  if (existingUser && existingUser.role === 'admin') {
+    targetRole = 'admin';
+  } else if (role === 'admin') {
+    targetRole = existingUser ? existingUser.role : 'patient';
+  }
+
   if (password && password.trim().length >= 6) {
     const hash = bcrypt.hashSync(password.trim(), 10);
     db.prepare(`UPDATE users SET name = ?, email = ?, phone = ?, role = ?, status = ?, password_hash = ? WHERE id = ?`)
-      .run(name.trim(), email.trim(), phone.trim(), role, status, hash, req.params.id);
+      .run(name.trim(), email.trim(), phone.trim(), targetRole, status, hash, req.params.id);
   } else {
     db.prepare(`UPDATE users SET name = ?, email = ?, phone = ?, role = ?, status = ? WHERE id = ?`)
-      .run(name.trim(), email.trim(), phone.trim(), role, status, req.params.id);
+      .run(name.trim(), email.trim(), phone.trim(), targetRole, status, req.params.id);
   }
   req.flash('success', 'Cập nhật tài khoản thành công!');
   res.redirect('/admin/users');
 });
 
 app.post('/admin/users/toggle/:id', requireRole('admin'), (req, res) => {
-  const user = db.prepare('SELECT status FROM users WHERE id = ?').get(req.params.id);
+  const user = db.prepare('SELECT role, status FROM users WHERE id = ?').get(req.params.id);
+  if (user && user.role === 'admin') {
+    req.flash('error', 'Không thể khóa tài khoản Quản trị viên tối cao duy nhất!');
+    return res.redirect('/admin/users');
+  }
   const nextStatus = user.status === 'active' ? 'inactive' : 'active';
   db.prepare('UPDATE users SET status = ? WHERE id = ?').run(nextStatus, req.params.id);
   req.flash('success', `Đã chuyển trạng thái người dùng thành: ${nextStatus}`);

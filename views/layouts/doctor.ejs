@@ -6,23 +6,31 @@
   <title><%= typeof pageTitle !== 'undefined' ? pageTitle : 'Bác sĩ - MediBook' %></title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/app.css">
   <link rel="stylesheet" href="/assets/css/dashboard.css">
 </head>
 <body>
   <div class="dashboard-container">
     <aside class="dashboard-sidebar">
-      <div class="sidebar-header">
-        <span>MediBook</span>
-        <span class="sidebar-role-badge role-doctor">Bác sĩ</span>
+      <div class="sidebar-header" style="padding: 0 16px;">
+        <a href="/doctor/dashboard" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit;">
+          <div class="brand-icon" style="width: 36px; height: 36px; min-width: 36px; border-radius: 6px; background:#fff; padding:2px;">
+            <img src="/assets/images/logo.png" alt="MediBook Logo" class="brand-img">
+          </div>
+          <div style="display:flex; flex-direction:column; line-height:1.2;">
+            <span style="font-size: 17px; font-weight: 700; color: #ffffff; letter-spacing: -0.3px;">Medi<span style="color:#0284c7;">Book</span></span>
+            <span style="font-size: 10px; font-weight: 600; color: #94a3b8; letter-spacing: 0.5px;">BÁC SĨ ĐIỀU TRỊ</span>
+          </div>
+        </a>
+        <span class="sidebar-role-badge role-doctor" style="margin-left: auto;">Bác sĩ</span>
       </div>
 
       <ul class="sidebar-nav">
-        <li><a href="/doctor/dashboard" class="<%= currentPath.includes('/doctor/dashboard') ? 'active' : '' %>">📊 Tổng quan ca trực</a></li>
-        <li><a href="/doctor/queue" class="<%= currentPath.includes('/doctor/queue') ? 'active' : '' %>">🩺 Hàng đợi khám bệnh</a></li>
-        <li><a href="/doctor/schedule" class="<%= currentPath.includes('/doctor/schedule') ? 'active' : '' %>">📅 Ca trực & Xin nghỉ</a></li>
-        <li style="margin-top:20px;"><a href="/" target="_blank">🌐 Xem trang chủ</a></li>
+        <li><a href="/doctor/dashboard" class="<%= currentPath === '/doctor/dashboard' || currentPath === '/doctor' ? 'active' : '' %>"><span>📊</span> Tổng quan ca trực</a></li>
+        <li><a href="/doctor/queue" class="<%= currentPath.startsWith('/doctor/queue') ? 'active' : '' %>"><span>🩺</span> Hàng đợi khám bệnh</a></li>
+        <li><a href="/doctor/schedule" class="<%= currentPath.startsWith('/doctor/schedule') ? 'active' : '' %>"><span>📅</span> Ca trực & Xin nghỉ</a></li>
+        <li style="margin-top:14px; border-top: 1px solid rgba(255,255,255,0.08); padding-top:10px;"><a href="/" target="_blank"><span>🌐</span> Xem trang chủ</a></li>
       </ul>
 
       <div class="sidebar-footer">

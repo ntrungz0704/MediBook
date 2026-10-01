@@ -25,12 +25,16 @@
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
       <div class="form-group">
         <label>Vai trò <span style="color:red;">*</span></label>
-        <select name="role" class="form-control" required>
-          <option value="patient" <%= isEdit && user.role === 'patient' ? 'selected' : '' %>>Bệnh nhân</option>
-          <option value="doctor" <%= isEdit && user.role === 'doctor' ? 'selected' : '' %>>Bác sĩ</option>
-          <option value="receptionist" <%= isEdit && user.role === 'receptionist' ? 'selected' : '' %>>Lễ tân</option>
-          <option value="admin" <%= isEdit && user.role === 'admin' ? 'selected' : '' %>>Quản trị viên (Admin)</option>
-        </select>
+        <% if (isEdit && user.role === 'admin') { %>
+          <input type="text" class="form-control" value="Quản trị viên (Admin tối cao)" readonly style="background:#f1f5f9;font-weight:700;">
+          <input type="hidden" name="role" value="admin">
+        <% } else { %>
+          <select name="role" class="form-control" required>
+            <option value="patient" <%= isEdit && user.role === 'patient' ? 'selected' : '' %>>Bệnh nhân</option>
+            <option value="doctor" <%= isEdit && user.role === 'doctor' ? 'selected' : '' %>>Bác sĩ</option>
+            <option value="receptionist" <%= isEdit && user.role === 'receptionist' ? 'selected' : '' %>>Lễ tân</option>
+          </select>
+        <% } %>
       </div>
 
       <div class="form-group">

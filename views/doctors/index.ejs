@@ -1,14 +1,28 @@
-<div class="container" style="padding: 40px 20px 80px;" data-animate="fade-up">
-  <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:20px; margin-bottom: 30px;">
-    <div>
-      <h1 class="section-title">Đội ngũ Bác sĩ chuyên khoa MediBook</h1>
-      <p style="color: var(--text-muted);">Các bác sĩ giàu kinh nghiệm, tận tâm, phụ trách đầy đủ tất cả các chuyên khoa phòng khám</p>
+<div class="youmed-page-header">
+  <div class="container">
+    <div class="breadcrumbs-bar">
+      <a href="/">Trang chủ</a> <span>&bull;</span> <span>Đặt khám Bác sĩ</span>
+    </div>
+    <h1 class="page-title">Đội ngũ Bác sĩ chuyên khoa MediBook</h1>
+    <p class="page-subtitle">Tìm bác sĩ chính xác - Đặt lịch khám dễ dàng với hơn 1.000+ chuyên gia y tế giàu kinh nghiệm</p>
+  </div>
+</div>
+
+<div class="container" style="padding: 30px 20px 80px;" data-animate="fade-up">
+  <!-- Filter & Search Toolbar -->
+  <div class="youmed-toolbar">
+    <div class="toolbar-search">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input type="text" placeholder="Tìm theo tên bác sĩ..." id="doctor-search-input" onkeyup="filterDoctorList(this.value)">
     </div>
 
     <!-- Filter by Specialty -->
-    <div style="display:flex; align-items:center; gap:10px;">
-      <label style="font-size:14px; font-weight:700; color:#334155;">Lọc chuyên khoa:</label>
-      <select onchange="if(this.value){ location.href='/doctors?specialty_id='+this.value; } else { location.href='/doctors'; }" class="form-control" style="width:auto; min-width:220px; height:42px;">
+    <div class="toolbar-filter">
+      <label>Chuyên khoa:</label>
+      <select onchange="if(this.value){ location.href='/doctors?specialty_id='+this.value; } else { location.href='/doctors'; }" class="form-control form-control-clean" style="min-width:240px; height:42px;">
         <option value="">-- Tất cả chuyên khoa (<%= doctors ? doctors.length : 0 %> BS) --</option>
         <% (specialties || []).forEach(sp => { %>
           <option value="<%= sp.id %>" <%= typeof selectedSpecialtyId !== 'undefined' && selectedSpecialtyId == sp.id ? 'selected' : '' %>>
@@ -19,43 +33,62 @@
     </div>
   </div>
 
-  <div class="doctors-grid">
+  <div class="youmed-doctors-list-grid" id="doctors-container">
     <% doctors.forEach(doc => { %>
-      <div class="doctor-card interactive-hover">
-        <div class="doctor-card-top">
-          <img src="/assets/images/doctor-<%= doc.id %>.jpg" alt="<%= doc.name %>" class="doctor-img" style="object-fit:cover;object-position:top center;">
-          <button type="button" class="btn-favorite" data-doctor-id="<%= doc.id %>" data-doctor-name="<%= doc.name %>" title="Lưu bác sĩ">
+      <div class="youmed-doc-card interactive-hover doc-item-card" data-name="<%= doc.name.toLowerCase() %>">
+        <div class="doc-card-head">
+          <div class="doc-card-avatar">
+            <img src="/assets/images/doctor-<%= doc.id %>.jpg" alt="<%= doc.name %>" class="doc-round-img" onerror="this.onerror=null;this.src='/assets/images/doctor-1.jpg';">
+          </div>
+          <button type="button" class="btn-favorite-youmed" data-doctor-id="<%= doc.id %>" data-doctor-name="<%= doc.name %>" title="Lưu bác sĩ">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
           </button>
         </div>
-        <div class="doctor-card-body">
-          <h3 class="doctor-name">
+
+        <div class="doc-card-info">
+          <h3 class="doc-card-name">
             <a href="/doctors/<%= doc.id %>"><%= doc.name %></a>
           </h3>
-          <div class="doctor-specialty"><%= doc.specialty_names || 'Nội tổng quát' %> &bull; <%= doc.room_number %></div>
+          <div class="doc-card-specialty"><%= doc.specialty_names || 'Nội tổng quát' %></div>
+          <div class="doc-card-facility">Bệnh viện MediBook &bull; <%= doc.room_number %></div>
 
-          <p style="font-size:13px; color:#64748b; line-height:1.45; margin-bottom:12px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+          <p class="doc-card-bio">
             <%= doc.bio || 'Bác sĩ chuyên khoa giàu kinh nghiệm, tận tâm, cam kết đồng hành cùng sức khỏe bệnh nhân.' %>
           </p>
 
-          <div class="doctor-meta">
-            <div class="doctor-rating">
-              ⭐ <%= Number(doc.rating).toFixed(1) %>
-              <span class="doctor-reviews-count">(<%= doc.rating_count %>)</span>
+          <div class="doc-card-metrics">
+            <div class="doc-star-rating">
+              <span style="color:#f59e0b;">★</span> <%= Number(doc.rating).toFixed(1) %>
+              <span class="rating-count">(<%= doc.rating_count %> đánh giá)</span>
             </div>
-            <div style="font-size:12px; font-weight:700; color:#0d9488;">
+            <div class="doc-price">
               <%= doc.consultation_fee ? new Intl.NumberFormat('vi-VN').format(doc.consultation_fee) + ' ₫' : '200.000 ₫' %>
             </div>
           </div>
 
-          <div style="display:flex;gap:8px;margin-top:16px;">
-            <a href="/doctors/<%= doc.id %>" class="btn btn-secondary btn-sm" style="flex:1;">Hồ sơ</a>
-            <a href="/appointments/book?doctor_id=<%= doc.id %>" class="btn btn-primary btn-sm" style="flex:1;">Đặt lịch</a>
+          <div class="doc-card-actions">
+            <a href="/doctors/<%= doc.id %>" class="btn btn-secondary-youmed">Xem hồ sơ</a>
+            <a href="/appointments/book?doctor_id=<%= doc.id %>" class="btn btn-primary-youmed">Đặt lịch khám</a>
           </div>
         </div>
       </div>
     <% }); %>
   </div>
+
+  <script>
+    function filterDoctorList(val) {
+      const q = val.trim().toLowerCase();
+      const cards = document.querySelectorAll('.doc-item-card');
+      cards.forEach(card => {
+        const name = card.getAttribute('data-name') || '';
+        if (name.includes(q)) {
+          card.style.display = '';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+  </script>
 
   <!-- SECTION BỔ SUNG 1: TIÊU CHUẨN ĐỘI NGŨ BÁC SĨ -->
   <div style="margin-top: 60px; background:#ffffff; border-radius:20px; padding:35px 30px; border:1px solid var(--border);" data-animate="fade-up">

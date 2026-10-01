@@ -24,7 +24,10 @@
 
 <div class="card-box">
   <div class="card-header-bar">
-    <h3>Danh sách người dùng (<%= users ? users.length : 0 %> tài khoản)</h3>
+    <div>
+      <h3 style="margin-bottom: 2px;">Danh sách người dùng (<%= users ? users.length : 0 %> tài khoản)</h3>
+      <span style="font-size: 12px; color: var(--text-muted);">🔒 Hệ thống thiết lập chính sách <strong>1 Quản trị viên tối cao duy nhất</strong></span>
+    </div>
     <a href="/admin/users/create" class="btn btn-primary btn-sm">➕ Thêm tài khoản mới</a>
   </div>
 
@@ -85,11 +88,15 @@
               <td>
                 <div style="display:flex; gap: 6px;">
                   <a href="/admin/users/edit/<%= u.id %>" class="btn btn-secondary btn-sm">Sửa</a>
-                  <form action="/admin/users/toggle/<%= u.id %>" method="POST" style="display:inline;" onsubmit="return confirm('Thay đổi trạng thái tài khoản này?');">
-                    <button type="submit" class="btn btn-outline btn-sm" style="color:#ef4444; border-color:#fca5a5;">
-                      <%= u.status === 'active' ? 'Khóa' : 'Mở' %>
-                    </button>
-                  </form>
+                  <% if (u.role === 'admin') { %>
+                    <span class="badge badge-secondary" style="font-size:11px; align-self:center;" title="Tài khoản Quản trị viên tối cao duy nhất">Admin gốc</span>
+                  <% } else { %>
+                    <form action="/admin/users/toggle/<%= u.id %>" method="POST" style="display:inline;" onsubmit="return confirm('Thay đổi trạng thái tài khoản này?');">
+                      <button type="submit" class="btn btn-outline btn-sm" style="color:#ef4444; border-color:#fca5a5;">
+                        <%= u.status === 'active' ? 'Khóa' : 'Mở' %>
+                      </button>
+                    </form>
+                  <% } %>
                 </div>
               </td>
             </tr>

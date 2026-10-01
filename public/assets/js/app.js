@@ -95,15 +95,30 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      // If logged in, toggle state and show positive feedback
-      const wasActive = btn.classList.contains('active');
-      btn.classList.toggle('active');
-
-      if (!wasActive) {
-        showToast(`Đã thêm ${doctorName} vào danh sách quan tâm!`, 'success');
-      } else {
-        showToast(`Đã bỏ lưu ${doctorName}.`, 'warning');
-      }
+      // If logged in, send request to API
+      const doctorId = btn.getAttribute('data-doctor-id');
+      fetch('/api/favorite-doctor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ doctor_id: doctorId })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          if (data.is_favorite) {
+            btn.classList.add('active');
+            showToast(`Đã thêm ${doctorName} vào danh sách quan tâm!`, 'success');
+          } else {
+            btn.classList.remove('active');
+            showToast(`Đã bỏ lưu ${doctorName}.`, 'warning');
+          }
+        } else {
+          showToast(data.message || 'Không thể cập nhật yêu thích.', 'warning');
+        }
+      })
+      .catch(() => {
+        showToast('Có lỗi xảy ra khi kết nối máy chủ.', 'warning');
+      });
     });
   });
 

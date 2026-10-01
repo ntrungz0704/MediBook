@@ -6,7 +6,7 @@
   <title><%= typeof pageTitle !== 'undefined' ? pageTitle : 'Quản trị hệ thống - MediBook' %></title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/app.css">
   <link rel="stylesheet" href="/assets/css/dashboard.css">
 </head>
@@ -14,23 +14,31 @@
   <div class="dashboard-container">
     <!-- Sidebar -->
     <aside class="dashboard-sidebar">
-      <div class="sidebar-header">
-        <span>MediBook</span>
-        <span class="sidebar-role-badge role-admin">Admin</span>
+      <div class="sidebar-header" style="padding: 0 16px;">
+        <a href="/admin/dashboard" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit;">
+          <div class="brand-icon" style="width: 36px; height: 36px; min-width: 36px; border-radius: 6px; background:#fff; padding:2px;">
+            <img src="/assets/images/logo.png" alt="MediBook Logo" class="brand-img">
+          </div>
+          <div style="display:flex; flex-direction:column; line-height:1.2;">
+            <span style="font-size: 17px; font-weight: 700; color: #ffffff; letter-spacing: -0.3px;">Medi<span style="color:#0284c7;">Book</span></span>
+            <span style="font-size: 10px; font-weight: 600; color: #94a3b8; letter-spacing: 0.5px;">ADMIN PORTAL</span>
+          </div>
+        </a>
+        <span class="sidebar-role-badge role-admin" style="margin-left: auto;">Admin</span>
       </div>
 
       <ul class="sidebar-nav">
-        <li><a href="/admin/dashboard" class="<%= currentPath.includes('/admin/dashboard') ? 'active' : '' %>">📊 Bảng điều khiển</a></li>
-        <li><a href="/admin/users" class="<%= currentPath.includes('/admin/users') ? 'active' : '' %>">👥 Quản lý người dùng</a></li>
-        <li><a href="/admin/doctors" class="<%= currentPath.includes('/admin/doctors') ? 'active' : '' %>">🩺 Quản lý bác sĩ</a></li>
-        <li><a href="/admin/specialties" class="<%= currentPath.includes('/admin/specialties') ? 'active' : '' %>">🏥 Quản lý chuyên khoa</a></li>
-        <li><a href="/admin/services" class="<%= currentPath.includes('/admin/services') ? 'active' : '' %>">📋 Quản lý dịch vụ</a></li>
-        <li><a href="/admin/medicines" class="<%= currentPath.includes('/admin/medicines') ? 'active' : '' %>">💊 Kho thuốc phòng khám</a></li>
-        <li><a href="/admin/schedules" class="<%= currentPath.includes('/admin/schedules') ? 'active' : '' %>">📅 Ca trực & Nghỉ phép</a></li>
-        <li><a href="/admin/appointments" class="<%= currentPath.includes('/admin/appointments') ? 'active' : '' %>">🗓️ Lịch hẹn khám</a></li>
-        <li><a href="/admin/reports" class="<%= currentPath.includes('/admin/reports') ? 'active' : '' %>">📈 Báo cáo doanh thu</a></li>
-        <li><a href="/admin/logs" class="<%= currentPath.includes('/admin/logs') ? 'active' : '' %>">🔒 Nhật ký hoạt động</a></li>
-        <li style="margin-top:20px;"><a href="/" target="_blank">🌐 Xem trang chủ</a></li>
+        <li><a href="/admin/dashboard" class="<%= currentPath === '/admin/dashboard' || currentPath === '/admin' ? 'active' : '' %>"><span>📊</span> Bảng điều khiển</a></li>
+        <li><a href="/admin/users" class="<%= currentPath.startsWith('/admin/users') ? 'active' : '' %>"><span>👥</span> Quản lý người dùng</a></li>
+        <li><a href="/admin/doctors" class="<%= currentPath.startsWith('/admin/doctors') ? 'active' : '' %>"><span>🩺</span> Quản lý bác sĩ</a></li>
+        <li><a href="/admin/specialties" class="<%= currentPath.startsWith('/admin/specialties') ? 'active' : '' %>"><span>🏥</span> Quản lý chuyên khoa</a></li>
+        <li><a href="/admin/services" class="<%= currentPath.startsWith('/admin/services') ? 'active' : '' %>"><span>📋</span> Quản lý dịch vụ</a></li>
+        <li><a href="/admin/medicines" class="<%= currentPath.startsWith('/admin/medicines') ? 'active' : '' %>"><span>💊</span> Kho thuốc phòng khám</a></li>
+        <li><a href="/admin/schedules" class="<%= currentPath.startsWith('/admin/schedules') ? 'active' : '' %>"><span>📅</span> Ca trực & Nghỉ phép</a></li>
+        <li><a href="/admin/appointments" class="<%= currentPath.startsWith('/admin/appointments') ? 'active' : '' %>"><span>🗓️</span> Lịch hẹn khám</a></li>
+        <li><a href="/admin/reports" class="<%= currentPath.startsWith('/admin/reports') ? 'active' : '' %>"><span>📈</span> Báo cáo doanh thu</a></li>
+        <li><a href="/admin/logs" class="<%= currentPath.startsWith('/admin/logs') ? 'active' : '' %>"><span>🔒</span> Nhật ký hoạt động</a></li>
+        <li style="margin-top:14px; border-top: 1px solid rgba(255,255,255,0.08); padding-top:10px;"><a href="/" target="_blank"><span>🌐</span> Xem trang chủ</a></li>
       </ul>
 
       <div class="sidebar-footer">
@@ -45,9 +53,46 @@
         <div class="topbar-title">
           <h2><%= typeof pageTitle !== 'undefined' ? pageTitle : 'Quản trị hệ thống' %></h2>
         </div>
-        <div class="topbar-user">
-          <div class="user-avatar-circle">AD</div>
-          <span style="font-weight:600;"><%= currentUser ? currentUser.name : 'Quản trị viên' %></span>
+        <div class="topbar-user" style="display:flex; align-items:center; gap:20px;">
+          <!-- Notification Bell -->
+          <div style="position:relative; cursor:pointer;" id="notif-wrapper" onclick="document.getElementById('notif-dropdown').classList.toggle('show');">
+            <div style="width:38px; height:38px; border-radius:50%; background:#f1f5f9; display:flex; align-items:center; justify-content:center; color:#334155;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+              </svg>
+            </div>
+            <% if (typeof unreadNotificationCount !== 'undefined' && unreadNotificationCount > 0) { %>
+              <span style="position:absolute; top:-4px; right:-4px; background:#ef4444; color:#fff; font-size:11px; font-weight:700; width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid #fff;">
+                <%= unreadNotificationCount %>
+              </span>
+            <% } %>
+
+            <!-- Dropdown Menu -->
+            <div id="notif-dropdown" style="display:none; position:absolute; right:0; top:46px; width:320px; background:#fff; border:1px solid #e2e8f0; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.1); z-index:100; padding:12px;">
+              <div style="font-weight:700; font-size:14px; margin-bottom:8px; border-bottom:1px solid #f1f5f9; padding-bottom:6px; color:#0f172a; display:flex; justify-content:space-between;">
+                <span>Thông báo hệ thống</span>
+                <span style="font-size:12px; color:var(--primary); font-weight:600;"><%= typeof unreadNotificationCount !== 'undefined' ? unreadNotificationCount : 0 %> mới</span>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:8px; max-height:260px; overflow-y:auto;">
+                <% if (typeof recentNotifications !== 'undefined' && recentNotifications.length > 0) { %>
+                  <% recentNotifications.forEach(n => { %>
+                    <a href="<%= n.link || '#' %>" style="display:block; padding:8px 10px; border-radius:8px; background:<%= n.is_read ? '#fff' : '#f0fdf4' %>; border:1px solid <%= n.is_read ? '#f1f5f9' : '#bbf7d0' %>; text-decoration:none; color:inherit;">
+                      <div style="font-weight:600; font-size:12.5px; color:#0f172a;"><%= n.title %></div>
+                      <div style="font-size:11.5px; color:#64748b; margin-top:2px;"><%= n.message %></div>
+                    </a>
+                  <% }); %>
+                <% } else { %>
+                  <div style="text-align:center; padding:15px; font-size:13px; color:#94a3b8;">Không có thông báo mới</div>
+                <% } %>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div class="user-avatar-circle">AD</div>
+            <span style="font-weight:600;"><%= currentUser ? currentUser.name : 'Quản trị viên' %></span>
+          </div>
         </div>
       </header>
 

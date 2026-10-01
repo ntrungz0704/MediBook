@@ -10,7 +10,12 @@
 
     <div style="display: flex; gap: 10px;">
       <button onclick="window.print()" class="btn btn-secondary btn-sm no-print">
-        🖨️ In phiếu khám
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 6 2 18 2 18 9"></polyline>
+          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+          <rect x="6" y="14" width="12" height="8"></rect>
+        </svg>
+        In phiếu khám
       </button>
       <% if (['pending', 'confirmed'].includes(app.status)) { %>
         <form action="/appointments/<%= app.booking_code %>/cancel" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn hủy lịch khám này?');">
@@ -51,7 +56,10 @@
       </div>
       <div>
         <span class="text-muted">Bác sĩ phụ trách:</span><br>
-        <strong style="color:var(--primary);"><%= app.doctor_name %></strong>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:2px;">
+          <strong style="color:var(--primary);"><%= app.doctor_name %></strong>
+          <a href="/doctors/<%= app.doctor_id %>" class="badge badge-primary" style="text-decoration:none;font-size:11.5px;padding:3px 8px;">Xem hồ sơ &rarr;</a>
+        </div>
       </div>
       <div>
         <span class="text-muted">Thời gian khám:</span><br>
@@ -70,14 +78,15 @@
 
   <!-- Medical Examination Results & Vitals (If Completed) -->
   <% if (app.status === 'completed' && app.medical_record_id) { %>
-    <div class="card-box" style="padding: 28px; margin-bottom: 24px; border-top: 4px solid #10b981;">
-      <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 16px; color: #047857;">
-        🩺 Kết quả khám bệnh & Chẩn đoán
+    <div class="card-box" style="padding: 24px; margin-bottom: 24px; border-top: 3px solid var(--primary);">
+      <h3 style="font-size: 17px; font-weight: 700; margin-bottom: 16px; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></svg>
+        Kết quả khám bệnh & Chẩn đoán
       </h3>
 
       <div style="margin-bottom: 18px;">
-        <div style="font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Chẩn đoán lâm sàng:</div>
-        <div style="font-size: 18px; font-weight: 800; color: #0f172a; margin-top: 4px;">
+        <div style="font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Chẩn đoán lâm sàng:</div>
+        <div style="font-size: 17px; font-weight: 700; color: #0f172a; margin-top: 4px;">
           <%= app.clinical_diagnosis %>
           <% if (app.icd10_code) { %>
             <span class="badge badge-info" style="font-size: 12px; margin-left: 8px;">ICD-10: <%= app.icd10_code %></span>
@@ -86,16 +95,17 @@
       </div>
 
       <% if (app.doctor_notes) { %>
-        <div style="background: #f8fafc; padding: 14px 18px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 20px;">
-          <strong style="color: #334155;">Lời dặn của bác sĩ:</strong>
-          <p style="margin-top: 4px; color: #475569;"><%= app.doctor_notes %></p>
+        <div style="background: #f8fafc; padding: 14px 18px; border-radius: 6px; border: 1px solid var(--border); margin-bottom: 20px;">
+          <strong style="color: #334155; font-size: 13.5px;">Lời dặn của bác sĩ:</strong>
+          <p style="margin-top: 4px; color: #475569; font-size: 14px;"><%= app.doctor_notes %></p>
         </div>
       <% } %>
 
       <!-- Prescription Table -->
       <% if (prescription && prescription.items && prescription.items.length > 0) { %>
-        <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 12px; color: #0f172a;">
-          💊 Đơn thuốc điều trị
+        <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 12px; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>
+          Đơn thuốc điều trị
         </h4>
         <div class="table-responsive" style="margin-bottom: 14px;">
           <table class="data-table">
@@ -128,27 +138,28 @@
   <!-- Review Doctor Form (If Completed) -->
   <% if (app.status === 'completed') { %>
     <div class="card-box" style="padding: 24px;">
-      <h3 style="font-size: 17px; font-weight: 700; margin-bottom: 14px;">
-        ⭐ Đánh giá trải nghiệm khám bệnh
+      <h3 style="font-size: 17px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="#d97706" stroke="#d97706" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+        Đánh giá trải nghiệm khám bệnh
       </h3>
 
       <% if (review) { %>
-        <div style="background: #fefce8; padding: 16px; border-radius: 8px; border: 1px solid #fef08a;">
-          <div style="font-weight: 700; color: #854d0e; margin-bottom: 4px;">
-            Đánh giá của bạn: <%= '⭐'.repeat(review.rating) %> (<%= review.rating %>/5 sao)
+        <div style="background: #fffbeb; padding: 16px; border-radius: 6px; border: 1px solid #fde68a;">
+          <div style="font-weight: 700; color: #92400e; margin-bottom: 4px;">
+            Đánh giá của bạn: <%= review.rating %>/5 điểm
           </div>
-          <p style="color: #713f12;"><%= review.comment || 'Không có bình luận thêm.' %></p>
+          <p style="color: #78350f;"><%= review.comment || 'Không có bình luận thêm.' %></p>
         </div>
       <% } else { %>
         <form action="/appointments/<%= app.booking_code %>/review" method="POST">
           <div class="form-group" style="margin-bottom: 14px;">
             <label>Mức độ hài lòng của bạn</label>
-            <select name="rating" class="form-control" style="max-width: 220px;">
-              <option value="5">⭐⭐⭐⭐⭐ Rất hài lòng (5/5)</option>
-              <option value="4">⭐⭐⭐⭐ Hài lòng (4/5)</option>
-              <option value="3">⭐⭐⭐ Bình thường (3/5)</option>
-              <option value="2">⭐⭐ Chưa hài lòng (2/5)</option>
-              <option value="1">⭐ Rất không hài lòng (1/5)</option>
+            <select name="rating" class="form-control" style="max-width: 260px;">
+              <option value="5">Rất hài lòng (5/5 sao)</option>
+              <option value="4">Hài lòng (4/5 sao)</option>
+              <option value="3">Bình thường (3/5 sao)</option>
+              <option value="2">Chưa hài lòng (2/5 sao)</option>
+              <option value="1">Rất không hài lòng (1/5 sao)</option>
             </select>
           </div>
 
