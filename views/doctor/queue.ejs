@@ -16,6 +16,7 @@
       <thead>
         <tr>
           <th>STT</th>
+          <th>Độ ưu tiên</th>
           <th>Mã đặt lịch</th>
           <th>Họ tên & SĐT</th>
           <th>Giới tính / Tuổi</th>
@@ -28,17 +29,23 @@
       <tbody>
         <% if (!queueList || queueList.length === 0) { %>
           <tr>
-            <td colspan="8" style="text-align: center; padding: 40px; color: var(--text-muted);">
+            <td colspan="9" style="text-align: center; padding: 40px; color: var(--text-muted);">
               Chưa có bệnh nhân nào check-in vào phòng khám hôm nay.
             </td>
           </tr>
         <% } else { %>
           <% queueList.forEach(q => { %>
-            <tr style="<%= q.status === 'calling' ? 'background:#ecfdf5;' : (q.status === 'in_room' ? 'background:#eff6ff;' : '') %>">
+            <tr style="<%= q.priority_level === 'emergency' ? 'background:#fef2f2; border-left: 4px solid #ef4444;' : (q.status === 'calling' ? 'background:#ecfdf5;' : (q.status === 'in_room' ? 'background:#eff6ff;' : '')) %>">
               <td>
-                <span style="font-size: 16px; font-weight: 800; color: var(--primary);">
+                <span style="font-size: 16px; font-weight: 800; color: <%= q.priority_level === 'emergency' ? '#dc2626' : 'var(--primary)' %>;">
                   <%= q.queue_number %>
                 </span>
+              </td>
+              <td>
+                <%- getPriorityBadge(q.priority_level) %>
+                <% if (q.priority_reason) { %>
+                  <div style="font-size: 11px; color: #64748b; margin-top: 2px;"><%= q.priority_reason %></div>
+                <% } %>
               </td>
               <td><code><%= q.booking_code %></code></td>
               <td>

@@ -158,7 +158,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 html += `<span style="font-size:13px;color:#64748b;">Hết lượt chờ</span>`;
               } else {
                 waitingItems.slice(0, 6).forEach(wi => {
-                  html += `<span class="waiting-pill">${escapeHtml(wi.queue_number)}</span>`;
+                  let pStyle = '';
+                  if (wi.priority_level === 'emergency' || (wi.queue_number && wi.queue_number.startsWith('CC-'))) {
+                    pStyle = 'style="background:#dc2626; color:#fff; border:1px solid #f87171; box-shadow:0 0 8px rgba(220,38,38,0.5);"';
+                  } else if (wi.priority_level === 'priority' || (wi.queue_number && wi.queue_number.startsWith('UT-'))) {
+                    pStyle = 'style="background:#d97706; color:#fff; border:1px solid #fcd34d;"';
+                  }
+                  html += `<span class="waiting-pill" ${pStyle}>${escapeHtml(wi.queue_number)}</span>`;
                 });
               }
 

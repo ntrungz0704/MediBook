@@ -132,6 +132,22 @@
             </div>
           <% } %>
 
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label style="font-weight: 600; font-size: 13.5px; display: block; margin-bottom: 6px;">
+              🎯 Đối tượng ưu tiên khám (Triage Priority):
+            </label>
+            <select name="priority_category" class="form-control" style="font-size:13.5px;">
+              <option value="standard">Khám tiêu chuẩn (Lịch hẹn trực tuyến)</option>
+              <option value="pregnant">🤰 Phụ nữ mang thai (Ưu tiên)</option>
+              <option value="elderly">👴 Người cao tuổi ≥ 60 tuổi (Ưu tiên)</option>
+              <option value="child">👶 Trẻ em ≤ 6 tuổi (Ưu tiên)</option>
+              <option value="emergency">🚨 Trường hợp khẩn cấp / Triệu chứng nguy cấp</option>
+            </select>
+            <small style="color: var(--text-muted); display: block; margin-top: 4px;">
+              Hệ thống tự động xếp thứ tự ưu tiên: <strong>Khẩn cấp &rarr; Người già, Trẻ em, Thai phụ &rarr; Đặt Online &rarr; Vãng lai tại quầy</strong>.
+            </small>
+          </div>
+
           <div class="form-group">
             <label for="symptoms">Lý do khám / Triệu chứng bệnh (Nếu có)</label>
             <textarea name="symptoms" id="symptoms" rows="3" class="form-control" style="height:auto;padding:10px 14px;" placeholder="Ví dụ: Đau đầu, sốt nhẹ 2 ngày nay, cần tái khám huyết áp..."></textarea>

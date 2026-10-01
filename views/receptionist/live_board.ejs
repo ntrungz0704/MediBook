@@ -219,7 +219,15 @@
               <span style="font-size:13px;color:#64748b;">Hết lượt chờ</span>
             <% } else { %>
               <% waitingItems.slice(0, 6).forEach(wi => { %>
-                <span class="waiting-pill"><%= wi.queue_number %></span>
+                <% 
+                  let pStyle = '';
+                  if (wi.priority_level === 'emergency' || (wi.queue_number && wi.queue_number.startsWith('CC-'))) {
+                    pStyle = 'background:#dc2626; color:#fff; border:1px solid #f87171; box-shadow:0 0 8px rgba(220,38,38,0.5);';
+                  } else if (wi.priority_level === 'priority' || (wi.queue_number && wi.queue_number.startsWith('UT-'))) {
+                    pStyle = 'background:#d97706; color:#fff; border:1px solid #fcd34d;';
+                  }
+                %>
+                <span class="waiting-pill" style="<%= pStyle %>"><%= wi.queue_number %></span>
               <% }); %>
             <% } %>
           </div>
@@ -228,8 +236,13 @@
     <% }); %>
   </div>
 
-  <div class="board-footer">
-    📢 Quý bệnh nhân vui lòng chuẩn bị sẵn giấy tờ tùy thân và sổ khám bệnh khi số thứ tự của mình hiển thị trên bảng.
+  <div class="board-footer" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+    <div>📢 Quý bệnh nhân vui lòng chuẩn bị sẵn giấy tờ tùy thân khi số thứ tự hiển thị trên bảng.</div>
+    <div style="display:flex; gap:14px; font-size:13px;">
+      <span style="display:inline-flex; align-items:center; gap:6px;"><span style="display:inline-block; width:12px; height:12px; background:#dc2626; border-radius:3px;"></span> 🚨 Cấp cứu (CC)</span>
+      <span style="display:inline-flex; align-items:center; gap:6px;"><span style="display:inline-block; width:12px; height:12px; background:#d97706; border-radius:3px;"></span> ⭐ Ưu tiên (UT)</span>
+      <span style="display:inline-flex; align-items:center; gap:6px;"><span style="display:inline-block; width:12px; height:12px; background:#334155; border-radius:3px;"></span> 🚶 Tiêu chuẩn</span>
+    </div>
   </div>
 
   <script src="/assets/js/queue.js"></script>

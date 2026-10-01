@@ -12,6 +12,15 @@ db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
 function initDb() {
     db.exec(`
+    -- 1. Bảng Vai trò (Roles) trong hệ thống
+    CREATE TABLE IF NOT EXISTS roles (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      code TEXT NOT NULL UNIQUE,
+      name TEXT NOT NULL,
+      description TEXT
+    );
+
+    -- 2. Bảng Người dùng (Users)
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       role TEXT NOT NULL DEFAULT 'patient',
@@ -25,6 +34,16 @@ function initDb() {
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
+    -- 3. Bảng Người dùng - Nhiều vai trò (User Roles: 1 người có nhiều role)
+    CREATE TABLE IF NOT EXISTS user_roles (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      role TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(user_id, role),
+      FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+    );
+
     CREATE TABLE IF NOT EXISTS patients (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER NOT NULL UNIQUE,
@@ -35,6 +54,7 @@ function initDb() {
       emergency_contact TEXT,
       health_insurance_no TEXT,
       medical_history TEXT,
+      priority_category TEXT DEFAULT 'normal',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
@@ -124,48 +144,55 @@ function initDb() {
 
     CREATE TABLE IF NOT EXISTS appointments (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      appointment_code TEXT NOT NULL UNIQUE,
+      booking_code TEXT NOT NULL UNIQUE,
       patient_id INTEGER NOT NULL,
       doctor_id INTEGER NOT NULL,
+      specialty_id INTEGER,
       service_id INTEGER,
       appointment_date TEXT NOT NULL,
-      appointment_time TEXT NOT NULL,
+      start_time TEXT NOT NULL,
+      end_time TEXT NOT NULL,
       status TEXT NOT NULL DEFAULT 'pending',
       symptoms TEXT,
       notes TEXT,
       cancellation_reason TEXT,
+      source TEXT NOT NULL DEFAULT 'online',
+      priority_level TEXT NOT NULL DEFAULT 'online',
+      priority_reason TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (patient_id) REFERENCES patients (id) ON DELETE CASCADE,
       FOREIGN KEY (doctor_id) REFERENCES doctors (id) ON DELETE CASCADE,
+      FOREIGN KEY (specialty_id) REFERENCES specialties (id) ON DELETE SET NULL,
       FOREIGN KEY (service_id) REFERENCES services (id) ON DELETE SET NULL
     );
 
     CREATE TABLE IF NOT EXISTS appointment_status_history (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       appointment_id INTEGER NOT NULL,
-      from_status TEXT,
-      to_status TEXT NOT NULL,
-      changed_by INTEGER,
+      old_status TEXT,
+      new_status TEXT NOT NULL,
+      changed_by_user_id INTEGER,
       note TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (appointment_id) REFERENCES appointments (id) ON DELETE CASCADE,
-      FOREIGN KEY (changed_by) REFERENCES users (id) ON DELETE SET NULL
+      FOREIGN KEY (changed_by_user_id) REFERENCES users (id) ON DELETE SET NULL
     );
 
     CREATE TABLE IF NOT EXISTS examination_queues (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       appointment_id INTEGER NOT NULL UNIQUE,
-      doctor_id INTEGER NOT NULL,
-      queue_number INTEGER NOT NULL,
-      queue_date TEXT NOT NULL,
+      queue_number TEXT NOT NULL,
+      room TEXT NOT NULL,
       status TEXT NOT NULL DEFAULT 'waiting',
-      called_at DATETIME,
-      completed_at DATETIME,
+      priority_level TEXT NOT NULL DEFAULT 'online',
+      priority_order INTEGER NOT NULL DEFAULT 3,
+      checkin_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+      called_time DATETIME,
+      finish_time DATETIME,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (appointment_id) REFERENCES appointments (id) ON DELETE CASCADE,
-      FOREIGN KEY (doctor_id) REFERENCES doctors (id) ON DELETE CASCADE
+      FOREIGN KEY (appointment_id) REFERENCES appointments (id) ON DELETE CASCADE
     );
 
     CREATE TABLE IF NOT EXISTS medical_records (
@@ -173,14 +200,19 @@ function initDb() {
       appointment_id INTEGER NOT NULL UNIQUE,
       patient_id INTEGER NOT NULL,
       doctor_id INTEGER NOT NULL,
-      pulse TEXT,
-      blood_pressure TEXT,
-      temperature TEXT,
-      weight TEXT,
-      diagnosis TEXT NOT NULL,
+      visit_type TEXT NOT NULL DEFAULT 'initial',
+      treatment_type TEXT NOT NULL DEFAULT 'outpatient',
+      inpatient_room TEXT,
+      inpatient_bed TEXT,
+      admission_date TEXT,
+      discharge_date TEXT,
+      vital_signs TEXT,
+      anamnesis TEXT,
+      clinical_diagnosis TEXT NOT NULL,
+      icd10_code TEXT,
       treatment_plan TEXT,
       doctor_notes TEXT,
-      follow_up_date TEXT,
+      re_examination_date TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (appointment_id) REFERENCES appointments (id) ON DELETE CASCADE,
@@ -190,10 +222,11 @@ function initDb() {
 
     CREATE TABLE IF NOT EXISTS medicines (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
+      code TEXT,
       name TEXT NOT NULL,
-      unit TEXT NOT NULL DEFAULT 'viên',
-      usage_instructions TEXT,
-      price REAL NOT NULL DEFAULT 0.00,
+      unit TEXT NOT NULL DEFAULT 'Viên',
+      usage_instruction TEXT,
+      unit_price REAL NOT NULL DEFAULT 0.00,
       stock_quantity INTEGER NOT NULL DEFAULT 100,
       status TEXT NOT NULL DEFAULT 'active',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -203,38 +236,54 @@ function initDb() {
     CREATE TABLE IF NOT EXISTS prescriptions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       medical_record_id INTEGER NOT NULL UNIQUE,
-      advice TEXT,
+      appointment_id INTEGER,
+      doctor_id INTEGER,
+      patient_id INTEGER,
+      total_amount REAL NOT NULL DEFAULT 0.00,
+      usage_instructions TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (medical_record_id) REFERENCES medical_records (id) ON DELETE CASCADE
+      FOREIGN KEY (medical_record_id) REFERENCES medical_records (id) ON DELETE CASCADE,
+      FOREIGN KEY (appointment_id) REFERENCES appointments (id) ON DELETE CASCADE
     );
 
     CREATE TABLE IF NOT EXISTS prescription_items (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       prescription_id INTEGER NOT NULL,
-      medicine_id INTEGER NOT NULL,
-      quantity INTEGER NOT NULL DEFAULT 1,
-      dosage TEXT NOT NULL,
+      medicine_id INTEGER,
+      medicine_name TEXT NOT NULL,
+      dosage TEXT,
+      unit TEXT DEFAULT 'Viên',
+      quantity REAL NOT NULL DEFAULT 1,
+      morning TEXT DEFAULT '0',
+      noon TEXT DEFAULT '0',
+      afternoon TEXT DEFAULT '0',
+      night TEXT DEFAULT '0',
+      instructions TEXT,
+      unit_price REAL NOT NULL DEFAULT 0.00,
+      amount REAL NOT NULL DEFAULT 0.00,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (prescription_id) REFERENCES prescriptions (id) ON DELETE CASCADE,
-      FOREIGN KEY (medicine_id) REFERENCES medicines (id) ON DELETE CASCADE
+      FOREIGN KEY (medicine_id) REFERENCES medicines (id) ON DELETE SET NULL
     );
 
     CREATE TABLE IF NOT EXISTS payments (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       appointment_id INTEGER NOT NULL UNIQUE,
-      patient_id INTEGER NOT NULL,
-      amount REAL NOT NULL,
+      invoice_code TEXT NOT NULL UNIQUE,
+      service_fee REAL NOT NULL DEFAULT 0.00,
+      medicine_fee REAL NOT NULL DEFAULT 0.00,
+      discount REAL NOT NULL DEFAULT 0.00,
+      total_amount REAL NOT NULL DEFAULT 0.00,
+      final_amount REAL NOT NULL DEFAULT 0.00,
       payment_method TEXT NOT NULL DEFAULT 'cash',
-      status TEXT NOT NULL DEFAULT 'unpaid',
-      transaction_id TEXT,
+      payment_status TEXT NOT NULL DEFAULT 'unpaid',
       paid_at DATETIME,
-      receptionist_id INTEGER,
+      cashier_id INTEGER,
       notes TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (appointment_id) REFERENCES appointments (id) ON DELETE CASCADE,
-      FOREIGN KEY (patient_id) REFERENCES patients (id) ON DELETE CASCADE,
-      FOREIGN KEY (receptionist_id) REFERENCES receptionists (id) ON DELETE SET NULL
+      FOREIGN KEY (cashier_id) REFERENCES users (id) ON DELETE SET NULL
     );
 
     CREATE TABLE IF NOT EXISTS reviews (
@@ -255,6 +304,7 @@ function initDb() {
       user_id INTEGER NOT NULL,
       title TEXT NOT NULL,
       message TEXT NOT NULL,
+      type TEXT DEFAULT 'general',
       link TEXT,
       is_read INTEGER DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -269,6 +319,7 @@ function initDb() {
       entity_id INTEGER,
       details TEXT,
       ip_address TEXT,
+      user_agent TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE SET NULL
     );
@@ -283,6 +334,56 @@ function initDb() {
       FOREIGN KEY (doctor_id) REFERENCES doctors (id) ON DELETE CASCADE
     );
   `);
+    // Migrate existing tables gracefully (safe idempotent migrations)
+    const migrations = [
+        "ALTER TABLE medical_records ADD COLUMN visit_type TEXT NOT NULL DEFAULT 'initial'",
+        "ALTER TABLE medical_records ADD COLUMN treatment_type TEXT NOT NULL DEFAULT 'outpatient'",
+        "ALTER TABLE medical_records ADD COLUMN inpatient_room TEXT",
+        "ALTER TABLE medical_records ADD COLUMN inpatient_bed TEXT",
+        "ALTER TABLE medical_records ADD COLUMN admission_date TEXT",
+        "ALTER TABLE medical_records ADD COLUMN discharge_date TEXT",
+        "ALTER TABLE appointments ADD COLUMN source TEXT NOT NULL DEFAULT 'online'",
+        "ALTER TABLE appointments ADD COLUMN priority_level TEXT NOT NULL DEFAULT 'online'",
+        "ALTER TABLE appointments ADD COLUMN priority_reason TEXT",
+        "ALTER TABLE examination_queues ADD COLUMN priority_level TEXT NOT NULL DEFAULT 'online'",
+        "ALTER TABLE examination_queues ADD COLUMN priority_order INTEGER NOT NULL DEFAULT 3",
+        "ALTER TABLE patients ADD COLUMN priority_category TEXT DEFAULT 'normal'"
+    ];
+    for (const sql of migrations) {
+        try {
+            db.exec(sql);
+        }
+        catch (e) {
+            // Column already exists or table not ready, safely ignore
+        }
+    }
+    // Populate roles table if empty
+    try {
+        const roleCount = db.prepare('SELECT count(*) as c FROM roles').get().c;
+        if (roleCount === 0) {
+            db.exec(`
+        INSERT INTO roles (code, name, description) VALUES
+        ('admin', 'Quản trị viên', 'Quản trị toàn diện hệ thống MediBook'),
+        ('doctor', 'Bác sĩ', 'Bác sĩ chuyên khoa thăm khám, chẩn đoán và kê đơn'),
+        ('receptionist', 'Lễ tân / Thu ngân', 'Tiếp đón, phân luồng ưu tiên, cấp STT và thu viện phí'),
+        ('patient', 'Bệnh nhân', 'Đặt lịch trực tuyến, theo dõi bệnh án và đơn thuốc');
+      `);
+        }
+    }
+    catch (e) { }
+    // Sync users to user_roles
+    try {
+        db.exec(`
+      INSERT OR IGNORE INTO user_roles (user_id, role)
+      SELECT id, role FROM users WHERE role IS NOT NULL;
+    `);
+        // Give admin user id=1 also doctor role for multi-role demonstration
+        db.exec(`
+      INSERT OR IGNORE INTO user_roles (user_id, role)
+      SELECT id, 'doctor' FROM users WHERE email = 'admin@medibook.local';
+    `);
+    }
+    catch (e) { }
 }
 // Auto init tables
 initDb();

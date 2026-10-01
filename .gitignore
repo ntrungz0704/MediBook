@@ -1,4 +1,8 @@
 node_modules/
 database/*.sqlite-journal
+database/*.sqlite-wal
+database/*.sqlite-shm
+*.log
+npm-debug.log*
 .DS_Store
 Thumbs.db

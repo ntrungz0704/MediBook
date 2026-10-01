@@ -62,6 +62,10 @@
         <td>Chẩn đoán: <strong><%= appointment.clinical_diagnosis || 'Khám lâm sàng định kỳ' %></strong></td>
         <td>Hình thức thanh toán: <strong><%= (payment.payment_method || 'CASH').toUpperCase() %></strong></td>
       </tr>
+      <tr>
+        <td>Loại khám & Chế độ: <strong><%= appointment.visit_type === 'follow_up' ? 'Tái khám' : 'Lần đầu khám' %></strong> &bull; <strong><%= appointment.treatment_type === 'inpatient' ? `Nội trú (${appointment.inpatient_room || ''} - ${appointment.inpatient_bed || ''})` : 'Ngoại trú' %></strong></td>
+        <td>Mức ưu tiên: <strong><%= appointment.priority_level === 'emergency' ? '🚨 Cấp cứu' : (appointment.priority_level === 'priority' ? '⭐ Ưu tiên' : 'Tiêu chuẩn') %></strong></td>
+      </tr>
     </table>
 
     <table class="items-table">

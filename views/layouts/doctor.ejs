@@ -44,7 +44,19 @@
         <div class="topbar-title">
           <h2><%= typeof pageTitle !== 'undefined' ? pageTitle : 'Khu vực làm việc Bác sĩ' %></h2>
         </div>
-        <div class="topbar-user">
+        <div class="topbar-user" style="display:flex; align-items:center; gap:16px;">
+          <% if (currentUser && currentUser.roles && currentUser.roles.length > 1) { %>
+            <div style="display:inline-flex; align-items:center; gap:6px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:20px; padding:4px 12px; font-size:12px; font-weight:600; color:#166534;">
+              <span>🎭 Vai trò:</span>
+              <select onchange="window.location.href='/switch-role/' + this.value" style="background:transparent; border:none; font-weight:700; color:#166534; cursor:pointer; outline:none; font-size:12px;">
+                <% currentUser.roles.forEach(r => { %>
+                  <option value="<%= r %>" <%= currentUser.role === r ? 'selected' : '' %>>
+                    <%= r === 'admin' ? '🛡️ Quản trị viên' : r === 'doctor' ? '🩺 Bác sĩ' : r === 'receptionist' ? '📋 Lễ tân' : '👤 Bệnh nhân' %>
+                  </option>
+                <% }); %>
+              </select>
+            </div>
+          <% } %>
           <div class="user-avatar-circle" style="background:#ccfbf1;color:#0f766e;">BS</div>
           <span style="font-weight:600;"><%= currentUser ? currentUser.name : 'Bác sĩ' %></span>
         </div>

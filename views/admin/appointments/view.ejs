@@ -11,9 +11,12 @@
   </div>
 
   <div class="card-box" style="padding: 24px; margin-bottom: 24px;">
-    <h3 style="font-size: 17px; font-weight: 700; margin-bottom: 16px; border-bottom: 1px solid var(--border-light); padding-bottom: 8px;">
-      Thông tin đặt khám & Bệnh nhân
-    </h3>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid var(--border-light); padding-bottom:8px;">
+      <h3 style="font-size: 17px; font-weight: 700; margin:0;">
+        Thông tin đặt khám & Bệnh nhân
+      </h3>
+      <%- getPriorityBadge(app.priority_level) %>
+    </div>
 
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 14px;">
       <div>Bệnh nhân: <strong><%= app.patient_name %></strong></div>
@@ -22,9 +25,90 @@
       <div>Phòng khám: <strong><%= app.room_number %> (<%= app.specialty_name %>)</strong></div>
       <div>Ngày khám: <strong><%= formatDate(app.appointment_date) %></strong> &bull; <%= app.start_time %> - <%= app.end_time %></div>
       <div>Dịch vụ: <%= app.service_name || 'Khám tiêu chuẩn' %></div>
+      <% if (app.priority_reason) { %>
+        <div>Lý do ưu tiên: <span style="color:#d97706; font-weight:600;"><%= app.priority_reason %></span></div>
+      <% } %>
       <div style="grid-column: 1/-1;">Triệu chứng: <%= app.symptoms || 'Không ghi nhận' %></div>
     </div>
   </div>
+
+  <!-- Medical Record & Inpatient / Outpatient Examination -->
+  <% if (typeof medicalRecord !== 'undefined' && medicalRecord) { %>
+    <div class="card-box" style="padding: 24px; margin-bottom: 24px; border-top: 3px solid var(--primary);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid var(--border-light); padding-bottom:8px;">
+        <h3 style="font-size: 17px; font-weight: 700; margin:0; color:#0f172a;">
+          🩺 Hồ sơ bệnh án & Kết quả thăm khám
+        </h3>
+        <div style="display:flex; gap:8px;">
+          <%- getVisitTypeBadge(medicalRecord.visit_type) %>
+          <%- getTreatmentTypeBadge(medicalRecord.treatment_type) %>
+        </div>
+      </div>
+
+      <% if (medicalRecord.treatment_type === 'inpatient') { %>
+        <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 14px 18px; margin-bottom: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; font-size: 13.5px;">
+          <div><span style="color:#92400e; font-weight:600;">Phòng điều trị:</span> <strong><%= medicalRecord.inpatient_room || 'Chưa xếp' %></strong></div>
+          <div><span style="color:#92400e; font-weight:600;">Giường bệnh:</span> <strong><%= medicalRecord.inpatient_bed || 'Chưa xếp' %></strong></div>
+          <div><span style="color:#92400e; font-weight:600;">Ngày nhập viện:</span> <strong><%= formatDate(medicalRecord.admission_date) %></strong></div>
+          <div><span style="color:#92400e; font-weight:600;">Dự kiến xuất viện:</span> <strong><%= medicalRecord.discharge_date ? formatDate(medicalRecord.discharge_date) : 'Đang điều trị' %></strong></div>
+        </div>
+      <% } %>
+
+      <div style="margin-bottom: 14px;">
+        <div style="font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Chẩn đoán lâm sàng:</div>
+        <div style="font-size: 16px; font-weight: 700; color: #0f172a; margin-top: 2px;">
+          <%= medicalRecord.clinical_diagnosis %>
+          <% if (medicalRecord.icd10_code) { %>
+            <span class="badge badge-info" style="font-size: 11.5px; margin-left: 8px;">ICD-10: <%= medicalRecord.icd10_code %></span>
+          <% } %>
+        </div>
+      </div>
+
+      <% if (medicalRecord.doctor_notes) { %>
+        <div style="background: #f8fafc; padding: 12px 16px; border-radius: 6px; border: 1px solid var(--border); font-size: 13.5px; margin-bottom: 16px;">
+          <strong>Lời dặn bác sĩ:</strong> <%= medicalRecord.doctor_notes %>
+        </div>
+      <% } %>
+
+      <!-- Prescription Items Table -->
+      <% if (typeof prescriptionItems !== 'undefined' && prescriptionItems.length > 0) { %>
+        <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 10px; color:#0f172a;">
+          💊 Đơn thuốc đã kê (#<%= prescription.prescription_code %>)
+        </h4>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Tên thuốc</th>
+                <th>Liều dùng</th>
+                <th>Đơn vị</th>
+                <th>Số lượng</th>
+                <th>Chia cữ (S - T - C - Tối)</th>
+                <th>Đơn giá</th>
+                <th>Thành tiền</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% prescriptionItems.forEach(item => { %>
+                <tr>
+                  <td><strong><%= item.medicine_name %></strong></td>
+                  <td><%= item.dosage %></td>
+                  <td><%= item.unit %></td>
+                  <td><%= item.quantity %></td>
+                  <td><%= item.morning %> - <%= item.noon %> - <%= item.afternoon %> - <%= item.night %></td>
+                  <td><%= formatCurrency(item.unit_price) %></td>
+                  <td style="font-weight:700; color:var(--primary);"><%= formatCurrency(item.amount) %></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+        <div style="text-align:right; font-weight:700; font-size:15px; margin-top:10px;">
+          Tổng tiền thuốc: <span style="color:var(--primary); font-size:17px;"><%= formatCurrency(prescription.total_amount) %></span>
+        </div>
+      <% } %>
+    </div>
+  <% } %>
 
   <!-- Status History Timeline -->
   <div class="card-box" style="padding: 24px; margin-bottom: 24px;">

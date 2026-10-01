@@ -1,37 +1,47 @@
-<mxfile host="app.diagrams.net" modified="2026-09-28T16:09:00.000Z" agent="Mozilla/5.0" version="21.0.0" type="device">
+<mxfile host="app.diagrams.net" modified="2026-10-01T21:30:00.000Z" agent="Mozilla/5.0" version="21.0.0" type="device">
   <diagram id="erd-diagram" name="MediBook - ERD Diagram">
-    <mxGraphModel dx="1800" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1200" background="#ffffff" math="0" shadow="0">
+    <mxGraphModel dx="2000" dy="1400" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2200" pageHeight="1400" background="#ffffff" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
 
         <!-- ========================================== -->
-        <!-- HÀNG 1: TÀI KHOẢN, HỒ SƠ & BẢO MẬT (y = 40) -->
+        <!-- HÀNG 1: TÀI KHOẢN & ĐA VAI TRÒ (y = 40)    -->
         <!-- ========================================== -->
 
+        <!-- 0. ROLES -->
+        <mxCell id="t_roles" value="roles&#xa;---------------------------------&#xa;+ code : text [PK]&#xa;  name : text&#xa;  description : text" style="shape=table;startSize=26;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#eff6ff;strokeColor=#1d4ed8;strokeWidth=1.5;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="180" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- 0.1. USER_ROLES (1 Người Nhiều Role) -->
+        <mxCell id="t_user_roles" value="user_roles&#xa;---------------------------------&#xa;+ id : int [PK]&#xa;# user_id : int [FK]&#xa;# role : text [FK roles.code]&#xa;  assigned_at : datetime&#xa;  UNIQUE(user_id, role)" style="shape=table;startSize=26;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#eff6ff;strokeColor=#1d4ed8;strokeWidth=1.5;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="260" y="40" width="190" height="140" as="geometry" />
+        </mxCell>
+
         <!-- 1. USERS -->
-        <mxCell id="t_users" value="users&#xa;---------------------------------&#xa;+ id : int [PK]&#xa;  role : text [CHECK patient|receptionist|doctor|admin]&#xa;  name : text&#xa;  email : text [UK]&#xa;  password_hash : text&#xa;  phone : text&#xa;  status : text [CHECK active|locked]&#xa;  created_at : datetime" style="shape=table;startSize=26;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="60" y="40" width="220" height="175" as="geometry" />
+        <mxCell id="t_users" value="users&#xa;---------------------------------&#xa;+ id : int [PK]&#xa;  role : text [default_role]&#xa;  name : text&#xa;  email : text [UK]&#xa;  password_hash : text&#xa;  phone : text&#xa;  status : text [active|inactive]&#xa;  created_at : datetime" style="shape=table;startSize=26;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="500" y="40" width="220" height="175" as="geometry" />
         </mxCell>
 
         <!-- 2. PATIENTS -->
-        <mxCell id="t_patients" value="patients&#xa;---------------------------------&#xa;+ id : int [PK]&#xa;# user_id : int [FK, UNIQUE, NULL nếu vãng lai]&#xa;  full_name : text&#xa;  phone : text&#xa;  dob : text&#xa;  gender : text&#xa;  blood_group : text&#xa;  health_insurance_no : text" style="shape=table;startSize=26;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="360" y="40" width="240" height="175" as="geometry" />
+        <mxCell id="t_patients" value="patients&#xa;---------------------------------&#xa;+ id : int [PK]&#xa;# user_id : int [FK, UNIQUE, NULLABLE]&#xa;  priority_category : text [Triage]&#xa;  full_name : text&#xa;  phone : text&#xa;  dob : text&#xa;  gender : text&#xa;  health_insurance_no : text" style="shape=table;startSize=26;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="780" y="40" width="240" height="175" as="geometry" />
         </mxCell>
 
         <!-- 3. DOCTORS -->
-        <mxCell id="t_doctors" value="doctors&#xa;---------------------------------&#xa;+ id : int [PK]&#xa;# user_id : int [FK, UNIQUE]&#xa;# specialty_id : int [FK]&#xa;  title : text&#xa;  experience_years : int&#xa;  consultation_fee : int [VNĐ]&#xa;  rating : real&#xa;  room_number : text" style="shape=table;startSize=26;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="680" y="40" width="220" height="175" as="geometry" />
+        <mxCell id="t_doctors" value="doctors&#xa;---------------------------------&#xa;+ id : int [PK]&#xa;# user_id : int [FK, UNIQUE]&#xa;  title : text [BS|ThS|BSCKI|PGS]&#xa;  experience_years : int&#xa;  consultation_fee : int [VNĐ]&#xa;  rating : real&#xa;  rating_count : int&#xa;  room_number : text" style="shape=table;startSize=26;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="40" width="220" height="175" as="geometry" />
         </mxCell>
 
-        <!-- 4. SPECIALTIES -->
+        <!-- 4. SPECIALTIES (Chuyên khoa) -->
         <mxCell id="t_specialties" value="specialties&#xa;---------------------------------&#xa;+ id : int [PK]&#xa;  name : text&#xa;  slug : text [UK]&#xa;  description : text&#xa;  icon : text" style="shape=table;startSize=26;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="980" y="40" width="180" height="130" as="geometry" />
+          <mxGeometry x="1360" y="40" width="180" height="130" as="geometry" />
         </mxCell>
 
-        <!-- 5. SERVICES -->
-        <mxCell id="t_services" value="services&#xa;---------------------------------&#xa;+ id : int [PK]&#xa;# specialty_id : int [FK]&#xa;  name : text&#xa;  price : int [VNĐ]&#xa;  duration_minutes : int" style="shape=table;startSize=26;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="1240" y="40" width="190" height="130" as="geometry" />
+        <!-- 4.1 DOCTOR_SPECIALTIES (1 Bác sĩ nhiều Chuyên khoa) -->
+        <mxCell id="t_doc_spec" value="doctor_specialties&#xa;---------------------------------&#xa;+ id : int [PK]&#xa;# doctor_id : int [FK]&#xa;# specialty_id : int [FK]&#xa;  is_primary : int [1|0]" style="shape=table;startSize=26;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1600" y="40" width="190" height="130" as="geometry" />
         </mxCell>
 
         <!-- ========================================== -->
@@ -40,70 +50,75 @@
 
         <!-- 6. ACTIVITY LOGS -->
         <mxCell id="t_logs" value="activity_logs&#xa;---------------------------------&#xa;+ id : int [PK]&#xa;# user_id : int [FK, NULLABLE]&#xa;  action : text&#xa;  entity : text&#xa;  entity_id : int&#xa;  ip : text&#xa;  created_at : datetime" style="shape=table;startSize=26;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="60" y="280" width="220" height="150" as="geometry" />
+          <mxGeometry x="500" y="280" width="220" height="150" as="geometry" />
         </mxCell>
 
         <!-- 7. FAVORITE DOCTORS -->
         <mxCell id="t_fav_docs" value="favorite_doctors&#xa;---------------------------------&#xa;+ patient_id : int [PK, FK]&#xa;+ doctor_id : int [PK, FK]&#xa;  created_at : datetime" style="shape=table;startSize=26;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="360" y="280" width="200" height="90" as="geometry" />
+          <mxGeometry x="780" y="280" width="200" height="90" as="geometry" />
         </mxCell>
 
-        <!-- 8. DOCTOR SHIFTS -->
-        <mxCell id="t_shifts" value="doctor_shifts&#xa;---------------------------------&#xa;+ id : int [PK]&#xa;# doctor_id : int [FK]&#xa;  work_date : text&#xa;  start_time : text&#xa;  end_time : text&#xa;  slot_minutes : int" style="shape=table;startSize=26;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="680" y="280" width="190" height="140" as="geometry" />
+        <!-- 8. DOCTOR SCHEDULES -->
+        <mxCell id="t_schedules" value="doctor_schedules&#xa;---------------------------------&#xa;+ id : int [PK]&#xa;# doctor_id : int [FK]&#xa;  day_of_week : int [0..6]&#xa;  start_time : text&#xa;  end_time : text&#xa;  slot_duration : int [30m]" style="shape=table;startSize=26;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="280" width="190" height="140" as="geometry" />
         </mxCell>
 
-        <!-- 9. LEAVE REQUESTS -->
-        <mxCell id="t_leaves" value="leave_requests&#xa;---------------------------------&#xa;+ id : int [PK]&#xa;# doctor_id : int [FK]&#xa;  from_date : text&#xa;  to_date : text&#xa;  reason : text&#xa;  status : text [pending|approved|rejected]&#xa;# reviewed_by : int [FK users.id]" style="shape=table;startSize=26;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="950" y="280" width="230" height="150" as="geometry" />
+        <!-- 9. DOCTOR LEAVES -->
+        <mxCell id="t_leaves" value="doctor_leaves&#xa;---------------------------------&#xa;+ id : int [PK]&#xa;# doctor_id : int [FK]&#xa;  start_date : text&#xa;  end_date : text&#xa;  reason : text&#xa;  status : text [pending|approved]" style="shape=table;startSize=26;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1350" y="280" width="210" height="140" as="geometry" />
         </mxCell>
 
-        <!-- 10. MEDICINES (Kho thuốc) -->
-        <mxCell id="t_medicines" value="medicines&#xa;---------------------------------&#xa;+ id : int [PK]&#xa;  name : text&#xa;  unit : text&#xa;  price : int [VNĐ]&#xa;  stock_quantity : int&#xa;  status : text" style="shape=table;startSize=26;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="1240" y="280" width="190" height="140" as="geometry" />
-        </mxCell>
-
-        <!-- ========================================== -->
-        <!-- HÀNG 3: TRUNG TÂM LỊCH HẸN & HÀNG ĐỢI (y = 500) -->
-        <!-- ========================================== -->
-
-        <!-- 11. EXAMINATION QUEUES -->
-        <mxCell id="t_queues" value="examination_queues&#xa;---------------------------------&#xa;+ id : int [PK]&#xa;# appointment_id : int [FK, UNIQUE (0..1)]&#xa;# doctor_id : int [FK]&#xa;  queue_number : int&#xa;  queue_date : text&#xa;  status : text [waiting|called|in_progress|done|skipped]" style="shape=table;startSize=26;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="120" y="500" width="240" height="160" as="geometry" />
-        </mxCell>
-
-        <!-- 12. APPOINTMENTS (Trung tâm điều phối) -->
-        <mxCell id="t_appointments" value="appointments&#xa;---------------------------------&#xa;+ id : int [PK]&#xa;  appointment_code : text [UK]&#xa;# patient_id : int [FK]&#xa;# doctor_id : int [FK]&#xa;# service_id : int [FK]&#xa;  appointment_date : text&#xa;  appointment_time : text&#xa;  status : text [pending|confirmed|checked_in|in_progress|completed|cancelled|no_show]&#xa;  symptoms : text&#xa;  source : text [online|walkin]&#xa;  created_at : datetime&#xa;  updated_at : datetime" style="shape=table;startSize=26;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="460" y="470" width="280" height="230" as="geometry" />
+        <!-- 10. MEDICINES (Kho dược) -->
+        <mxCell id="t_medicines" value="medicines&#xa;---------------------------------&#xa;+ id : int [PK]&#xa;  code : text [UK]&#xa;  name : text&#xa;  unit : text [Viên|Chai|Gói]&#xa;  unit_price : int [VNĐ]&#xa;  stock_quantity : int&#xa;  status : text [active]" style="shape=table;startSize=26;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1620" y="280" width="200" height="160" as="geometry" />
         </mxCell>
 
         <!-- ========================================== -->
-        <!-- HÀNG 4: HẬU KHÁM - VIỆN PHÍ, BỆNH ÁN, ĐƠN THUỐC (y = 770) -->
+        <!-- HÀNG 3: TRUNG TÂM LỊCH HẸN & PHÂN LUỒNG TRIAGE (y = 520) -->
+        <!-- ========================================== -->
+
+        <!-- 11. EXAMINATION QUEUES (Phân luồng ưu tiên) -->
+        <mxCell id="t_queues" value="examination_queues&#xa;---------------------------------&#xa;+ id : int [PK]&#xa;# appointment_id : int [FK, UNIQUE (0..1)]&#xa;  queue_number : text [CC-01|UT-02|P101-03]&#xa;  room : text&#xa;  status : text [waiting|calling|in_room|completed]&#xa;  priority_level : text [emergency|priority|online|walkin]&#xa;  priority_order : int [1:CC, 2:UT, 3:Online, 4:Walkin]&#xa;  checkin_time : datetime&#xa;  called_time : datetime" style="shape=table;startSize=26;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#fef2f2;strokeColor=#ef4444;strokeWidth=2;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="120" y="520" width="290" height="210" as="geometry" />
+        </mxCell>
+
+        <!-- 12. APPOINTMENTS (Trung tâm điều phối khám) -->
+        <mxCell id="t_appointments" value="appointments&#xa;---------------------------------&#xa;+ id : int [PK]&#xa;  booking_code : text [UK]&#xa;# patient_id : int [FK]&#xa;# doctor_id : int [FK]&#xa;# specialty_id : int [FK]&#xa;# service_id : int [FK]&#xa;  appointment_date : text&#xa;  start_time : text&#xa;  end_time : text&#xa;  status : text [pending|confirmed|checked_in|completed|cancelled]&#xa;  source : text [online|walkin]&#xa;  priority_level : text [emergency|priority|online|walkin]&#xa;  priority_reason : text&#xa;  symptoms : text&#xa;  created_at : datetime" style="shape=table;startSize=26;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="480" y="490" width="310" height="270" as="geometry" />
+        </mxCell>
+
+        <!-- ========================================== -->
+        <!-- HÀNG 4: HẬU KHÁM - VIỆN PHÍ, BỆNH ÁN, ĐƠN THUỐC (y = 830) -->
         <!-- ========================================== -->
 
         <!-- 13. PAYMENTS -->
-        <mxCell id="t_payments" value="payments&#xa;---------------------------------&#xa;+ id : int [PK]&#xa;# appointment_id : int [FK, UNIQUE (0..1)]&#xa;# patient_id : int [FK]&#xa;  service_fee : int [VNĐ]&#xa;  medicine_fee : int [VNĐ]&#xa;  amount : int [VNĐ]&#xa;  payment_method : text&#xa;  status : text [unpaid|paid|refunded]&#xa;  paid_at : datetime&#xa;# received_by : int [FK users.id]" style="shape=table;startSize=26;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="120" y="770" width="240" height="210" as="geometry" />
+        <mxCell id="t_payments" value="payments&#xa;---------------------------------&#xa;+ id : int [PK]&#xa;# appointment_id : int [FK, UNIQUE (0..1)]&#xa;  invoice_code : text [UK]&#xa;  service_fee : int [VNĐ]&#xa;  medicine_fee : int [VNĐ]&#xa;  discount : int [VNĐ]&#xa;  final_amount : int [VNĐ]&#xa;  payment_method : text [cash|vnpay|card]&#xa;  payment_status : text [unpaid|paid]&#xa;  paid_at : datetime&#xa;# cashier_user_id : int [FK users.id]" style="shape=table;startSize=26;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="120" y="830" width="260" height="230" as="geometry" />
         </mxCell>
 
-        <!-- 14. MEDICAL RECORDS -->
-        <mxCell id="t_records" value="medical_records&#xa;---------------------------------&#xa;+ id : int [PK]&#xa;# appointment_id : int [FK, UNIQUE (0..1)]&#xa;# patient_id : int [FK]&#xa;# doctor_id : int [FK]&#xa;  systolic : int&#xa;  diastolic : int&#xa;  pulse : int&#xa;  temperature : real&#xa;  weight_kg : real&#xa;  diagnosis : text&#xa;  treatment_plan : text" style="shape=table;startSize=26;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="470" y="770" width="250" height="210" as="geometry" />
+        <!-- 14. MEDICAL RECORDS (Phiếu khám lâm sàng & Nội trú) -->
+        <mxCell id="t_records" value="medical_records (Phiếu khám lâm sàng)&#xa;---------------------------------&#xa;+ id : int [PK]&#xa;# appointment_id : int [FK, UNIQUE (0..1)]&#xa;# patient_id : int [FK]&#xa;# doctor_id : int [FK]&#xa;  visit_type : text [initial: Khám đầu | follow_up: Tái khám]&#xa;  treatment_type : text [outpatient: Ngoại trú | inpatient: Nội trú]&#xa;  inpatient_room : text [Số phòng điều trị nội trú]&#xa;  inpatient_bed : text [Số giường bệnh nội trú]&#xa;  admission_date : text&#xa;  discharge_date : text&#xa;  vital_signs : text [HA, Mạch, Nhiệt, BMI]&#xa;  clinical_diagnosis : text&#xa;  icd10_code : text&#xa;  doctor_notes : text&#xa;  created_at : datetime" style="shape=table;startSize=26;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#f0fdf4;strokeColor=#16a34a;strokeWidth=2;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="460" y="820" width="340" height="280" as="geometry" />
         </mxCell>
 
-        <!-- 15. PRESCRIPTIONS -->
-        <mxCell id="t_prescriptions" value="prescriptions&#xa;---------------------------------&#xa;+ id : int [PK]&#xa;# medical_record_id : int [FK, UNIQUE (0..1)]&#xa;  advice : text&#xa;  created_at : datetime" style="shape=table;startSize=26;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="830" y="780" width="210" height="120" as="geometry" />
+        <!-- 15. PRESCRIPTIONS (1 Phiếu khám -> 1 Đơn thuốc) -->
+        <mxCell id="t_prescriptions" value="prescriptions (1 Phiếu khám -> 1 Đơn)&#xa;---------------------------------&#xa;+ id : int [PK]&#xa;# medical_record_id : int [FK, UNIQUE (0..1)]&#xa;# appointment_id : int [FK]&#xa;# doctor_id : int [FK]&#xa;# patient_id : int [FK]&#xa;  total_amount : int [VNĐ]&#xa;  usage_instructions : text&#xa;  created_at : datetime" style="shape=table;startSize=26;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="880" y="830" width="260" height="190" as="geometry" />
         </mxCell>
 
-        <!-- 16. PRESCRIPTION ITEMS -->
-        <mxCell id="t_items" value="prescription_items&#xa;---------------------------------&#xa;+ id : int [PK]&#xa;# prescription_id : int [FK]&#xa;# medicine_id : int [FK]&#xa;  quantity : int&#xa;  unit_price : int [Snapshot]&#xa;  dosage : text" style="shape=table;startSize=26;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="1140" y="780" width="210" height="140" as="geometry" />
+        <!-- 16. PRESCRIPTION ITEMS (1 Đơn -> Nhiều Thuốc) -->
+        <mxCell id="t_items" value="prescription_items (Nhiều thuốc)&#xa;---------------------------------&#xa;+ id : int [PK]&#xa;# prescription_id : int [FK]&#xa;# medicine_id : int [FK]&#xa;  medicine_name : text&#xa;  dosage : text&#xa;  unit : text&#xa;  quantity : int&#xa;  morning / noon / afternoon / night : text&#xa;  unit_price : int [Snapshot]&#xa;  amount : int" style="shape=table;startSize=26;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1220" y="830" width="240" height="230" as="geometry" />
         </mxCell>
 
         <!-- ========================================== -->
         <!-- ĐƯỜNG NỐI QUAN HỆ CHUẨN XÁC, THẲNG TẮP     -->
         <!-- ========================================== -->
+
+        <!-- Roles -> User Roles (1 - N) -->
+        <mxCell id="rel_r_ur" edge="1" parent="1" source="t_roles" target="t_user_roles" style="endArrow=ERzeroToMany;startArrow=ERmandOne;html=1;strokeWidth=1.5;strokeColor=#1d4ed8;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <!-- Users -> User Roles (1 - N) -->
+        <mxCell id="rel_u_ur" edge="1" parent="1" source="t_users" target="t_user_roles" style="endArrow=ERzeroToMany;startArrow=ERmandOne;html=1;strokeWidth=1.5;strokeColor=#1d4ed8;"><mxGeometry relative="1" as="geometry" /></mxCell>
 
         <!-- Users -> Patients (1 - 0..1) -->
         <mxCell id="rel_u_p" edge="1" parent="1" source="t_users" target="t_patients" style="endArrow=ERzeroToOne;startArrow=ERmandOne;html=1;strokeWidth=1.2;strokeColor=#000000;"><mxGeometry relative="1" as="geometry" /></mxCell>
@@ -112,13 +127,13 @@
         <!-- Users -> Activity Logs (1 - N) -->
         <mxCell id="rel_u_log" edge="1" parent="1" source="t_users" target="t_logs" style="endArrow=ERzeroToMany;startArrow=ERmandOne;html=1;strokeWidth=1.2;strokeColor=#000000;"><mxGeometry relative="1" as="geometry" /></mxCell>
 
-        <!-- Specialties -> Doctors (1 - N) -->
-        <mxCell id="rel_s_d" edge="1" parent="1" source="t_specialties" target="t_doctors" style="endArrow=ERzeroToMany;startArrow=ERmandOne;html=1;strokeWidth=1.2;strokeColor=#000000;"><mxGeometry relative="1" as="geometry" /></mxCell>
-        <!-- Specialties -> Services (1 - N) -->
-        <mxCell id="rel_s_ser" edge="1" parent="1" source="t_specialties" target="t_services" style="endArrow=ERzeroToMany;startArrow=ERmandOne;html=1;strokeWidth=1.2;strokeColor=#000000;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <!-- Specialties -> Doctor Specialties (1 - N) -->
+        <mxCell id="rel_s_ds" edge="1" parent="1" source="t_specialties" target="t_doc_spec" style="endArrow=ERzeroToMany;startArrow=ERmandOne;html=1;strokeWidth=1.2;strokeColor=#000000;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <!-- Doctors -> Doctor Specialties (1 - N) -->
+        <mxCell id="rel_d_ds" edge="1" parent="1" source="t_doctors" target="t_doc_spec" style="endArrow=ERzeroToMany;startArrow=ERmandOne;html=1;strokeWidth=1.2;strokeColor=#000000;"><mxGeometry relative="1" as="geometry" /></mxCell>
 
-        <!-- Doctors -> Shifts (1 - N) -->
-        <mxCell id="rel_d_shift" edge="1" parent="1" source="t_doctors" target="t_shifts" style="endArrow=ERzeroToMany;startArrow=ERmandOne;html=1;strokeWidth=1.2;strokeColor=#000000;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <!-- Doctors -> Schedules (1 - N) -->
+        <mxCell id="rel_d_sched" edge="1" parent="1" source="t_doctors" target="t_schedules" style="endArrow=ERzeroToMany;startArrow=ERmandOne;html=1;strokeWidth=1.2;strokeColor=#000000;"><mxGeometry relative="1" as="geometry" /></mxCell>
         <!-- Doctors -> Leaves (1 - N) -->
         <mxCell id="rel_d_leave" edge="1" parent="1" source="t_doctors" target="t_leaves" style="endArrow=ERzeroToMany;startArrow=ERmandOne;html=1;strokeWidth=1.2;strokeColor=#000000;"><mxGeometry relative="1" as="geometry" /></mxCell>
 
@@ -133,16 +148,16 @@
         <mxCell id="rel_d_a" edge="1" parent="1" source="t_doctors" target="t_appointments" style="endArrow=ERzeroToMany;startArrow=ERmandOne;html=1;strokeWidth=1.5;strokeColor=#000000;"><mxGeometry relative="1" as="geometry" /></mxCell>
 
         <!-- Appointments -> Queues (1 - 0..1) -->
-        <mxCell id="rel_a_q" edge="1" parent="1" source="t_appointments" target="t_queues" style="endArrow=ERzeroToOne;startArrow=ERmandOne;html=1;strokeWidth=1.2;strokeColor=#000000;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="rel_a_q" edge="1" parent="1" source="t_appointments" target="t_queues" style="endArrow=ERzeroToOne;startArrow=ERmandOne;html=1;strokeWidth=1.5;strokeColor=#ef4444;"><mxGeometry relative="1" as="geometry" /></mxCell>
         <!-- Appointments -> Payments (1 - 0..1) -->
         <mxCell id="rel_a_pay" edge="1" parent="1" source="t_appointments" target="t_payments" style="endArrow=ERzeroToOne;startArrow=ERmandOne;html=1;strokeWidth=1.2;strokeColor=#000000;"><mxGeometry relative="1" as="geometry" /></mxCell>
         <!-- Appointments -> Medical Records (1 - 0..1) -->
-        <mxCell id="rel_a_med" edge="1" parent="1" source="t_appointments" target="t_records" style="endArrow=ERzeroToOne;startArrow=ERmandOne;html=1;strokeWidth=1.5;strokeColor=#000000;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="rel_a_med" edge="1" parent="1" source="t_appointments" target="t_records" style="endArrow=ERzeroToOne;startArrow=ERmandOne;html=1;strokeWidth=2;strokeColor=#16a34a;"><mxGeometry relative="1" as="geometry" /></mxCell>
 
-        <!-- Medical Records -> Prescriptions (1 - 0..1) -->
-        <mxCell id="rel_med_pres" edge="1" parent="1" source="t_records" target="t_prescriptions" style="endArrow=ERzeroToOne;startArrow=ERmandOne;html=1;strokeWidth=1.2;strokeColor=#000000;"><mxGeometry relative="1" as="geometry" /></mxCell>
-        <!-- Prescriptions -> Prescription Items (1 - N) -->
-        <mxCell id="rel_pres_item" edge="1" parent="1" source="t_prescriptions" target="t_items" style="endArrow=ERoneToMany;startArrow=ERmandOne;html=1;strokeWidth=1.2;strokeColor=#000000;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <!-- Medical Records -> Prescriptions (1 - 0..1: 1 Khám -> 1 Đơn) -->
+        <mxCell id="rel_med_pres" edge="1" parent="1" source="t_records" target="t_prescriptions" style="endArrow=ERzeroToOne;startArrow=ERmandOne;html=1;strokeWidth=1.5;strokeColor=#16a34a;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <!-- Prescriptions -> Prescription Items (1 - N: 1 Đơn -> Nhiều Thuốc) -->
+        <mxCell id="rel_pres_item" edge="1" parent="1" source="t_prescriptions" target="t_items" style="endArrow=ERoneToMany;startArrow=ERmandOne;html=1;strokeWidth=1.5;strokeColor=#000000;"><mxGeometry relative="1" as="geometry" /></mxCell>
         <!-- Medicines -> Prescription Items (1 - N) -->
         <mxCell id="rel_med_item" edge="1" parent="1" source="t_medicines" target="t_items" style="endArrow=ERoneToMany;startArrow=ERmandOne;html=1;strokeWidth=1.2;strokeColor=#000000;"><mxGeometry relative="1" as="geometry" /></mxCell>
 

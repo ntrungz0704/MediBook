@@ -58,15 +58,14 @@
               </td>
               <td><%= u.phone || '-' %></td>
               <td>
-                <% if (u.role === 'admin') { %>
-                  <span class="sidebar-role-badge role-admin">Admin</span>
-                <% } else if (u.role === 'doctor') { %>
-                  <span class="sidebar-role-badge role-doctor">Bác sĩ</span>
-                <% } else if (u.role === 'receptionist') { %>
-                  <span class="sidebar-role-badge role-receptionist">Lễ tân</span>
-                <% } else { %>
-                  <span class="badge badge-secondary">Bệnh nhân</span>
-                <% } %>
+                <% 
+                  const rolesList = (u.all_roles ? u.all_roles.split(',').map(r => r.trim()).filter(Boolean) : [u.role]);
+                %>
+                <div style="display:flex; flex-wrap:wrap; gap:4px;">
+                  <% rolesList.forEach(r => { %>
+                    <%- getRoleBadge(r) %>
+                  <% }); %>
+                </div>
               </td>
               <td>
                 <% if (u.role === 'doctor') { %>

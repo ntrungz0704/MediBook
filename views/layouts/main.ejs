@@ -44,6 +44,19 @@
         </a>
 
         <% if (currentUser) { %>
+          <% if (currentUser.roles && currentUser.roles.length > 1) { %>
+            <div class="role-switcher-badge" style="display:inline-flex; align-items:center; gap:5px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:20px; padding:4px 10px; font-size:12px; font-weight:600; color:#1d4ed8;" title="Chuyển đổi vai trò làm việc">
+              <span>🎭</span>
+              <select onchange="window.location.href='/switch-role/' + this.value" style="background:transparent; border:none; font-weight:700; color:#1d4ed8; cursor:pointer; outline:none; font-size:12px;">
+                <% currentUser.roles.forEach(r => { %>
+                  <option value="<%= r %>" <%= currentUser.role === r ? 'selected' : '' %>>
+                    <%= r === 'admin' ? 'Quản trị' : r === 'doctor' ? 'Bác sĩ' : r === 'receptionist' ? 'Lễ tân' : 'Bệnh nhân' %>
+                  </option>
+                <% }); %>
+              </select>
+            </div>
+          <% } %>
+
           <% if (currentUser.role === 'admin') { %>
             <a href="/admin/dashboard" class="btn btn-secondary btn-sm">Quản trị</a>
           <% } else if (currentUser.role === 'doctor') { %>

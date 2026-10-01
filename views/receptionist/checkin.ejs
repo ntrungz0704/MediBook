@@ -42,6 +42,7 @@
         <tr>
           <th>Mã đặt lịch</th>
           <th>Số thứ tự</th>
+          <th>Độ ưu tiên</th>
           <th>Bệnh nhân</th>
           <th>Số điện thoại</th>
           <th>Bác sĩ phụ trách</th>
@@ -54,19 +55,25 @@
       <tbody>
         <% if (!appointments || appointments.length === 0) { %>
           <tr>
-            <td colspan="9" style="text-align: center; padding: 40px; color: var(--text-muted);">
+            <td colspan="10" style="text-align: center; padding: 40px; color: var(--text-muted);">
               Không tìm thấy lịch hẹn nào theo điều kiện tìm kiếm.
             </td>
           </tr>
         <% } else { %>
           <% appointments.forEach(a => { %>
-            <tr>
+            <tr style="<%= a.priority_level === 'emergency' ? 'background:#fef2f2; border-left:4px solid #ef4444;' : '' %>">
               <td><code><%= a.booking_code %></code></td>
               <td>
                 <% if (a.queue_number) { %>
-                  <strong style="color:var(--primary); font-size:15px;"><%= a.queue_number %></strong>
+                  <strong style="color:<%= a.priority_level === 'emergency' ? '#dc2626' : 'var(--primary)' %>; font-size:15px;"><%= a.queue_number %></strong>
                 <% } else { %>
                   <span class="text-muted">-</span>
+                <% } %>
+              </td>
+              <td>
+                <%- getPriorityBadge(a.priority_level) %>
+                <% if (a.priority_reason) { %>
+                  <div style="font-size: 11px; color:#64748b; margin-top:2px;"><%= a.priority_reason %></div>
                 <% } %>
               </td>
               <td><strong><%= a.patient_name %></strong></td>

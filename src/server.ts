@@ -51,6 +51,11 @@ app.use((req, res, next) => {
   res.locals.formatDate = helpers.formatDate;
   res.locals.formatDateTime = helpers.formatDateTime;
   res.locals.getStatusBadge = helpers.getStatusBadge;
+  res.locals.getRoleName = helpers.getRoleName;
+  res.locals.getRoleBadge = helpers.getRoleBadge;
+  res.locals.getPriorityBadge = helpers.getPriorityBadge;
+  res.locals.getVisitTypeBadge = helpers.getVisitTypeBadge;
+  res.locals.getTreatmentTypeBadge = helpers.getTreatmentTypeBadge;
   res.locals.today = new Date().toISOString().slice(0, 10);
 
   // Notifications for current user
@@ -164,12 +169,21 @@ app.post('/login', (req, res) => {
     return res.redirect('/login');
   }
 
+  // Query all roles assigned to this user (1 user can have multiple roles)
+  const userRolesRows = db.prepare('SELECT role FROM user_roles WHERE user_id = ?').all(user.id);
+  let userRoles = userRolesRows.map(r => r.role);
+  if (!userRoles.includes(user.role)) {
+    userRoles.push(user.role);
+  }
+
   req.session.user = {
     id: user.id,
     name: user.name,
     email: user.email,
     phone: user.phone,
-    role: user.role
+    role: user.role,
+    roles: userRoles,
+    active_role: user.role
   };
 
   logActivity(user.id, 'USER_LOGIN', 'User', user.id, 'Đăng nhập thành công', req);
@@ -214,8 +228,9 @@ app.post('/register', (req, res) => {
   const result = insertUser.run(name.trim(), email.trim(), hash, phone.trim());
   const newUserId = result.lastInsertRowid;
 
-  // Create Patient record
+  // Create Patient record & Assign patient role
   db.prepare(`INSERT INTO patients (user_id) VALUES (?)`).run(newUserId);
+  db.prepare(`INSERT OR IGNORE INTO user_roles (user_id, role) VALUES (?, 'patient')`).run(newUserId);
 
   logActivity(newUserId, 'PATIENT_REGISTER', 'User', newUserId, 'Đăng ký tài khoản bệnh nhân', req);
 
@@ -224,11 +239,35 @@ app.post('/register', (req, res) => {
     name: name.trim(),
     email: email.trim(),
     phone: phone.trim(),
-    role: 'patient'
+    role: 'patient',
+    roles: ['patient'],
+    active_role: 'patient'
   };
 
   req.flash('success', 'Đăng ký tài khoản bệnh nhân thành công!');
   res.redirect('/my-appointments');
+});
+
+// Chuyển đổi vai trò làm việc linh hoạt (Switch Active Role)
+app.get('/switch-role/:role', requireAuth, (req, res) => {
+  const targetRole = req.params.role;
+  const user = req.session.user;
+
+  // Refresh user roles from user_roles table
+  const dbRoles = db.prepare('SELECT role FROM user_roles WHERE user_id = ?').all(user.id).map((r: any) => r.role);
+  const userRoles = dbRoles.length > 0 ? dbRoles : (Array.isArray(user.roles) && user.roles.length > 0 ? user.roles : [user.role]);
+  user.roles = userRoles;
+
+  if (userRoles.includes(targetRole)) {
+    user.role = targetRole;
+    user.active_role = targetRole;
+    req.flash('info', `Đã chuyển sang giao diện vai trò: ${helpers.getRoleName(targetRole)}`);
+    return redirectByRole(res, targetRole);
+  }
+
+  req.flash('error', 'Bạn không có quyền truy cập vai trò này.');
+  const referer = req.get('Referer') || '/';
+  res.redirect(referer);
 });
 
 app.get('/logout', (req, res) => {
@@ -552,14 +591,43 @@ app.post('/appointments/book', (req, res) => {
   const randNum = String(Math.floor(1000 + Math.random() * 9000));
   const bookingCode = `MB${codeDate}-${randNum}`;
 
+  // Triage: Phân loại thứ tự ưu tiên (Khẩn cấp -> Người già, trẻ em, thai phụ -> Online -> Offline)
+  const patInfo = db.prepare('SELECT * FROM patients WHERE id = ?').get(patientId);
+  let priorityLevel = 'online';
+  let priorityReason = 'Đặt lịch trực tuyến';
+
+  if (patInfo && patInfo.dob) {
+    const birthYear = new Date(patInfo.dob).getFullYear();
+    const currentYear = new Date().getFullYear();
+    const age = currentYear - birthYear;
+    if (age >= 60) {
+      priorityLevel = 'priority';
+      priorityReason = `Người cao tuổi (${age} tuổi)`;
+    } else if (age <= 6) {
+      priorityLevel = 'priority';
+      priorityReason = `Trẻ em (${age} tuổi)`;
+    }
+  }
+
+  if (req.body.is_pregnant || req.body.priority_target === 'pregnant') {
+    priorityLevel = 'priority';
+    priorityReason = 'Phụ nữ mang thai';
+  } else if (req.body.priority_target === 'elderly') {
+    priorityLevel = 'priority';
+    priorityReason = 'Người cao tuổi';
+  } else if (req.body.priority_target === 'child') {
+    priorityLevel = 'priority';
+    priorityReason = 'Trẻ em';
+  }
+
   try {
     const insertApp = db.prepare(`
-      INSERT INTO appointments (booking_code, patient_id, doctor_id, specialty_id, service_id, appointment_date, start_time, end_time, status, symptoms)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'confirmed', ?)
+      INSERT INTO appointments (booking_code, patient_id, doctor_id, specialty_id, service_id, appointment_date, start_time, end_time, status, symptoms, source, priority_level, priority_reason)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'confirmed', ?, 'online', ?, ?)
     `);
     const appResult = insertApp.run(
       bookingCode, patientId, doctor_id, specialty_id || null, service_id || null,
-      appointment_date, start_time, end_time, symptoms || ''
+      appointment_date, start_time, end_time, symptoms || '', priorityLevel, priorityReason
     );
     const appointmentId = appResult.lastInsertRowid;
 
@@ -625,7 +693,9 @@ app.get('/appointments/:code', (req, res) => {
   const appt = db.prepare(`
     SELECT a.*, s.name as specialty_name, u.name as patient_name, u.phone as patient_phone,
            ud.name as doctor_name, d.title as doctor_title, d.room_number,
-           eq.queue_number, mr.id as medical_record_id, mr.clinical_diagnosis, mr.icd10_code, mr.doctor_notes
+           eq.queue_number, mr.id as medical_record_id, mr.clinical_diagnosis, mr.icd10_code, mr.doctor_notes,
+           mr.visit_type, mr.treatment_type, mr.inpatient_room, mr.inpatient_bed, mr.admission_date, mr.discharge_date,
+           mr.vital_signs
     FROM appointments a
     JOIN patients p ON a.patient_id = p.id
     JOIN users u ON p.user_id = u.id
@@ -847,8 +917,24 @@ app.post('/profile/password', requireAuth, (req, res) => {
 // ==========================================
 // 5. DOCTOR MODULE
 // ==========================================
+function getOrCreateDoctorProfile(userId: number) {
+  let doc = db.prepare('SELECT * FROM doctors WHERE user_id = ?').get(userId) as any;
+  if (!doc) {
+    db.prepare(`
+      INSERT INTO doctors (user_id, title, room_number, bio, consultation_fee)
+      VALUES (?, 'Bác sĩ', 'P.101', 'Bác sĩ phòng khám MediBook', 200000)
+    `).run(userId);
+    doc = db.prepare('SELECT * FROM doctors WHERE user_id = ?').get(userId);
+    const spec = db.prepare('SELECT id FROM specialties LIMIT 1').get() as any;
+    if (spec && doc) {
+      db.prepare(`INSERT OR IGNORE INTO doctor_specialties (doctor_id, specialty_id) VALUES (?, ?)`).run(doc.id, spec.id);
+    }
+  }
+  return doc;
+}
+
 app.get('/doctor/dashboard', requireRole('doctor'), (req, res) => {
-  const doctor = db.prepare('SELECT * FROM doctors WHERE user_id = ?').get(req.session.user.id);
+  const doctor = getOrCreateDoctorProfile(req.session.user.id);
   const today = new Date().toISOString().slice(0, 10);
 
   const totalToday = db.prepare(`SELECT count(*) as c FROM appointments WHERE doctor_id = ? AND appointment_date = ?`).get(doctor.id, today).c;
@@ -860,13 +946,16 @@ app.get('/doctor/dashboard', requireRole('doctor'), (req, res) => {
   const completedToday = db.prepare(`SELECT count(*) as c FROM appointments WHERE doctor_id = ? AND appointment_date = ? AND status = 'completed'`).get(doctor.id, today).c;
 
   const todayQueue = db.prepare(`
-    SELECT eq.*, a.booking_code, a.start_time, a.symptoms, u.name as patient_name
+    SELECT eq.*, a.booking_code, a.start_time, a.symptoms, a.priority_reason, u.name as patient_name
     FROM examination_queues eq
     JOIN appointments a ON eq.appointment_id = a.id
     JOIN patients p ON a.patient_id = p.id
     JOIN users u ON p.user_id = u.id
     WHERE a.doctor_id = ? AND a.appointment_date = ?
-    ORDER BY eq.id ASC
+    ORDER BY 
+      CASE WHEN eq.status = 'calling' THEN 0 WHEN eq.status = 'in_room' THEN 1 WHEN eq.status = 'waiting' THEN 2 ELSE 3 END,
+      eq.priority_order ASC,
+      eq.id ASC
   `).all(doctor.id, today);
 
   renderWithLayout(res, 'doctor/dashboard', {
@@ -880,6 +969,7 @@ app.get('/doctor/dashboard', requireRole('doctor'), (req, res) => {
 });
 
 app.get('/doctor/queue', requireRole('doctor'), (req, res) => {
+  getOrCreateDoctorProfile(req.session.user.id);
   const doctor = db.prepare(`
     SELECT d.*, u.name, u.email, GROUP_CONCAT(s.name, ', ') as specialty_names
     FROM doctors d
@@ -892,7 +982,7 @@ app.get('/doctor/queue', requireRole('doctor'), (req, res) => {
 
   const today = new Date().toISOString().slice(0, 10);
   const queueList = db.prepare(`
-    SELECT eq.*, a.booking_code, a.start_time, a.symptoms,
+    SELECT eq.*, a.booking_code, a.start_time, a.symptoms, a.priority_reason,
            u.name as patient_name, u.phone as patient_phone,
            p.gender as patient_gender, p.dob as patient_dob
     FROM examination_queues eq
@@ -900,7 +990,10 @@ app.get('/doctor/queue', requireRole('doctor'), (req, res) => {
     JOIN patients p ON a.patient_id = p.id
     JOIN users u ON p.user_id = u.id
     WHERE a.doctor_id = ? AND a.appointment_date = ?
-    ORDER BY eq.id ASC
+    ORDER BY 
+      CASE WHEN eq.status = 'calling' THEN 0 WHEN eq.status = 'in_room' THEN 1 WHEN eq.status = 'waiting' THEN 2 ELSE 3 END,
+      eq.priority_order ASC,
+      eq.id ASC
   `).all(doctor.id, today);
 
   renderWithLayout(res, 'doctor/queue', { pageTitle: 'Hàng đợi phòng khám - Bác sĩ', doctor, queueList }, 'layouts/doctor');
@@ -967,9 +1060,20 @@ app.get('/doctor/examine/:appointmentId', requireRole('doctor'), (req, res) => {
 
 app.post('/doctor/examine/:appointmentId', requireRole('doctor'), (req, res) => {
   const appt = db.prepare('SELECT * FROM appointments WHERE id = ?').get(req.params.appointmentId);
-  const { blood_pressure, heart_rate, temperature, weight, height, bmi, anamnesis, clinical_diagnosis, icd10_code, doctor_notes, re_examination_date } = req.body;
+  const { 
+    blood_pressure, heart_rate, temperature, weight, height, bmi, 
+    anamnesis, clinical_diagnosis, icd10_code, doctor_notes, re_examination_date,
+    visit_type, treatment_type, inpatient_room, inpatient_bed, admission_date, discharge_date
+  } = req.body;
 
   const vitalsJson = JSON.stringify({ blood_pressure, heart_rate, temperature, weight, height, bmi });
+
+  const vType = visit_type || 'initial';
+  const tType = treatment_type || 'outpatient';
+  const inRoom = tType === 'inpatient' ? (inpatient_room ? inpatient_room.trim() : '') : null;
+  const inBed = tType === 'inpatient' ? (inpatient_bed ? inpatient_bed.trim() : '') : null;
+  const admDate = tType === 'inpatient' ? (admission_date || null) : null;
+  const disDate = tType === 'inpatient' ? (discharge_date || null) : null;
 
   // 1. Save or update medical record
   let medRecord = db.prepare('SELECT id FROM medical_records WHERE appointment_id = ?').get(appt.id);
@@ -977,15 +1081,18 @@ app.post('/doctor/examine/:appointmentId', requireRole('doctor'), (req, res) => 
   if (medRecord) {
     db.prepare(`
       UPDATE medical_records 
-      SET anamnesis = ?, vital_signs = ?, clinical_diagnosis = ?, icd10_code = ?, doctor_notes = ?, re_examination_date = ?
+      SET anamnesis = ?, vital_signs = ?, clinical_diagnosis = ?, icd10_code = ?, doctor_notes = ?, re_examination_date = ?,
+          visit_type = ?, treatment_type = ?, inpatient_room = ?, inpatient_bed = ?, admission_date = ?, discharge_date = ?
       WHERE id = ?
-    `).run(anamnesis, vitalsJson, clinical_diagnosis, icd10_code || null, doctor_notes || null, re_examination_date || null, medRecord.id);
+    `).run(anamnesis, vitalsJson, clinical_diagnosis, icd10_code || null, doctor_notes || null, re_examination_date || null,
+           vType, tType, inRoom, inBed, admDate, disDate, medRecord.id);
     recordId = medRecord.id;
   } else {
     const rRes = db.prepare(`
-      INSERT INTO medical_records (appointment_id, patient_id, doctor_id, anamnesis, vital_signs, clinical_diagnosis, icd10_code, doctor_notes, re_examination_date)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(appt.id, appt.patient_id, appt.doctor_id, anamnesis, vitalsJson, clinical_diagnosis, icd10_code || null, doctor_notes || null, re_examination_date || null);
+      INSERT INTO medical_records (appointment_id, patient_id, doctor_id, anamnesis, vital_signs, clinical_diagnosis, icd10_code, doctor_notes, re_examination_date, visit_type, treatment_type, inpatient_room, inpatient_bed, admission_date, discharge_date)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(appt.id, appt.patient_id, appt.doctor_id, anamnesis, vitalsJson, clinical_diagnosis, icd10_code || null, doctor_notes || null, re_examination_date || null,
+           vType, tType, inRoom, inBed, admDate, disDate);
     recordId = rRes.lastInsertRowid;
   }
 
@@ -1066,7 +1173,7 @@ app.post('/doctor/examine/:appointmentId', requireRole('doctor'), (req, res) => 
 });
 
 app.get('/doctor/schedule', requireRole('doctor'), (req, res) => {
-  const doctor = db.prepare('SELECT id FROM doctors WHERE user_id = ?').get(req.session.user.id);
+  const doctor = getOrCreateDoctorProfile(req.session.user.id);
   const schedules = db.prepare('SELECT * FROM doctor_schedules WHERE doctor_id = ? ORDER BY day_of_week ASC').all(doctor.id);
   const leaves = db.prepare('SELECT * FROM doctor_leaves WHERE doctor_id = ? ORDER BY start_date DESC').all(doctor.id);
 
@@ -1074,7 +1181,7 @@ app.get('/doctor/schedule', requireRole('doctor'), (req, res) => {
 });
 
 app.post('/doctor/leave/request', requireRole('doctor'), (req, res) => {
-  const doctor = db.prepare('SELECT id FROM doctors WHERE user_id = ?').get(req.session.user.id);
+  const doctor = getOrCreateDoctorProfile(req.session.user.id);
   const { leave_date, reason } = req.body;
   db.prepare(`
     INSERT INTO doctor_leaves (doctor_id, start_date, end_date, reason, status)
@@ -1170,20 +1277,33 @@ app.post('/receptionist/checkin/:id', requireRole('receptionist', 'admin'), (req
   `).get(req.params.id);
 
   if (appt) {
-    // Determine next queue number for room
-    const prefix = appt.room_number.replace('P.', 'P');
+    const priorityLevel = req.body.priority_level || appt.priority_level || (appt.source === 'online' ? 'online' : 'walkin');
+    let priorityOrder = 3;
+    let pPrefix = appt.room_number.replace('P.', 'P');
+    if (priorityLevel === 'emergency') {
+      priorityOrder = 1;
+      pPrefix = 'CC';
+    } else if (priorityLevel === 'priority') {
+      priorityOrder = 2;
+      pPrefix = 'UT';
+    } else if (priorityLevel === 'online') {
+      priorityOrder = 3;
+    } else {
+      priorityOrder = 4;
+    }
+
     const countToday = db.prepare(`
       SELECT count(*) as c FROM examination_queues WHERE room = ? AND date(checkin_time) = date('now')
     `).get(appt.room_number).c;
-    const queueNum = `${prefix}-${String(countToday + 1).padStart(2, '0')}`;
+    const queueNum = `${pPrefix}-${String(countToday + 1).padStart(2, '0')}`;
 
-    db.prepare(`UPDATE appointments SET status = 'checked_in' WHERE id = ?`).run(appt.id);
+    db.prepare(`UPDATE appointments SET status = 'checked_in', priority_level = ? WHERE id = ?`).run(priorityLevel, appt.id);
     db.prepare(`
-      INSERT OR REPLACE INTO examination_queues (appointment_id, queue_number, room, status, checkin_time)
-      VALUES (?, ?, ?, 'waiting', datetime('now'))
-    `).run(appt.id, queueNum, appt.room_number);
+      INSERT OR REPLACE INTO examination_queues (appointment_id, queue_number, room, status, priority_level, priority_order, checkin_time)
+      VALUES (?, ?, ?, 'waiting', ?, ?, datetime('now'))
+    `).run(appt.id, queueNum, appt.room_number, priorityLevel, priorityOrder);
 
-    logActivity(req.session.user.id, 'CHECKIN_PATIENT', 'Appointment', appt.id, `Cấp số thứ tự ${queueNum}`, req);
+    logActivity(req.session.user.id, 'CHECKIN_PATIENT', 'Appointment', appt.id, `Cấp số thứ tự ${queueNum} (${priorityLevel})`, req);
     req.flash('success', `Đã tiếp đón bệnh nhân và cấp số thứ tự: ${queueNum}`);
   }
   res.redirect('back');
@@ -1201,13 +1321,16 @@ app.get('/receptionist/live-board', (req, res) => {
 
   const today = new Date().toISOString().slice(0, 10);
   const queueItems = db.prepare(`
-    SELECT eq.*, u.name as patient_name
+    SELECT eq.*, u.name as patient_name, a.priority_reason
     FROM examination_queues eq
     JOIN appointments a ON eq.appointment_id = a.id
     JOIN patients p ON a.patient_id = p.id
     JOIN users u ON p.user_id = u.id
     WHERE a.appointment_date = ?
-    ORDER BY eq.id ASC
+    ORDER BY 
+      CASE WHEN eq.status = 'calling' THEN 0 WHEN eq.status = 'in_room' THEN 1 WHEN eq.status = 'waiting' THEN 2 ELSE 3 END,
+      eq.priority_order ASC,
+      eq.id ASC
   `).all(today);
 
   res.render('receptionist/live_board', { doctors, queueItems });
@@ -1216,13 +1339,16 @@ app.get('/receptionist/live-board', (req, res) => {
 app.get('/api/queue/live', (req, res) => {
   const today = new Date().toISOString().slice(0, 10);
   const queueItems = db.prepare(`
-    SELECT eq.*, u.name as patient_name
+    SELECT eq.*, u.name as patient_name, a.priority_reason
     FROM examination_queues eq
     JOIN appointments a ON eq.appointment_id = a.id
     JOIN patients p ON a.patient_id = p.id
     JOIN users u ON p.user_id = u.id
     WHERE a.appointment_date = ?
-    ORDER BY eq.id ASC
+    ORDER BY 
+      CASE WHEN eq.status = 'calling' THEN 0 WHEN eq.status = 'in_room' THEN 1 WHEN eq.status = 'waiting' THEN 2 ELSE 3 END,
+      eq.priority_order ASC,
+      eq.id ASC
   `).all(today);
   res.json({ success: true, items: queueItems });
 });
@@ -1242,7 +1368,7 @@ app.get('/receptionist/booking', requireRole('receptionist', 'admin'), (req, res
 });
 
 app.post('/receptionist/booking', requireRole('receptionist', 'admin'), (req, res) => {
-  const { patient_name, patient_phone, patient_email, specialty_id, doctor_id, appointment_date, start_time, symptoms, auto_checkin } = req.body;
+  const { patient_name, patient_phone, patient_email, specialty_id, doctor_id, appointment_date, start_time, symptoms, auto_checkin, priority_level, priority_reason } = req.body;
 
   let email = (patient_email && patient_email.trim()) || `walkin.${Date.now()}@medibook.local`;
   let user = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
@@ -1282,28 +1408,50 @@ app.post('/receptionist/booking', requireRole('receptionist', 'admin'), (req, re
     return res.redirect('back');
   }
 
+  const pLevel = priority_level || 'walkin';
+  let pOrder = 4;
+  let pPrefix = '';
+  let pReason = priority_reason || '';
+
+  if (pLevel === 'emergency') {
+    pOrder = 1;
+    pPrefix = 'CC';
+    if (!pReason) pReason = 'Cấp cứu / Khẩn cấp';
+  } else if (pLevel === 'priority') {
+    pOrder = 2;
+    pPrefix = 'UT';
+    if (!pReason) pReason = 'Đối tượng ưu tiên (Người già / Trẻ em / Thai phụ)';
+  } else if (pLevel === 'online') {
+    pOrder = 3;
+    if (!pReason) pReason = 'Đặt lịch trực tuyến';
+  } else {
+    pOrder = 4;
+    if (!pReason) pReason = 'Khám vãng lai tại quầy';
+  }
+
   const codeDate = appointment_date.replace(/-/g, '').slice(2);
   const bookingCode = `MB${codeDate}-${Math.floor(1000 + Math.random() * 9000)}`;
 
   const aRes = db.prepare(`
-    INSERT INTO appointments (booking_code, patient_id, doctor_id, specialty_id, appointment_date, start_time, end_time, status, symptoms)
-    VALUES (?, ?, ?, ?, ?, ?, ?, 'confirmed', ?)
-  `).run(bookingCode, pat.id, doctor_id, specialty_id, appointment_date, start_time, end_time, symptoms || 'Đăng ký tại quầy');
+    INSERT INTO appointments (booking_code, patient_id, doctor_id, specialty_id, appointment_date, start_time, end_time, status, symptoms, source, priority_level, priority_reason)
+    VALUES (?, ?, ?, ?, ?, ?, ?, 'confirmed', ?, 'walkin', ?, ?)
+  `).run(bookingCode, pat.id, doctor_id, specialty_id, appointment_date, start_time, end_time, symptoms || 'Đăng ký tại quầy', pLevel, pReason);
   const appointmentId = aRes.lastInsertRowid;
 
   if (auto_checkin) {
     const doctor = db.prepare('SELECT room_number FROM doctors WHERE id = ?').get(doctor_id);
-    const prefix = doctor.room_number.replace('P.', 'P');
+    const roomPrefix = doctor.room_number.replace('P.', 'P');
     const countToday = db.prepare(`
       SELECT count(*) as c FROM examination_queues WHERE room = ? AND date(checkin_time) = date('now')
     `).get(doctor.room_number).c;
-    const queueNum = `${prefix}-${String(countToday + 1).padStart(2, '0')}`;
+    const finalPrefix = pPrefix ? pPrefix : roomPrefix;
+    const queueNum = `${finalPrefix}-${String(countToday + 1).padStart(2, '0')}`;
 
     db.prepare(`UPDATE appointments SET status = 'checked_in' WHERE id = ?`).run(appointmentId);
     db.prepare(`
-      INSERT INTO examination_queues (appointment_id, queue_number, room, status, checkin_time)
-      VALUES (?, ?, ?, 'waiting', datetime('now'))
-    `).run(appointmentId, queueNum, doctor.room_number);
+      INSERT INTO examination_queues (appointment_id, queue_number, room, status, priority_level, priority_order, checkin_time)
+      VALUES (?, ?, ?, 'waiting', ?, ?, datetime('now'))
+    `).run(appointmentId, queueNum, doctor.room_number, pLevel, pOrder);
 
     req.flash('success', `Đã tạo lịch khám trực tiếp và cấp số thứ tự: ${queueNum}`);
   } else {
@@ -1371,7 +1519,8 @@ app.get('/receptionist/payments/receipt/:id', requireRole('receptionist', 'admin
   const appointment = db.prepare(`
     SELECT a.*, u.name as patient_name, u.phone as patient_phone,
            ud.name as doctor_name, d.title as doctor_title, d.room_number,
-           s.name as specialty_name, mr.clinical_diagnosis, mr.id as medical_record_id
+           s.name as specialty_name, mr.clinical_diagnosis, mr.id as medical_record_id,
+           mr.visit_type, mr.treatment_type, mr.inpatient_room, mr.inpatient_bed
     FROM appointments a
     JOIN patients pt ON a.patient_id = pt.id
     JOIN users u ON pt.user_id = u.id
@@ -1433,11 +1582,13 @@ app.get('/admin/dashboard', requireRole('admin'), (req, res) => {
 app.get('/admin/users', requireRole('admin'), (req, res) => {
   const { keyword, role } = req.query;
   let query = `
-    SELECT u.*, d.title as doctor_title, d.room_number, r.staff_code, p.gender
+    SELECT u.*, d.title as doctor_title, d.room_number, r.staff_code, p.gender,
+           GROUP_CONCAT(ur.role, ', ') as all_roles
     FROM users u
     LEFT JOIN doctors d ON u.id = d.user_id
     LEFT JOIN receptionists r ON u.id = r.user_id
     LEFT JOIN patients p ON u.id = p.user_id
+    LEFT JOIN user_roles ur ON u.id = ur.user_id
     WHERE 1=1
   `;
   const params = [];
@@ -1446,44 +1597,61 @@ app.get('/admin/users', requireRole('admin'), (req, res) => {
     params.push(`%${keyword}%`, `%${keyword}%`, `%${keyword}%`);
   }
   if (role) {
-    query += ` AND u.role = ?`;
-    params.push(role);
+    query += ` AND (u.role = ? OR u.id IN (SELECT user_id FROM user_roles WHERE role = ?))`;
+    params.push(role, role);
   }
-  query += ` ORDER BY u.id DESC`;
+  query += ` GROUP BY u.id ORDER BY u.id DESC`;
 
   const users = db.prepare(query).all(...params);
   renderWithLayout(res, 'admin/users/index', { pageTitle: 'Quản lý tài khoản - Admin', users, keyword, role }, 'layouts/admin');
 });
 
 app.get('/admin/users/create', requireRole('admin'), (req, res) => {
-  renderWithLayout(res, 'admin/users/form', { pageTitle: 'Thêm tài khoản mới - Admin', user: null }, 'layouts/admin');
+  renderWithLayout(res, 'admin/users/form', { pageTitle: 'Thêm tài khoản mới - Admin', user: null, userRoles: ['patient'] }, 'layouts/admin');
 });
 
 app.post('/admin/users/store', requireRole('admin'), (req, res) => {
-  const { name, email, phone, role, status, password } = req.body;
+  const { name, email, phone, status, password } = req.body;
+  const rawRoles = req.body['roles[]'] || req.body.roles || req.body.role;
+  let rolesList = Array.isArray(rawRoles) ? rawRoles : (rawRoles ? [rawRoles] : ['patient']);
+  if (rolesList.length === 0) rolesList = ['patient'];
+
   // Policy: Tuyệt đối chỉ có 1 tài khoản Admin duy nhất trong hệ thống
-  if (role === 'admin') {
-    req.flash('error', 'Hệ thống tuân thủ chính sách: Chỉ có 1 Quản trị viên tối cao duy nhất. Không thể tạo thêm Admin!');
-    return res.redirect('/admin/users');
+  if (rolesList.includes('admin')) {
+    const existingAdmin = db.prepare(`SELECT id FROM users WHERE role = 'admin' LIMIT 1`).get();
+    if (existingAdmin) {
+      req.flash('error', 'Hệ thống tuân thủ chính sách: Chỉ có 1 Quản trị viên tối cao duy nhất. Không thể tạo thêm Admin!');
+      rolesList = rolesList.filter(r => r !== 'admin');
+      if (rolesList.length === 0) rolesList = ['patient'];
+    }
   }
 
+  const primaryRole = rolesList[0];
   const hash = bcrypt.hashSync(password || 'password', 10);
 
   const uRes = db.prepare(`
     INSERT INTO users (role, name, email, password_hash, phone, status)
     VALUES (?, ?, ?, ?, ?, ?)
-  `).run(role, name.trim(), email.trim(), hash, phone.trim(), status || 'active');
+  `).run(primaryRole, name.trim(), email.trim(), hash, phone ? phone.trim() : '', status || 'active');
   const userId = uRes.lastInsertRowid;
 
-  if (role === 'doctor') {
-    db.prepare('INSERT INTO doctors (user_id) VALUES (?)').run(userId);
-  } else if (role === 'patient') {
-    db.prepare('INSERT INTO patients (user_id) VALUES (?)').run(userId);
-  } else if (role === 'receptionist') {
-    db.prepare('INSERT INTO receptionists (user_id, staff_code) VALUES (?, ?)').run(userId, 'LT-' + userId);
+  // Insert roles into user_roles
+  const insertRoleStmt = db.prepare(`INSERT OR IGNORE INTO user_roles (user_id, role) VALUES (?, ?)`);
+  for (const r of rolesList) {
+    insertRoleStmt.run(userId, r);
+    if (r === 'doctor') {
+      const hasDoc = db.prepare('SELECT id FROM doctors WHERE user_id = ?').get(userId);
+      if (!hasDoc) db.prepare('INSERT INTO doctors (user_id) VALUES (?)').run(userId);
+    } else if (r === 'patient') {
+      const hasPat = db.prepare('SELECT id FROM patients WHERE user_id = ?').get(userId);
+      if (!hasPat) db.prepare('INSERT INTO patients (user_id) VALUES (?)').run(userId);
+    } else if (r === 'receptionist') {
+      const hasRec = db.prepare('SELECT id FROM receptionists WHERE user_id = ?').get(userId);
+      if (!hasRec) db.prepare('INSERT INTO receptionists (user_id, staff_code) VALUES (?, ?)').run(userId, 'LT-' + userId);
+    }
   }
 
-  logActivity(req.session.user.id, 'CREATE_USER', 'User', userId, `Tạo người dùng role ${role}: ${email}`, req);
+  logActivity(req.session.user.id, 'CREATE_USER', 'User', userId, `Tạo người dùng roles [${rolesList.join(', ')}]: ${email}`, req);
   req.flash('success', 'Đã tạo tài khoản thành công!');
   res.redirect('/admin/users');
 });
@@ -1491,30 +1659,56 @@ app.post('/admin/users/store', requireRole('admin'), (req, res) => {
 app.get('/admin/users/edit/:id', requireRole('admin'), (req, res) => {
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
   if (!user) return res.status(404).render('errors/error', { message: 'Tài khoản không tồn tại' });
-  renderWithLayout(res, 'admin/users/form', { pageTitle: `Sửa tài khoản: ${user.name}`, user }, 'layouts/admin');
+
+  const userRolesRows = db.prepare('SELECT role FROM user_roles WHERE user_id = ?').all(user.id);
+  let userRoles = userRolesRows.map(r => r.role);
+  if (!userRoles.includes(user.role)) userRoles.push(user.role);
+
+  renderWithLayout(res, 'admin/users/form', { pageTitle: `Sửa tài khoản: ${user.name}`, user, userRoles }, 'layouts/admin');
 });
 
 app.post('/admin/users/update/:id', requireRole('admin'), (req, res) => {
-  const { name, email, phone, role, status, password } = req.body;
+  const { name, email, phone, status, password } = req.body;
   const existingUser = db.prepare('SELECT role FROM users WHERE id = ?').get(req.params.id);
 
-  // Bảo đảm admin duy nhất không bị đổi role, và tài khoản khác không được nâng cấp thành admin
-  let targetRole = role;
-  if (existingUser && existingUser.role === 'admin') {
-    targetRole = 'admin';
-  } else if (role === 'admin') {
-    targetRole = existingUser ? existingUser.role : 'patient';
+  const rawRoles = req.body['roles[]'] || req.body.roles || req.body.role;
+  let rolesList = Array.isArray(rawRoles) ? rawRoles : (rawRoles ? [rawRoles] : ['patient']);
+  if (rolesList.length === 0) rolesList = ['patient'];
+
+  // Preserve admin role on master admin
+  if (existingUser && existingUser.role === 'admin' && !rolesList.includes('admin')) {
+    rolesList.unshift('admin');
   }
+
+  const primaryRole = rolesList[0];
 
   if (password && password.trim().length >= 6) {
     const hash = bcrypt.hashSync(password.trim(), 10);
     db.prepare(`UPDATE users SET name = ?, email = ?, phone = ?, role = ?, status = ?, password_hash = ? WHERE id = ?`)
-      .run(name.trim(), email.trim(), phone.trim(), targetRole, status, hash, req.params.id);
+      .run(name.trim(), email.trim(), phone ? phone.trim() : '', primaryRole, status, hash, req.params.id);
   } else {
     db.prepare(`UPDATE users SET name = ?, email = ?, phone = ?, role = ?, status = ? WHERE id = ?`)
-      .run(name.trim(), email.trim(), phone.trim(), targetRole, status, req.params.id);
+      .run(name.trim(), email.trim(), phone ? phone.trim() : '', primaryRole, status, req.params.id);
   }
-  req.flash('success', 'Cập nhật tài khoản thành công!');
+
+  // Sync user_roles
+  db.prepare('DELETE FROM user_roles WHERE user_id = ?').run(req.params.id);
+  const insertRoleStmt = db.prepare(`INSERT OR IGNORE INTO user_roles (user_id, role) VALUES (?, ?)`);
+  for (const r of rolesList) {
+    insertRoleStmt.run(req.params.id, r);
+    if (r === 'doctor') {
+      const hasDoc = db.prepare('SELECT id FROM doctors WHERE user_id = ?').get(req.params.id);
+      if (!hasDoc) db.prepare('INSERT INTO doctors (user_id) VALUES (?)').run(req.params.id);
+    } else if (r === 'patient') {
+      const hasPat = db.prepare('SELECT id FROM patients WHERE user_id = ?').get(req.params.id);
+      if (!hasPat) db.prepare('INSERT INTO patients (user_id) VALUES (?)').run(req.params.id);
+    } else if (r === 'receptionist') {
+      const hasRec = db.prepare('SELECT id FROM receptionists WHERE user_id = ?').get(req.params.id);
+      if (!hasRec) db.prepare('INSERT INTO receptionists (user_id, staff_code) VALUES (?, ?)').run(req.params.id, 'LT-' + req.params.id);
+    }
+  }
+
+  req.flash('success', 'Cập nhật tài khoản và phân quyền vai trò thành công!');
   res.redirect('/admin/users');
 });
 
@@ -1824,10 +2018,28 @@ app.get('/admin/appointments/view/:id', requireRole('admin'), (req, res) => {
     ORDER BY ash.id DESC
   `).all(appt.id);
 
+  const medicalRecord = db.prepare('SELECT * FROM medical_records WHERE appointment_id = ?').get(appt.id);
+  let prescription = null;
+  let prescriptionItems: any[] = [];
+  if (medicalRecord) {
+    prescription = db.prepare('SELECT * FROM prescriptions WHERE medical_record_id = ?').get(medicalRecord.id);
+    if (prescription) {
+      prescriptionItems = db.prepare(`
+        SELECT pi.*, m.name as medicine_name, m.unit as medicine_unit
+        FROM prescription_items pi
+        JOIN medicines m ON pi.medicine_id = m.id
+        WHERE pi.prescription_id = ?
+      `).all(prescription.id);
+    }
+  }
+
   renderWithLayout(res, 'admin/appointments/view', {
     pageTitle: `Chi tiết lịch hẹn #${appt.booking_code}`,
     app: appt,
-    history
+    history,
+    medicalRecord,
+    prescription,
+    prescriptionItems
   }, 'layouts/admin');
 });
 

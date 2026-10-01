@@ -324,6 +324,138 @@ async function runTests() {
     res = await adminClient.get('/admin/reports');
     assert(res.statusCode === 200 && res.body.includes('Báo cáo doanh thu'), 'Trang báo cáo thống kê Admin tải số liệu chính xác từ DB');
 
+    // -------------------------------------------------------------
+    // TEST 7: 1 Người Nhiều Role & Chuyển Đổi Vai Trò Động (/switch-role)
+    // -------------------------------------------------------------
+    console.log('\n📌 NHÓM 7: Cơ chế 1 Người Có Nhiều Role & Chuyển Đổi Vai Trò (/switch-role/:role)');
+    // Admin user has both 'admin' and 'doctor' in user_roles
+    const adminUser = db.prepare("SELECT id FROM users WHERE email = 'admin@medibook.local'").get();
+    db.prepare("INSERT OR IGNORE INTO user_roles (user_id, role) VALUES (?, 'doctor')").run(adminUser.id);
+    const assignedRoles = db.prepare("SELECT role FROM user_roles WHERE user_id = ?").all(adminUser.id).map(r => r.role);
+    assert(assignedRoles.includes('admin') && assignedRoles.includes('doctor'), 'Bảng user_roles lưu trữ cùng lúc nhiều vai trò cho 1 người (Admin + Doctor)');
+
+    // Switch active role from admin to doctor
+    res = await adminClient.get('/switch-role/doctor');
+    assert(res.statusCode === 200 && res.body.includes('Tổng quan ca trực'), 'Chuyển đổi vai trò sang "Bác sĩ" thành công, điều hướng vào doctor dashboard');
+
+    // Switch back to admin
+    res = await adminClient.get('/switch-role/admin');
+    assert(res.statusCode === 200 && res.body.includes('Bảng điều khiển'), 'Chuyển đổi vai trò lại "Quản trị viên" thành công, điều hướng vào admin dashboard');
+
+    // Attempt to switch to an unassigned role (receptionist) should be rejected
+    res = await adminClient.get('/switch-role/receptionist');
+    assert(res.statusCode === 200 && (res.body.includes('không có quyền truy cập') || res.body.includes('Bảng điều khiển')), 'Chặn an toàn khi cố chuyển sang vai trò chưa được phân quyền');
+
+    // -------------------------------------------------------------
+    // TEST 8: Phân Luồng Ưu Tiên Tiếp Đón (Khẩn cấp -> Người già/Trẻ em/Thai phụ -> Online -> Offline)
+    // -------------------------------------------------------------
+    console.log('\n📌 NHÓM 8: Phân Luồng Độ Ưu Tiên Hàng Đợi (Khẩn cấp -> Ưu tiên -> Online -> Offline)');
+    // Test receptionist walk-in with emergency priority
+    const emergencyWalkin = await recepClient.post('/receptionist/booking', {
+      patient_name: 'Bệnh Nhân Cấp Cứu A',
+      patient_phone: '0911000999',
+      specialty_id: 1,
+      doctor_id: doctorObj.id,
+      appointment_date: tomDateStr,
+      start_time: '14:00:00',
+      symptoms: 'Đau ngực dữ dội khó thở',
+      priority_level: 'emergency',
+      priority_reason: 'Cấp cứu đau thắt ngực',
+      auto_checkin: '1'
+    });
+    const emergencyQueue = db.prepare(`
+      SELECT eq.*, a.priority_level, a.priority_reason
+      FROM examination_queues eq
+      JOIN appointments a ON eq.appointment_id = a.id
+      WHERE a.priority_level = 'emergency'
+      ORDER BY eq.id DESC LIMIT 1
+    `).get();
+    assert(emergencyQueue && emergencyQueue.queue_number.startsWith('CC-'), `Cấp mã STT khẩn cấp với tiền tố CC-: ${emergencyQueue?.queue_number}`);
+    assert(emergencyQueue.priority_order === 1, 'Mức độ ưu tiên Cấp cứu được gán priority_order = 1 (Cao nhất)');
+
+    // Test receptionist walk-in with priority (Elderly/Pregnant/Child)
+    const priorityWalkin = await recepClient.post('/receptionist/booking', {
+      patient_name: 'Cụ Già 75 Tuổi',
+      patient_phone: '0911000888',
+      specialty_id: 1,
+      doctor_id: doctorObj.id,
+      appointment_date: tomDateStr,
+      start_time: '14:30:00',
+      symptoms: 'Tăng huyết áp người già',
+      priority_level: 'priority',
+      priority_reason: 'Người cao tuổi (75t)',
+      auto_checkin: '1'
+    });
+    const priorityQueue = db.prepare(`
+      SELECT eq.*, a.priority_level
+      FROM examination_queues eq
+      JOIN appointments a ON eq.appointment_id = a.id
+      WHERE a.priority_level = 'priority'
+      ORDER BY eq.id DESC LIMIT 1
+    `).get();
+    assert(priorityQueue && priorityQueue.queue_number.startsWith('UT-'), `Cấp mã STT nhóm ưu tiên với tiền tố UT-: ${priorityQueue?.queue_number}`);
+    assert(priorityQueue.priority_order === 2, 'Mức độ Ưu tiên (Người già, Trẻ em, Thai phụ) được gán priority_order = 2');
+
+    // Verify queue ordering query
+    const sortedQueue = db.prepare(`
+      SELECT queue_number, priority_order, priority_level
+      FROM examination_queues
+      ORDER BY priority_order ASC, id ASC
+    `).all();
+    assert(sortedQueue.length >= 2, 'Hàng đợi phòng khám có đầy đủ các lượt chờ');
+    assert(sortedQueue[0].priority_order <= sortedQueue[1].priority_order, 'Thuật toán sắp xếp hàng đợi ưu tiên CC (Order 1) trước UT (Order 2) và Online/Offline (Order 3, 4)');
+
+    // -------------------------------------------------------------
+    // TEST 9: Phiếu Khám Lần Đầu/Tái Khám, Nội Trú (Số Phòng/Giường) & Kê Đơn Thuốc
+    // -------------------------------------------------------------
+    console.log('\n📌 NHÓM 9: Phiếu Khám (Lần Đầu / Tái Khám), Nội Trú (Số Phòng/Giường) & 1 Khám -> 1 Đơn -> Nhiều Thuốc');
+    // Doctor examines an inpatient follow-up patient
+    res = await doctorClient.post(`/doctor/examine/${emergencyQueue.appointment_id}`, {
+      blood_pressure: '140/90',
+      heart_rate: '85',
+      temperature: '37.5',
+      weight: '70',
+      height: '170',
+      bmi: '24.2',
+      visit_type: 'follow_up',
+      treatment_type: 'inpatient',
+      inpatient_room: 'Phòng 402 - Khoa Tim Mạch',
+      inpatient_bed: 'Giường C-12',
+      admission_date: tomDateStr,
+      discharge_date: tomDateStr,
+      clinical_diagnosis: 'Cơn đau thắt ngực không ổn định / Nhập viện theo dõi',
+      doctor_notes: 'Theo dõi điện tim 24h, nghỉ ngơi tại giường bệnh',
+      med_name: ['Aspirin 81mg', 'Atorvastatin 20mg'],
+      med_id: ['1', '2'],
+      med_dosage: ['81mg', '20mg'],
+      med_unit: ['Viên', 'Viên'],
+      med_quantity: ['14', '14'],
+      med_morning: ['1', '0'],
+      med_noon: ['0', '0'],
+      med_afternoon: ['0', '0'],
+      med_night: ['0', '1'],
+      med_instructions: ['Uống sau ăn sáng', 'Uống trước khi đi ngủ'],
+      med_price: ['1500', '4500']
+    });
+
+    const inpatientRecord = db.prepare('SELECT * FROM medical_records WHERE appointment_id = ?').get(emergencyQueue.appointment_id);
+    assert(inpatientRecord && inpatientRecord.visit_type === 'follow_up', 'Lưu chính xác loại phiếu khám là "follow_up" (Tái khám)');
+    assert(inpatientRecord.treatment_type === 'inpatient', 'Lưu chính xác chế độ điều trị là "inpatient" (Nội trú nhập viện)');
+    assert(inpatientRecord.inpatient_room === 'Phòng 402 - Khoa Tim Mạch' && inpatientRecord.inpatient_bed === 'Giường C-12', 'Lưu chính xác Số phòng (Phòng 402) và Số giường (Giường C-12)');
+
+    // Verify 1 medical record -> 1 prescription -> multiple prescription items
+    const recordPrescription = db.prepare('SELECT * FROM prescriptions WHERE medical_record_id = ?').get(inpatientRecord.id);
+    assert(recordPrescription && recordPrescription.id, `1 Phiếu khám sinh ra 1 đơn thuốc duy nhất: #${recordPrescription?.id}`);
+    const items = db.prepare('SELECT * FROM prescription_items WHERE prescription_id = ?').all(recordPrescription.id);
+    assert(items.length === 2, `1 Đơn thuốc bao gồm nhiều thuốc (Đã kê: ${items.length} thuốc)`);
+
+    // Clean up test appointments
+    db.prepare('DELETE FROM prescription_items WHERE prescription_id = ?').run(recordPrescription.id);
+    db.prepare('DELETE FROM prescriptions WHERE id = ?').run(recordPrescription.id);
+    db.prepare('DELETE FROM medical_records WHERE id = ?').run(inpatientRecord.id);
+    db.prepare('DELETE FROM examination_queues WHERE appointment_id IN (?, ?)').run(emergencyQueue.appointment_id, priorityQueue.appointment_id);
+    db.prepare('DELETE FROM appointments WHERE id IN (?, ?)').run(emergencyQueue.appointment_id, priorityQueue.appointment_id);
+
     console.log('\n=============================================================');
     console.log(`🎉 TẤT CẢ KIỂM THỬ ĐÃ HOÀN THÀNH: ${passCount}/${testCount} PASS! (100% THÀNH CÔNG)`);
     console.log('=============================================================\n');

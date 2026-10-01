@@ -40,6 +40,7 @@
           Giới tính: <strong><%= app.patient_gender === 'male' ? 'Nam' : (app.patient_gender === 'female' ? 'Nữ' : 'Khác') %></strong> &bull;
           Ngày sinh: <strong><%= formatDate(app.patient_dob) %></strong>
         </div>
+        <div>Độ ưu tiên: <%- getPriorityBadge(app.priority_level) %> <%= app.priority_reason ? `(${app.priority_reason})` : '' %></div>
         <div>Thẻ BHYT: <strong><%= app.health_insurance_no || 'Không có' %></strong></div>
         <div>Địa chỉ: <%= app.patient_address || 'Chưa cập nhật' %></div>
       </div>
@@ -117,6 +118,65 @@
         <div class="form-group">
           <label>Chỉ số BMI</label>
           <input type="text" name="bmi" id="vital_bmi" class="form-control" readonly style="background:#e2e8f0; font-weight:700;" value="<%= vitals.bmi || '22.5' %>">
+        </div>
+      </div>
+
+      <!-- Phân loại hình thức khám & Chế độ điều trị -->
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+        <h4 style="font-size: 14.5px; font-weight: 700; color: #1e293b; margin-top:0; margin-bottom: 12px; display: flex; align-items:center; gap: 8px;">
+          <span>📋</span> Phân loại hình thức khám & Chế độ điều trị
+        </h4>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <!-- Visit Type -->
+          <div class="form-group" style="margin-bottom:0;">
+            <label style="font-weight: 600; font-size: 13px; margin-bottom: 8px; display: block; color: #475569;">Loại phiếu khám:</label>
+            <div style="display:flex; gap: 16px;">
+              <label style="display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; cursor: pointer;">
+                <input type="radio" name="visit_type" value="initial" <%= (!currentRecord || currentRecord.visit_type !== 'follow_up') ? 'checked' : '' %>>
+                <span class="badge badge-primary" style="padding: 4px 10px;">Lần đầu khám</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; cursor: pointer;">
+                <input type="radio" name="visit_type" value="follow_up" <%= (currentRecord && currentRecord.visit_type === 'follow_up') ? 'checked' : '' %>>
+                <span class="badge badge-info" style="padding: 4px 10px;">Tái khám</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Treatment Type -->
+          <div class="form-group" style="margin-bottom:0;">
+            <label style="font-weight: 600; font-size: 13px; margin-bottom: 8px; display: block; color: #475569;">Chế độ điều trị:</label>
+            <div style="display:flex; gap: 16px;">
+              <label style="display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; cursor: pointer;">
+                <input type="radio" name="treatment_type" value="outpatient" id="treatment_outpatient" <%= (!currentRecord || currentRecord.treatment_type !== 'inpatient') ? 'checked' : '' %> onchange="toggleInpatientFields()">
+                <span class="badge badge-secondary" style="padding: 4px 10px; background: #e0f2fe; color:#0369a1;">Ngoại trú (kê đơn)</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; cursor: pointer;">
+                <input type="radio" name="treatment_type" value="inpatient" id="treatment_inpatient" <%= (currentRecord && currentRecord.treatment_type === 'inpatient') ? 'checked' : '' %> onchange="toggleInpatientFields()">
+                <span class="badge badge-warning" style="padding: 4px 10px; background: #fef3c7; color:#b45309;">Nội trú (nhập viện)</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inpatient Bed & Room Details Container -->
+        <div id="inpatient_details_box" style="display: <%= (currentRecord && currentRecord.treatment_type === 'inpatient') ? 'grid' : 'none' %>; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 14px; margin-top: 14px; padding-top: 14px; border-top: 1px dashed #cbd5e1; background: #fffbeb; padding: 12px; border-radius: 6px; border: 1px solid #fde68a;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label style="font-size: 12px; font-weight: 700; color: #92400e;">Số phòng điều trị <span style="color:red;">*</span></label>
+            <input type="text" name="inpatient_room" id="inp_room" class="form-control form-control-sm" placeholder="VD: Phòng 402 - Khoa Nội" value="<%= (currentRecord && currentRecord.inpatient_room) || '' %>">
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label style="font-size: 12px; font-weight: 700; color: #92400e;">Số giường bệnh <span style="color:red;">*</span></label>
+            <input type="text" name="inpatient_bed" id="inp_bed" class="form-control form-control-sm" placeholder="VD: Giường 08 (G-08)" value="<%= (currentRecord && currentRecord.inpatient_bed) || '' %>">
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label style="font-size: 12px; font-weight: 700; color: #92400e;">Ngày nhập viện</label>
+            <input type="date" name="admission_date" class="form-control form-control-sm" value="<%= (currentRecord && currentRecord.admission_date) || today %>">
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label style="font-size: 12px; font-weight: 700; color: #92400e;">Ngày dự kiến xuất viện</label>
+            <input type="date" name="discharge_date" class="form-control form-control-sm" value="<%= (currentRecord && currentRecord.discharge_date) || '' %>">
+          </div>
         </div>
       </div>
 
@@ -326,5 +386,23 @@ document.addEventListener('DOMContentLoaded', () => {
       updateSubtotal();
     });
   }
+
+  window.toggleInpatientFields = function() {
+    const isIp = document.getElementById('treatment_inpatient')?.checked;
+    const box = document.getElementById('inpatient_details_box');
+    if (box) {
+      box.style.display = isIp ? 'grid' : 'none';
+      const r = document.getElementById('inp_room');
+      const b = document.getElementById('inp_bed');
+      if (isIp) {
+        r?.setAttribute('required', 'required');
+        b?.setAttribute('required', 'required');
+      } else {
+        r?.removeAttribute('required');
+        b?.removeAttribute('required');
+      }
+    }
+  };
+  toggleInpatientFields();
 });
 </script>

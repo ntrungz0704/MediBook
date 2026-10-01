@@ -24,31 +24,48 @@
 
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
       <div class="form-group">
-        <label>Vai trò <span style="color:red;">*</span></label>
-        <% if (isEdit && user.role === 'admin') { %>
-          <input type="text" class="form-control" value="Quản trị viên (Admin tối cao)" readonly style="background:#f1f5f9;font-weight:700;">
-          <input type="hidden" name="role" value="admin">
-        <% } else { %>
-          <select name="role" class="form-control" required>
-            <option value="patient" <%= isEdit && user.role === 'patient' ? 'selected' : '' %>>Bệnh nhân</option>
-            <option value="doctor" <%= isEdit && user.role === 'doctor' ? 'selected' : '' %>>Bác sĩ</option>
-            <option value="receptionist" <%= isEdit && user.role === 'receptionist' ? 'selected' : '' %>>Lễ tân</option>
-          </select>
-        <% } %>
-      </div>
-
-      <div class="form-group">
-        <label>Trạng thái</label>
+        <label>Trạng thái tài khoản</label>
         <select name="status" class="form-control">
           <option value="active" <%= isEdit && user.status === 'active' ? 'selected' : '' %>>Hoạt động</option>
           <option value="inactive" <%= isEdit && user.status === 'inactive' ? 'selected' : '' %>>Khóa tài khoản</option>
         </select>
       </div>
+
+      <div class="form-group">
+        <label>Mật khẩu <%= isEdit ? '(Để trống nếu không đổi)' : '<span style="color:red;">*</span>' %></label>
+        <input type="password" name="password" class="form-control" placeholder="<%= isEdit ? '••••••••' : 'Nhập mật khẩu ít nhất 6 ký tự' %>" <%= isEdit ? '' : 'required minlength="6"' %>>
+      </div>
     </div>
 
+    <!-- Multi-role selection -->
     <div class="form-group" style="margin-bottom: 24px;">
-      <label>Mật khẩu <%= isEdit ? '(Để trống nếu không đổi)' : '<span style="color:red;">*</span>' %></label>
-      <input type="password" name="password" class="form-control" placeholder="<%= isEdit ? '••••••••' : 'Nhập mật khẩu ít nhất 6 ký tự' %>" <%= isEdit ? '' : 'required minlength="6"' %>>
+      <label style="font-weight: 700; font-size: 14px; margin-bottom: 8px; display: block; color: #0f172a;">
+        Phân quyền vai trò (Hỗ trợ 1 người có nhiều vai trò) <span style="color:red;">*</span>
+      </label>
+      <% 
+        const currentRoles = (isEdit && user.roles && user.roles.length > 0) ? user.roles : (isEdit && user.role ? [user.role] : ['patient']);
+      %>
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; background: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid var(--border);">
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13.5px; font-weight: 600;">
+          <input type="checkbox" name="roles[]" value="admin" <%= currentRoles.includes('admin') ? 'checked' : '' %>>
+          <span>🛡️ Quản trị viên</span>
+        </label>
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13.5px; font-weight: 600;">
+          <input type="checkbox" name="roles[]" value="doctor" <%= currentRoles.includes('doctor') ? 'checked' : '' %>>
+          <span>🩺 Bác sĩ</span>
+        </label>
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13.5px; font-weight: 600;">
+          <input type="checkbox" name="roles[]" value="receptionist" <%= currentRoles.includes('receptionist') ? 'checked' : '' %>>
+          <span>📋 Lễ tân</span>
+        </label>
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13.5px; font-weight: 600;">
+          <input type="checkbox" name="roles[]" value="patient" <%= currentRoles.includes('patient') ? 'checked' : '' %>>
+          <span>👤 Bệnh nhân</span>
+        </label>
+      </div>
+      <small style="color: var(--text-muted); display: block; margin-top: 6px;">
+        * Một người có thể đảm nhận nhiều vai trò cùng lúc (ví dụ vừa là Bác sĩ vừa là Bệnh nhân, hoặc Admin kiêm Bác sĩ).
+      </small>
     </div>
 
     <div style="display: flex; justify-content: flex-end; gap: 12px;">
