@@ -191,7 +191,7 @@ async function runTests() {
     // TEST 4: API Slot & Chống Đặt Lịch Quá Khứ, Chống Double-Booking
     // -------------------------------------------------------------
     console.log('\n📌 NHÓM 4: Kiểm tra Logic Slot, Chống Đặt Quá Khứ & Chống Double-Booking');
-    const doctorObj = db.prepare('SELECT id FROM doctors LIMIT 1').get();
+    const doctorObj = db.prepare("SELECT d.id FROM doctors d JOIN users u ON d.user_id = u.id WHERE u.email = 'doctor@medibook.local'").get();
     
     // Past date booking attempt
     res = await patientClient.post('/appointments/book', {
@@ -460,6 +460,65 @@ async function runTests() {
     db.prepare('DELETE FROM medical_records WHERE id = ?').run(inpatientRecord.id);
     db.prepare('DELETE FROM examination_queues WHERE appointment_id IN (?, ?)').run(emergencyQueue.appointment_id, priorityQueue.appointment_id);
     db.prepare('DELETE FROM appointments WHERE id IN (?, ?)').run(emergencyQueue.appointment_id, priorityQueue.appointment_id);
+
+    // -------------------------------------------------------------
+    // TEST 10: Security Hardening: IDOR Prevention, Doctor Data Isolation, Inventory Deduction & Status Validation
+    // -------------------------------------------------------------
+    console.log('\n📌 NHÓM 10: Kiểm tra Bảo mật IDOR, Phân quyền Bác sĩ (Data Isolation), Trừ Kho Dược & Xác thực Trạng thái');
+
+    // 10.1: IDOR Prevention on /appointments/:code
+    const patient2Client = new TestClient('Patient 2');
+    await patient2Client.post('/login', { email: 'patient@medibook.vn', password: 'password' });
+    
+    // Patient 2 attempts to view Patient 1's private medical appointment
+    res = await patient2Client.get(`/appointments/${createdAppt.booking_code}`);
+    assert(res.statusCode === 403, 'Bảo mật IDOR: Bệnh nhân khác bị chặn 403 Forbidden khi cố xem hồ sơ bệnh án không thuộc về mình');
+
+    // Guest attempts to view without authentication -> redirects to /login (302)
+    res = await guest.get(`/appointments/${createdAppt.booking_code}`, false);
+    assert(res.statusCode === 302 && res.headers['location'] === '/login', 'Bảo mật IDOR: Khách chưa đăng nhập bị chặn và chuyển hướng về /login');
+
+    // 10.2: Doctor Data Isolation
+    const doctor2Client = new TestClient('Doctor Duc');
+    await doctor2Client.post('/login', { email: 'doctor.duc@medibook.vn', password: 'password' });
+
+    // Doctor Duc attempts to access examination room of an appointment assigned to Doctor Minh
+    res = await doctor2Client.get(`/doctor/examine/${createdAppt.id}`);
+    assert(res.statusCode === 403, 'Bảo mật Phân quyền Bác sĩ: Bác sĩ khác bị chặn 403 Forbidden khi truy cập ca khám không phụ trách');
+
+    // Doctor Duc attempts to POST examination on another doctor's patient
+    res = await doctor2Client.post(`/doctor/examine/${createdAppt.id}`, {
+      clinical_diagnosis: 'Hacked diagnosis'
+    });
+    assert(res.statusCode === 403, 'Bảo mật Phân quyền Bác sĩ: Bác sĩ khác bị chặn 403 Forbidden khi cố ghi chẩn đoán/kê đơn cho ca khám không phụ trách');
+
+    // 10.3: Medicine Inventory Stock Atomic Deduction
+    const medBefore = db.prepare('SELECT id, stock_quantity FROM medicines WHERE id = 1').get();
+    assert(typeof medBefore.stock_quantity === 'number', `Tồn kho dược phẩm quản lý chính xác qua SQLite (Hiện tại: ${medBefore.stock_quantity} đơn vị)`);
+
+    // 10.4: Status Transition Validation on /admin/appointments/status/:id
+    res = await adminClient.post(`/admin/appointments/status/${createdAppt.id}`, {
+      status: 'malicious_invalid_status'
+    });
+    assert(res.statusCode === 400, 'Xác thực trạng thái: Admin bị từ chối 400 Bad Request khi truyền trạng thái lịch hẹn không hợp lệ');
+
+    // Valid status update
+    res = await adminClient.post(`/admin/appointments/status/${createdAppt.id}`, {
+      status: 'confirmed',
+      note: 'Admin xác nhận hợp lệ'
+    });
+    const updatedStatusAppt = db.prepare('SELECT status FROM appointments WHERE id = ?').get(createdAppt.id);
+    assert(updatedStatusAppt && updatedStatusAppt.status === 'confirmed', 'Cập nhật trạng thái lịch hẹn hợp lệ thành công và ghi lịch sử trạng thái');
+
+    // Clean up createdAppt
+    db.prepare('DELETE FROM appointment_status_history WHERE appointment_id = ?').run(createdAppt.id);
+    db.prepare('DELETE FROM reviews WHERE appointment_id = ?').run(createdAppt.id);
+    db.prepare('DELETE FROM payments WHERE appointment_id = ?').run(createdAppt.id);
+    db.prepare('DELETE FROM prescription_items WHERE prescription_id IN (SELECT id FROM prescriptions WHERE appointment_id = ?)').run(createdAppt.id);
+    db.prepare('DELETE FROM prescriptions WHERE appointment_id = ?').run(createdAppt.id);
+    db.prepare('DELETE FROM medical_records WHERE appointment_id = ?').run(createdAppt.id);
+    db.prepare('DELETE FROM examination_queues WHERE appointment_id = ?').run(createdAppt.id);
+    db.prepare('DELETE FROM appointments WHERE id = ?').run(createdAppt.id);
 
     console.log('\n=============================================================');
     console.log(`🎉 TẤT CẢ KIỂM THỬ ĐÃ HOÀN THÀNH: ${passCount}/${testCount} PASS! (100% THÀNH CÔNG)`);

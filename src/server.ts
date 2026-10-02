@@ -689,9 +689,10 @@ app.get('/appointments/success/:code', (req, res) => {
   renderWithLayout(res, 'appointments/success', { pageTitle: 'Đặt lịch thành công - MediBook', app: appt });
 });
 
-app.get('/appointments/:code', (req, res) => {
+app.get('/appointments/:code', requireAuth, (req, res) => {
   const appt = db.prepare(`
     SELECT a.*, s.name as specialty_name, u.name as patient_name, u.phone as patient_phone,
+           p.user_id as patient_user_id, d.user_id as doctor_user_id,
            ud.name as doctor_name, d.title as doctor_title, d.room_number,
            eq.queue_number, mr.id as medical_record_id, mr.clinical_diagnosis, mr.icd10_code, mr.doctor_notes,
            mr.visit_type, mr.treatment_type, mr.inpatient_room, mr.inpatient_bed, mr.admission_date, mr.discharge_date,
@@ -708,6 +709,17 @@ app.get('/appointments/:code', (req, res) => {
   `).get(req.params.code);
 
   if (!appt) return res.status(404).render('errors/error', { message: 'Không tìm thấy thông tin lịch khám' });
+
+  // IDOR Authorization Protection:
+  const user = req.session.user;
+  const isOwner = user.id === appt.patient_user_id;
+  const isDoctor = user.id === appt.doctor_user_id;
+  const isStaff = ['admin', 'receptionist'].includes(user.role) || (Array.isArray(user.roles) && user.roles.some((r: string) => ['admin', 'receptionist'].includes(r)));
+
+  if (!isOwner && !isDoctor && !isStaff) {
+    req.flash('error', 'Bạn không có quyền xem thông tin lịch khám này.');
+    return res.status(403).render('errors/error', { message: 'Truy cập bị từ chối (403): Bạn không có quyền truy cập hồ sơ lịch khám này.' });
+  }
 
   let prescription = null;
   if (appt.medical_record_id) {
@@ -1000,19 +1012,75 @@ app.get('/doctor/queue', requireRole('doctor'), (req, res) => {
 });
 
 app.post('/doctor/queue/call/:id', requireRole('doctor'), (req, res) => {
+  const qItem = db.prepare(`
+    SELECT eq.*, a.doctor_id, d.user_id as doctor_user_id
+    FROM examination_queues eq
+    JOIN appointments a ON eq.appointment_id = a.id
+    JOIN doctors d ON a.doctor_id = d.id
+    WHERE eq.id = ?
+  `).get(req.params.id);
+
+  if (!qItem) {
+    req.flash('error', 'Lượt chờ không tồn tại.');
+    return res.redirect('/doctor/queue');
+  }
+
+  const isAdmin = req.session.user.role === 'admin' || (Array.isArray(req.session.user.roles) && req.session.user.roles.includes('admin'));
+  if (!isAdmin && qItem.doctor_user_id !== req.session.user.id) {
+    req.flash('error', 'Bạn không thể thao tác trên hàng đợi của bác sĩ khác.');
+    return res.status(403).redirect('/doctor/queue');
+  }
+
   db.prepare(`UPDATE examination_queues SET status = 'calling', called_time = datetime('now') WHERE id = ?`).run(req.params.id);
   req.flash('info', 'Đã phát loa gọi bệnh nhân vào phòng khám.');
   res.redirect('/doctor/queue');
 });
 
 app.post('/doctor/queue/start/:id', requireRole('doctor'), (req, res) => {
-  const q = db.prepare('SELECT appointment_id FROM examination_queues WHERE id = ?').get(req.params.id);
+  const qItem = db.prepare(`
+    SELECT eq.*, a.doctor_id, d.user_id as doctor_user_id
+    FROM examination_queues eq
+    JOIN appointments a ON eq.appointment_id = a.id
+    JOIN doctors d ON a.doctor_id = d.id
+    WHERE eq.id = ?
+  `).get(req.params.id);
+
+  if (!qItem) {
+    req.flash('error', 'Lượt chờ không tồn tại.');
+    return res.redirect('/doctor/queue');
+  }
+
+  const isAdmin = req.session.user.role === 'admin' || (Array.isArray(req.session.user.roles) && req.session.user.roles.includes('admin'));
+  if (!isAdmin && qItem.doctor_user_id !== req.session.user.id) {
+    req.flash('error', 'Bạn không thể thao tác trên hàng đợi của bác sĩ khác.');
+    return res.status(403).redirect('/doctor/queue');
+  }
+
   db.prepare(`UPDATE examination_queues SET status = 'in_room' WHERE id = ?`).run(req.params.id);
-  db.prepare(`UPDATE appointments SET status = 'in_consultation' WHERE id = ?`).run(q.appointment_id);
-  res.redirect(`/doctor/examine/${q.appointment_id}`);
+  db.prepare(`UPDATE appointments SET status = 'in_consultation' WHERE id = ?`).run(qItem.appointment_id);
+  res.redirect(`/doctor/examine/${qItem.appointment_id}`);
 });
 
 app.post('/doctor/queue/skip/:id', requireRole('doctor'), (req, res) => {
+  const qItem = db.prepare(`
+    SELECT eq.*, a.doctor_id, d.user_id as doctor_user_id
+    FROM examination_queues eq
+    JOIN appointments a ON eq.appointment_id = a.id
+    JOIN doctors d ON a.doctor_id = d.id
+    WHERE eq.id = ?
+  `).get(req.params.id);
+
+  if (!qItem) {
+    req.flash('error', 'Lượt chờ không tồn tại.');
+    return res.redirect('/doctor/queue');
+  }
+
+  const isAdmin = req.session.user.role === 'admin' || (Array.isArray(req.session.user.roles) && req.session.user.roles.includes('admin'));
+  if (!isAdmin && qItem.doctor_user_id !== req.session.user.id) {
+    req.flash('error', 'Bạn không thể thao tác trên hàng đợi của bác sĩ khác.');
+    return res.status(403).redirect('/doctor/queue');
+  }
+
   db.prepare(`UPDATE examination_queues SET status = 'waiting' WHERE id = ?`).run(req.params.id);
   req.flash('info', 'Đã chuyển bệnh nhân xuống chờ lại.');
   res.redirect('/doctor/queue');
@@ -1032,6 +1100,14 @@ app.get('/doctor/examine/:appointmentId', requireRole('doctor'), (req, res) => {
   `).get(req.params.appointmentId);
 
   if (!appt) return res.status(404).render('errors/error', { message: 'Không tìm thấy hồ sơ' });
+
+  // Doctor Data Isolation Check:
+  const doctorRecord = db.prepare('SELECT id FROM doctors WHERE user_id = ?').get(req.session.user.id);
+  const isAdmin = req.session.user.role === 'admin' || (Array.isArray(req.session.user.roles) && req.session.user.roles.includes('admin'));
+  if (!isAdmin && doctorRecord && appt.doctor_id !== doctorRecord.id) {
+    req.flash('error', 'Bạn không được phân công khám cho ca hẹn này.');
+    return res.status(403).render('errors/error', { message: 'Truy cập bị từ chối (403): Ca khám này thuộc về bác sĩ khác.' });
+  }
 
   const pastRecords = db.prepare(`
     SELECT * FROM medical_records WHERE patient_id = ? AND appointment_id != ? ORDER BY created_at DESC
@@ -1060,6 +1136,16 @@ app.get('/doctor/examine/:appointmentId', requireRole('doctor'), (req, res) => {
 
 app.post('/doctor/examine/:appointmentId', requireRole('doctor'), (req, res) => {
   const appt = db.prepare('SELECT * FROM appointments WHERE id = ?').get(req.params.appointmentId);
+  if (!appt) return res.status(404).render('errors/error', { message: 'Không tìm thấy hồ sơ' });
+
+  // Doctor Data Isolation Check:
+  const doctorRecord = db.prepare('SELECT id FROM doctors WHERE user_id = ?').get(req.session.user.id);
+  const isAdmin = req.session.user.role === 'admin' || (Array.isArray(req.session.user.roles) && req.session.user.roles.includes('admin'));
+  if (!isAdmin && doctorRecord && appt.doctor_id !== doctorRecord.id) {
+    req.flash('error', 'Bạn không được phân công khám cho ca hẹn này.');
+    return res.status(403).render('errors/error', { message: 'Truy cập bị từ chối (403): Ca khám này thuộc về bác sĩ khác.' });
+  }
+
   const { 
     blood_pressure, heart_rate, temperature, weight, height, bmi, 
     anamnesis, clinical_diagnosis, icd10_code, doctor_notes, re_examination_date,
@@ -1114,8 +1200,8 @@ app.post('/doctor/examine/:appointmentId', requireRole('doctor'), (req, res) => 
     const prices = Array.isArray(med_price) ? med_price : [med_price];
 
     names.forEach((name, i) => {
-      const q = parseFloat(quantities[i] || 1);
-      const p = parseFloat(prices[i] || 0);
+      const q = Math.max(1, parseFloat(quantities[i]) || 1);
+      const p = Math.max(0, parseFloat(prices[i]) || 0);
       totalMedFee += (q * p);
     });
 
@@ -1139,14 +1225,19 @@ app.post('/doctor/examine/:appointmentId', requireRole('doctor'), (req, res) => 
     `);
 
     names.forEach((name, i) => {
-      const q = parseFloat(quantities[i] || 1);
-      const p = parseFloat(prices[i] || 0);
+      const q = Math.max(1, parseFloat(quantities[i]) || 1);
+      const p = Math.max(0, parseFloat(prices[i]) || 0);
       const mId = parseInt(ids[i]) || null;
       insertItem.run(
         presId, mId, name, dosages[i] || '', units[i] || 'Viên', q,
         mornings[i] || '0', noons[i] || '0', afternoons[i] || '0', nights[i] || '0',
         instructions[i] || '', p, q * p
       );
+
+      // Decrement stock quantity safely in medicines table
+      if (mId) {
+        db.prepare('UPDATE medicines SET stock_quantity = MAX(0, stock_quantity - ?) WHERE id = ?').run(q, mId);
+      }
     });
   }
 
@@ -2045,7 +2136,14 @@ app.get('/admin/appointments/view/:id', requireRole('admin'), (req, res) => {
 
 app.post('/admin/appointments/status/:id', requireRole('admin'), (req, res) => {
   const { status, note } = req.body;
+  const allowedStatuses = ['pending', 'confirmed', 'checked_in', 'in_consultation', 'completed', 'cancelled', 'no_show'];
+  if (!status || !allowedStatuses.includes(status)) {
+    return res.status(400).render('errors/error', { message: 'Trạng thái lịch hẹn không hợp lệ' });
+  }
   const appt = db.prepare('SELECT status FROM appointments WHERE id = ?').get(req.params.id);
+  if (!appt) {
+    return res.status(404).render('errors/error', { message: 'Lịch hẹn không tồn tại' });
+  }
 
   db.prepare('UPDATE appointments SET status = ? WHERE id = ?').run(status, req.params.id);
   db.prepare(`
@@ -2099,6 +2197,7 @@ app.get('/admin/backup-db', requireRole('admin'), (req, res) => {
   const dbFile = path.resolve(__dirname, '../database/medibook.sqlite');
   const nowStr = new Date().toISOString().split('T')[0];
   const downloadName = `medibook_backup_${nowStr}.sqlite`;
+  logActivity(req.session.user.id, 'BACKUP_DATABASE', 'System', null, 'Xuất file sao lưu CSDL medibook.sqlite', req);
   res.download(dbFile, downloadName, (err) => {
     if (err && !res.headersSent) {
       res.status(500).render('errors/error', { message: 'Không thể tải file sao lưu database' });

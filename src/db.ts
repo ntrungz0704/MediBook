@@ -278,12 +278,12 @@ function initDb() {
       payment_method TEXT NOT NULL DEFAULT 'cash',
       payment_status TEXT NOT NULL DEFAULT 'unpaid',
       paid_at DATETIME,
-      cashier_id INTEGER,
+      cashier_user_id INTEGER,
       notes TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (appointment_id) REFERENCES appointments (id) ON DELETE CASCADE,
-      FOREIGN KEY (cashier_id) REFERENCES users (id) ON DELETE SET NULL
+      FOREIGN KEY (cashier_user_id) REFERENCES users (id) ON DELETE SET NULL
     );
 
     CREATE TABLE IF NOT EXISTS reviews (
@@ -348,7 +348,8 @@ function initDb() {
     "ALTER TABLE appointments ADD COLUMN priority_reason TEXT",
     "ALTER TABLE examination_queues ADD COLUMN priority_level TEXT NOT NULL DEFAULT 'online'",
     "ALTER TABLE examination_queues ADD COLUMN priority_order INTEGER NOT NULL DEFAULT 3",
-    "ALTER TABLE patients ADD COLUMN priority_category TEXT DEFAULT 'normal'"
+    "ALTER TABLE patients ADD COLUMN priority_category TEXT DEFAULT 'normal'",
+    "ALTER TABLE payments ADD COLUMN cashier_user_id INTEGER"
   ];
 
   for (const sql of migrations) {
@@ -356,6 +357,27 @@ function initDb() {
       db.exec(sql);
     } catch (e) {
       // Column already exists or table not ready, safely ignore
+    }
+  }
+
+  // Create High-Performance B-Tree Indexes
+  const performanceIndexes = [
+    "CREATE INDEX IF NOT EXISTS idx_appointments_doc_date ON appointments (doctor_id, appointment_date)",
+    "CREATE INDEX IF NOT EXISTS idx_appointments_patient ON appointments (patient_id)",
+    "CREATE INDEX IF NOT EXISTS idx_appointments_status ON appointments (status)",
+    "CREATE INDEX IF NOT EXISTS idx_queue_room_status ON examination_queues (room, status)",
+    "CREATE INDEX IF NOT EXISTS idx_prescriptions_record ON prescriptions (medical_record_id)",
+    "CREATE INDEX IF NOT EXISTS idx_prescription_items_pres ON prescription_items (prescription_id)",
+    "CREATE INDEX IF NOT EXISTS idx_payments_status ON payments (payment_status)",
+    "CREATE INDEX IF NOT EXISTS idx_user_roles_user ON user_roles (user_id)",
+    "CREATE INDEX IF NOT EXISTS idx_activity_logs_user ON activity_logs (user_id)"
+  ];
+
+  for (const idxSql of performanceIndexes) {
+    try {
+      db.exec(idxSql);
+    } catch (e) {
+      // Safely ignore if index already exists
     }
   }
 
