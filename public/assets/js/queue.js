@@ -80,9 +80,80 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 3. Live Queue Board TV Auto Polling
+  // 3. Live Queue Board TV Auto Polling with Web Audio Ding-Dong & Web Speech
   const liveBoardContainer = document.getElementById('live_board_content');
   if (liveBoardContainer) {
+    let voiceEnabled = false;
+    let announcedCallings = new Set();
+    const btnToggleVoice = document.getElementById('btn_toggle_voice');
+    const voiceIcon = document.getElementById('voice_icon');
+    const voiceText = document.getElementById('voice_text');
+
+    if (btnToggleVoice) {
+      btnToggleVoice.addEventListener('click', () => {
+        voiceEnabled = !voiceEnabled;
+        if (voiceEnabled) {
+          btnToggleVoice.style.background = '#16a34a';
+          if (voiceIcon) voiceIcon.textContent = '🔊';
+          if (voiceText) voiceText.textContent = 'Loa Đang Bật';
+          playDingDong();
+        } else {
+          btnToggleVoice.style.background = '#475569';
+          if (voiceIcon) voiceIcon.textContent = '🔇';
+          if (voiceText) voiceText.textContent = 'Bật Loa Tự Động';
+        }
+      });
+    }
+
+    function playDingDong() {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+
+        // Note 1: E5 (659Hz)
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(659.25, ctx.currentTime);
+        gain1.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        osc1.start(ctx.currentTime);
+        osc1.stop(ctx.currentTime + 0.45);
+
+        // Note 2: C5 (523Hz)
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(523.25, ctx.currentTime + 0.35);
+        gain2.gain.setValueAtTime(0.35, ctx.currentTime + 0.35);
+        gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.95);
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.start(ctx.currentTime + 0.35);
+        osc2.stop(ctx.currentTime + 0.95);
+      } catch (e) {}
+    }
+
+    function announcePatient(patientName, queueNumber, room) {
+      if (!voiceEnabled) return;
+      playDingDong();
+      if ('speechSynthesis' in window) {
+        setTimeout(() => {
+          window.speechSynthesis.cancel();
+          const cleanQueue = (queueNumber || '').replace('-', ' ');
+          const text = `Xin mời bệnh nhân ${patientName}, số thứ tự ${cleanQueue}, vào phòng khám ${room}.`;
+          const utter = new SpeechSynthesisUtterance(text);
+          utter.lang = 'vi-VN';
+          utter.rate = 0.9;
+          utter.pitch = 1.05;
+          window.speechSynthesis.speak(utter);
+        }, 900);
+      }
+    }
+
     function escapeHtml(str) {
       if (!str) return '';
       const div = document.createElement('div');
@@ -116,6 +187,15 @@ document.addEventListener('DOMContentLoaded', () => {
                   }
                 }
               });
+
+              // Check if newly calling item needs announcement
+              if (callingItem && callingItem.status === 'calling') {
+                const callKey = `${callingItem.queue_number}_${callingItem.called_time || ''}`;
+                if (!announcedCallings.has(callKey)) {
+                  announcedCallings.add(callKey);
+                  announcePatient(callingItem.patient_name, callingItem.queue_number, room);
+                }
+              }
 
               html += `
                 <div class="room-card">

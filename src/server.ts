@@ -2094,6 +2094,18 @@ app.get('/admin/logs', requireRole('admin'), (req, res) => {
   renderWithLayout(res, 'admin/logs/index', { pageTitle: 'Nhật ký bảo mật & Hoạt động - Admin', logs }, 'layouts/admin');
 });
 
+// Admin Backup Database Endpoint (B-03)
+app.get('/admin/backup-db', requireRole('admin'), (req, res) => {
+  const dbFile = path.resolve(__dirname, '../database/medibook.sqlite');
+  const nowStr = new Date().toISOString().split('T')[0];
+  const downloadName = `medibook_backup_${nowStr}.sqlite`;
+  res.download(dbFile, downloadName, (err) => {
+    if (err && !res.headersSent) {
+      res.status(500).render('errors/error', { message: 'Không thể tải file sao lưu database' });
+    }
+  });
+});
+
 // 404 handler
 app.use((req, res) => {
   res.status(404).render('errors/error', { message: 'Trang bạn yêu cầu không tồn tại (404)' });

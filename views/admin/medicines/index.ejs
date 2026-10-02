@@ -4,6 +4,10 @@
     <a href="/admin/medicines/create" class="btn btn-primary btn-sm">➕ Thêm thuốc vào kho</a>
   </div>
 
+  <div style="margin: 15px 0 20px;">
+    <input type="text" id="medicine_search" placeholder="🔍 Nhập tên thuốc, mã biệt dược, phân loại để lọc nhanh..." class="form-control" style="max-width: 420px; padding: 9px 14px; border-radius: 8px; font-size: 13.5px; border: 1px solid #cbd5e1;">
+  </div>
+
   <div class="table-responsive">
     <table class="data-table">
       <thead>
@@ -47,3 +51,13 @@
     </table>
   </div>
 </div>
+
+<script>
+  document.getElementById('medicine_search')?.addEventListener('input', function(e) {
+    const q = e.target.value.toLowerCase().trim();
+    document.querySelectorAll('.data-table tbody tr').forEach(row => {
+      const text = row.textContent.toLowerCase();
+      row.style.display = text.includes(q) ? '' : 'none';
+    });
+  });
+</script>

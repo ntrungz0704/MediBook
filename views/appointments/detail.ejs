@@ -196,3 +196,13 @@
   <% } %>
 
 </div>
+
+<style>
+  @media print {
+    body { background: #ffffff !important; color: #0f172a !important; font-size: 13px !important; }
+    .site-header, .site-footer, .bottom-nav, .no-print, .btn, .role-switcher-badge, form { display: none !important; }
+    .container { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
+    .card-box { border: 1px solid #94a3b8 !important; box-shadow: none !important; margin-bottom: 16px !important; page-break-inside: avoid; }
+    .data-table th, .data-table td { border: 1px solid #cbd5e1 !important; color: #0f172a !important; }
+  }
+</style>

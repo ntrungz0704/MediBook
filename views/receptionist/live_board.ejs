@@ -165,8 +165,13 @@
       </div>
     </div>
 
-    <div class="clock-display" id="live_clock">
-      00:00:00
+    <div style="display:flex; align-items:center; gap:14px;">
+      <button id="btn_toggle_voice" type="button" style="background:#0d9488; color:#ffffff; border:none; padding:8px 16px; border-radius:10px; font-weight:700; font-size:14px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; box-shadow:0 4px 12px rgba(13,148,136,0.3); transition:all 0.2s ease;">
+        <span id="voice_icon">🔊</span> <span id="voice_text">Bật Loa Tự Động</span>
+      </button>
+      <div class="clock-display" id="live_clock">
+        00:00:00
+      </div>
     </div>
   </div>
 

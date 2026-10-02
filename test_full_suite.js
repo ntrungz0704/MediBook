@@ -299,9 +299,9 @@ async function runTests() {
     const paidBill = db.prepare('SELECT * FROM payments WHERE id = ?').get(bill.id);
     assert(paidBill.payment_status === 'paid', 'Tiếp tân ghi nhận thanh toán thành công, hóa đơn chuyển sang "paid"');
 
-    // Check receipt print view
+    // Check receipt print view with VietQR
     res = await recepClient.get(`/receptionist/payments/receipt/${bill.id}`);
-    assert(res.statusCode === 200 && res.body.includes('HÓA ĐƠN THU TIỀN VIỆN PHÍ'), 'Xem và in biên lai thu tiền (receipt_print) hoạt động chuẩn xác');
+    assert(res.statusCode === 200 && res.body.includes('HÓA ĐƠN THU TIỀN VIỆN PHÍ') && res.body.includes('VietQR Thanh Toán'), 'Xem và in biên lai thu tiền tích hợp mã VietQR động NAPAS hoạt động chuẩn xác');
 
     // Step 5.5: Bệnh nhân xem kết quả và gửi đánh giá (Review)
     res = await patientClient.get(`/appointments/${createdAppt.booking_code}`);
@@ -318,11 +318,16 @@ async function runTests() {
     assert(updatedDoc.rating_count > 0, `Điểm số và lượt đánh giá bác sĩ được cập nhật tự động (Rating: ${updatedDoc.rating}, Đánh giá: ${updatedDoc.rating_count})`);
 
     // -------------------------------------------------------------
-    // TEST 6: Báo cáo thống kê Admin phản ánh đúng
+    // TEST 6: Báo cáo thống kê Admin & Sao lưu CSDL 1-chạm
     // -------------------------------------------------------------
     console.log('\n📌 NHÓM 6: Báo cáo doanh thu & KPI Admin đồng bộ tức thì');
     res = await adminClient.get('/admin/reports');
     assert(res.statusCode === 200 && res.body.includes('Báo cáo doanh thu'), 'Trang báo cáo thống kê Admin tải số liệu chính xác từ DB');
+
+    // Test Admin Backup Database Endpoint
+    res = await adminClient.get('/admin/backup-db');
+    const isAttachment = res.headers['content-disposition'] && res.headers['content-disposition'].includes('medibook_backup_');
+    assert(res.statusCode === 200 && isAttachment, 'Tính năng sao lưu CSDL một chạm (/admin/backup-db) xuất file backup thành công');
 
     // -------------------------------------------------------------
     // TEST 7: 1 Người Nhiều Role & Chuyển Đổi Vai Trò Động (/switch-role)
