@@ -1,170 +1,209 @@
-# ✅ BÁO CÁO KIỂM CHỨNG ĐỘC LẬP (PROJECT VERIFICATION REPORT)
-**Dự án**: MediBook - Nền tảng Đặt lịch Khám & Quản lý Phòng khám Thông minh  
-**Vị trí Codebase**: `D:\MediBook` (Ổ đĩa `Study (D:)`)  
-**Thời điểm kiểm chứng**: 2026-10-03T11:29:00+07:00  
-**Kiểm chứng viên**: Independent Verification Auditor (Tech Lead & Security Reviewer)  
-**Quy trình tuân thủ**: 8 Phase Protocol của skill `/fix-verifier` (Không tin lời khai, tự chạy lại 100% bằng chứng)  
+# PROJECT_VERIFY.md — MediBook
+
+> Kiểm chứng độc lập ngày 2026-10-04 · HEAD `bec294b` · Verifier KHÔNG sửa code dự án (chỉ ghi file này + `PROJECT_AUDIT.md`).
+> Thí nghiệm phá code chỉ làm trên **bản clone tạm** (`%TEMP%\mb-verify-A`, đã `npm ci` sạch); các lần chạy server dùng **bản sao DB** (`VACUUM INTO`). Bằng chứng = diff/code thật (`file:dòng`) + lệnh tôi tự chạy; tóm tắt/commit message của agent chỉ được coi là *lời khai*.
 
 ---
 
-## 1. KẾT LUẬN ĐIỀU HÀNH
-- **Phán quyết chung**: **TIN ĐƯỢC TUYỆT ĐỐI (100% CONFIRMED)**.
-- **Tỷ lệ lời khai đúng**: **`100.0%`** (8/8 mục kiểm chứng đạt nhãn ✅ CONFIRMED).
-- **Điểm tin cậy của đợt sửa**: **`100 / 100`** (0 False-Claim, 0 Regression, 0 Scope Creep, 100% bằng chứng xác thực qua lệnh chạy thật).
-- **Tiến độ sau sửa**: Hoàn thành trọn vẹn **Work Item W-01** (Quản lý biến môi trường, fail-fast production secret, dọn sạch Git index cho binary SQLite/dist).
-- **Top 3 vấn đề tiếp theo cần làm**:
-  1. *W-02*: Tạo endpoint `/health` kiểm tra tình trạng kết nối CSDL SQLite.
-  2. *W-03*: Cài đặt `helmet` (giấu `X-Powered-By: Express`) và `express-rate-limit` chống brute-force đăng nhập.
-  3. *W-04*: Soạn thảo tài liệu triển khai `DEPLOY.md` chi tiết cho VPS/Docker kèm cảnh báo lưu trữ bền vững SQLite.
-- **Việc nên làm ngay**: Tiến hành triển khai Work Item **W-02** (`GET /health`) để hoàn thiện cổng giám sát ứng dụng.
+## 1. Kết luận điều hành
+
+**Phán quyết: TIN MỘT PHẦN** — nghiệp vụ lâm sàng tin được; độ an toàn và độ "chạy được từ clone sạch" **không** như báo cáo trước.
+
+| Chỉ số | Giá trị |
+|---|---|
+| Tỷ lệ lời khai đúng | **68.8 %** (11 ✅ / 16 lời khai) |
+| FALSE-CLAIM / REGRESSION | **1 / 0** |
+| Điểm tin cậy báo cáo sửa | **40 / 100** |
+| Tiến độ | báo cáo cũ khai **100 %** → thực tế **73.3 %** ước tính, **52.8 %** VERIFIED (−26.7 điểm % — do báo cáo cũ quá tay, không phải code thụt lùi) |
+
+**Top 3 vấn đề nghiêm trọng**
+1. ❌ **C-15**: "Bảo mật XUẤT SẮC / 100 % VERIFIED" là sai — chiếm tài khoản qua đặt lịch khách + mật khẩu mặc định `password` có từ commit đầu `6590313` (2026-09-27) và vẫn còn (`server.ts:720,1824`).
+2. 🟠 **C-16**: "87/87 PASS" chỉ đúng với file SQLite local cũ (không nằm trong git). **Clone sạch → `npm ci` OK → `npm run build` OK → `npm test` FAIL ở assertion đầu tiên** (`SqliteError: no such column: status`). Lỗi có từ trước (xác nhận ở `d6c17ff`, `3f23b33`, `1135837`, `HEAD`): `db.ts` chưa bao giờ tạo `specialties.status/image`.
+3. 🟠 **C-10 / C-12**: chặn bác sĩ tự đặt lịch bị **lách được** qua đường đặt lịch khách; "trừ kho nguyên tử" không có test bảo vệ (mutation xanh), không chặn hết hàng, và lưu lại đơn thuốc sẽ trừ kho lần nữa.
+
+**Nên làm ngay:** R-01 (clone sạch phải chạy) → R-02 (đóng đường đặt lịch khách) → R-03/R-04.
 
 ---
 
-## 2. MỐC SO SÁNH & PHẠM VI DIFF
-- **Commit mốc trước sửa**: `720b91a` (*docs: add comprehensive PROJECT_CLEANUP.md report*)
-- **Commit mốc sau sửa**: `ede94ad` (*feat(config): complete W-01 env management, fail-fast production secret, and update gitignore*)
-- **Tag an toàn**: `pre-cleanup-20261003` (đã gắn tại commit `ede94ad`)
-- **Phạm vi diff thực tế**:
-  ```text
-  .env.example             |   17 +
-  .gitignore               |   11 +
-  PROJECT_AUDIT.md         |  241 +++---
-  PROJECT_BASELINE.md      |  452 +++++++++++
-  database/medibook.sqlite |  Bin 286720 -> 0 bytes (untracked from git index)
-  dist/ (4 files)          | 2516 ----------------------------------------------
-  src/db.ts                |   21 +-
-  src/server.ts            |   34 +-
-  11 files changed, 664 insertions(+), 2628 deletions(-)
-  ```
-- **Nhận xét phạm vi**: Thay đổi cực kỳ tập trung, đúng trọng tâm W-01, không bị scope creep sang các file nghiệp vụ hay EJS views.
+## 2. Mốc so sánh
+
+- **Trước sửa:** `d6c17ff` (2026-10-02, audit cũ khai 100 %) → `3f23b33` (hardening IDOR/kho/52 test) → `ede94ad`/`1135837` (W-01 env + verify cũ).
+- **Sau sửa:** `bec294b` (HEAD). Phạm vi diff `1135837..HEAD`: 18 file, +2 687 / −187 (`src/server.ts` +760, `src/db.ts` +382, `test_full_suite.js` +359, `views/receptionist/beds.ejs` +447, 2 file `.md` mới).
+- **Giới hạn lần verify:** không có môi trường production/HTTPS; không đo hiệu năng/a11y; test runner dừng ở lần fail đầu tiên nên mỗi mutation chỉ cho biết *assertion đầu tiên đỏ*; lần chạy `npm test` đầu tiên trong phiên (trước khi bắt đầu verify) đã ghi thêm dữ liệu thử vào `database/medibook.sqlite` local (file bị `.gitignore`, không ảnh hưởng git).
 
 ---
 
-## 3. BẢNG PHÁN QUYẾT TỪNG LỜI KHAI (CLAIM TABLE)
+## 3. Bảng phán quyết từng lời khai
 
-| ID | Mục gốc | Lời khai của Agent | Thực tế kiểm chứng | Nhãn | Bằng chứng kiểm chứng | Ghi chú |
-|:---|:---|:---|:---|:---:|:---|:---:|
-| **C-01** | W-01 Req 1 | Tách cấu hình runtime (`PORT`, `NODE_ENV`, `SESSION_SECRET`, `DATABASE_PATH`) khỏi source code | `src/server.ts:21-24` và `src/db.ts:16-18` đọc trực tiếp từ `process.env` | ✅ CONFIRMED | `src/server.ts:21-24`, `src/db.ts:16-18` | Có fallback an toàn cho development |
-| **C-02** | W-01 Req 2 | Tạo file `.env.example` chứa placeholder, không chứa secret thật | File `.env.example` tồn tại, định nghĩa đủ 4 biến với placeholder an toàn, không có key nhạy cảm | ✅ CONFIRMED | `D:\MediBook\.env.example:1-18` | Đã commit vào Git |
-| **C-03** | W-01 Req 3 | Xử lý nạp `.env` tự động bằng Node 22 native `process.loadEnvFile`, không thêm dependency ngoài | `src/server.ts:5-12` và `src/db.ts:5-13` kiểm tra `fs.existsSync` và gọi `process.loadEnvFile`; `package.json` không thêm dependency nào | ✅ CONFIRMED | `src/server.ts:5-12`, `package.json` giữ nguyên 6 dependencies | Hoạt động chuẩn Node 22 |
-| **C-04** | W-01 Req 4 | Loại bỏ hoàn toàn SESSION_SECRET hardcoded (`medibook-secret-key-node`) khỏi `src/server.ts` | Grep toàn bộ thư mục `src/` không còn chuỗi `medibook-secret-key-node` | ✅ CONFIRMED | `Get-ChildItem src -Recurse \| Select-String 'medibook-secret-key-node'` ➔ 0 kết quả | Sạch 100% |
-| **C-05** | W-01 Req 5 | Khi `NODE_ENV=production` và `SESSION_SECRET` thiếu/rỗng: FAIL FAST (mã thoát 1) kèm thông báo rõ ràng | Chạy lệnh mô phỏng production thiếu secret ➔ in thông báo FATAL và thoát ngay với `ExitCode: 1` | ✅ CONFIRMED | Chạy thử node sub-process ➔ `ExitCode: 1`, in `FATAL: Biến môi trường SESSION_SECRET là bắt buộc` | Đã kiểm chứng độc lập |
-| **C-06** | W-01 Req 6 | Giữ nguyên cấu hình session (thời hạn 1 ngày), RBAC, multi-role switcher, authentication, IDOR, doctor isolation | `src/server.ts:49-56` giữ nguyên `resave: false, saveUninitialized: false, cookie: { maxAge: 86400000 }` | ✅ CONFIRMED | `src/server.ts:49-56`, toàn bộ 10 nhóm test PASS | Không đổi cơ chế session |
-| **C-07** | W-01 Req 7 | `.gitignore` bổ sung `.env`, `.env.*`, `!.env.example`, `dist/`, `database/*.sqlite` và untrack binary khỏi Git index | `git check-ignore` xác nhận các file binary/env được ignore; `git ls-files database/` chỉ còn `schema.sql` và `seed.sql` | ✅ CONFIRMED | `git ls-files database` chỉ ra 2 file sql; `.env` và `dist/` không bị track | DoD thỏa mãn 100% |
-| **C-08** | W-01 Req 8-10 | Giữ nguyên build/test, 52/52 test PASS, không có regression | Chạy lại `npm run build` (0 lỗi), `npm test` (52/52 PASS 2 lần liên tiếp), dry-run views (45/45 PASS) | ✅ CONFIRMED | Kết quả thực thi `npm test`: 52/52 PASS | Không có bất kỳ regression nào |
-
----
-
-## 4. CHÊNH LỆCH DIFF (REALITY CHECK)
-- **File khai đã sửa**: `src/server.ts`, `src/db.ts`, `.gitignore`, `.env.example`.
-- **Thực tế trong git diff**: Đúng 100% các file đã khai.
-- **File khai sửa nhưng không đổi**: Không có.
-- **File đổi nhưng không khai**: Không có.
-- **Scope Creep (Sửa ngoài phạm vi)**: Không có (toàn bộ diff chỉ giới hạn trong việc nạp env, validation secret và gitignore).
-
----
-
-## 5. QUÉT TỒN DƯ (PHASE 2 SCAN)
-- **Chuỗi secret cũ (`medibook-secret-key-node`)**: 0 kết quả trong toàn bộ `src/`.
-- **`TODO / FIXME / WIP / stub / mock / fake`**: 0 kết quả trong `src/`.
-- **`@ts-ignore / @ts-nocheck`**: 0 kết quả trong `src/`.
-- **`console.log` sót trong logic nghiệp vụ**: 0 kết quả (chỉ có log banner khởi động server tại `src/server.ts:2242-2245`).
-- **File nhạy cảm lọt vào Git**: Lệnh `git ls-files .env` trả về rỗng (được bảo vệ tuyệt đối bởi `.gitignore:5`).
+| C-xx | Mục gốc | Agent khai | Thực tế | Nhãn | Bằng chứng | Ghi chú |
+|---|---|---|---|---|---|---|
+| C-01 | B-01 (audit cũ) · `ede94ad` | Session secret đọc từ `.env`, production fail-fast | Đúng | ✅ CONFIRMED | `server.ts:27-38`; chạy `NODE_ENV=production` không `SESSION_SECRET` ⇒ exit 1 + thông báo FATAL; `.env` không tracked (`git ls-files` = 0) | Không có test bảo vệ: mutation M10 vẫn xanh → R-05 |
+| C-02 | `db6b658` | Sửa khung giờ cho cả tuần | Đúng | ✅ CONFIRMED | `/api/slots` trả slot cho đủ 7 ngày T2→CN với 3 bác sĩ (kể cả Chủ nhật); `doctor_schedules` có đủ 7 ngày | Số slot T2 và CN của vài bác sĩ thấp hơn (8/7 vs 18) — nghi do dữ liệu đặt thử của test, chưa chứng minh |
+| C-03 | `db6b658` | Trung tâm tin y tế + nút quay lại | Đúng | ✅ CONFIRMED | `/articles` 200, có nút/link quay lại, trang chủ link tới `/articles` | 0 test; `views/articles/detail.ejs:68` in raw `article.content` (chấp nhận nếu chỉ admin/seed nhập) |
+| C-04 | `db6b658` | Tách cổng admin / lễ tân | Mới tách layout + chuyển hướng đăng nhập | 🟠 PARTIAL | `layouts/receptionist.ejs` mới; `server.ts:311-319` chặn redirect chéo sau login; route lễ tân vẫn `requireRole('receptionist','admin')` | Admin vẫn vào được toàn bộ cổng lễ tân; không có test cho tách cổng |
+| C-05 | `f4a369c` | Chống double-booking | Đúng, nhưng chỉ DB index thật sự chặn | ✅ CONFIRMED | `db.ts:457` unique partial index; M1a (bỏ check ở app) vẫn xanh = index đủ; M1b (bỏ cả index) ⇒ đỏ | Runner dừng ở assertion "index tồn tại" nên chưa thấy test hành vi đỏ riêng |
+| C-06 | `f4a369c` | Emergency bumping | Đúng | ✅ CONFIRMED | `server.ts:1699-1730`; M7 ⇒ đỏ `Emergency Bumping…is_bumped = 1` | — |
+| C-07 | `f4a369c` | Tái khám ≤14 ngày giảm 50 % | Đúng | ✅ CONFIRMED | `server.ts:1421-1447`; M5 ⇒ đỏ `Tái khám > 14 ngày…` | Phí gốc **hard-code 200 000** (`:1432`), không lấy từ `services.price` |
+| C-08 | `f4a369c` | Ma trận giường nội trú | Đúng | ✅ CONFIRMED | `/receptionist/beds` 200; test nhóm 9.3 (11 assert chuyển trạng thái/xuất viện) PASS | Chưa mutation riêng |
+| C-09 | `bec294b` | Bác sĩ đồng thời là bệnh nhân (đa role) | Đúng | ✅ CONFIRMED | Test nhóm 7 PASS; `/switch-role/*` smoke OK | — |
+| C-10 | `bec294b` | Chặn bác sĩ tự đặt lịch cho mình | Chỉ chặn nhánh đã đăng nhập | 🟠 PARTIAL | `server.ts:697-701` có guard (M4 ⇒ đỏ) **nhưng** nhánh khách `:710-742` không có: probe POST `/appointments/book` (khách, email `doctor@medibook.local`, chính slot của bác sĩ 9) ⇒ 302 `/appointments/success/MB990302-2500`, DB có bản ghi `patient_user = 14 = doctor user` | Đóng cùng R-02 |
+| C-11 | `3f23b33` | Chống IDOR + cô lập dữ liệu bác sĩ | Đúng | ✅ CONFIRMED | `server.ts:925-933,1318-1325`; M2 ⇒ đỏ, M3 ⇒ đỏ; M6 (bỏ RBAC) ⇒ đỏ | `res.status(403).redirect(...)` thực tế trả 302 (`:1246,1271,1296`, `middleware.ts:35`) — chỉ cosmetic |
+| C-12 | `3f23b33` | Trừ kho thuốc nguyên tử | Có trừ, nhưng yếu | 🟠 PARTIAL | `server.ts:1554` `MAX(0, stock - ?)`; M8 (bỏ trừ kho) ⇒ **xanh** 87/87; test chỉ `assert(typeof stock === 'number')` (`test_full_suite.js:845`) | Không chặn kê quá tồn; nhánh cập nhật đơn (`:1525-1528`) xoá item rồi trừ lại **không hoàn kho** ⇒ trừ đôi (đọc code, chưa chạy); giá thuốc lấy từ form (`prices[i]`, `:1544`) |
+| C-13 | audit cũ | 100 % prepared statement, không SQLi | Đúng | ✅ CONFIRMED | Quét: 0 chuỗi SQL dùng `${}` trong `server.ts` (`residue.js`) | — |
+| C-14 | audit cũ | Không còn dependency thừa | Đúng | ✅ CONFIRMED | `npm ls --depth=0`: 6 runtime dep, đều được import/dùng (express, express-session, connect-flash, bcryptjs, better-sqlite3, ejs); `npm ci` ⇒ 0 vulnerabilities | — |
+| C-15 | audit cũ | "Bảo mật XUẤT SẮC, 100 % VERIFIED" | Sai | ❌ FALSE-CLAIM | Probe: ATO admin/doctor/lễ tân (`server.ts:718-741`), mật khẩu mặc định `password` (`:720,1824`), 15 lần login sai không bị chặn, XSS tên (`main.ejs:243`), `redirect('back')` ×14 hỏng; `git log -S` ⇒ có từ `6590313` | Chi tiết ở `PROJECT_AUDIT.md` §5–6 |
+| C-16 | commit `3f23b33`…`bec294b` | "52/52 → 87/87 PASS, 100 % thành công" | Chỉ đúng trên DB local cũ | 🟠 PARTIAL | 3 lần chạy trên bản sao DB local: 87/87 PASS, không flaky. Clone sạch: FAIL ngay (`no such column: status`) | Xem R-01 |
 
 ---
 
-## 6. KẾT QUẢ CHẠY LẠI ĐỘC LẬP (PHASE 3)
+## 4. Chênh lệch diff
 
-| STT | Lệnh kiểm chứng | Kết quả thực tế | Trạng thái |
-|:---:|:---|:---|:---:|
-| 1 | `npm run build` (`tsc`) | Biên dịch sạch `dist/` với 0 lỗi, 0 cảnh báo. | 🟢 PASS |
-| 2 | `npm test` (Lần 1) | **52/52 Test Suites PASS** (bao phủ 10 nhóm nghiệp vụ & bảo mật). | 🟢 PASS |
-| 3 | `npm test` (Lần 2 - kiểm tra flaky) | **52/52 Test Suites PASS** (ổn định, không chập chờn). | 🟢 PASS |
-| 4 | `node test_render_views.js` | **45/45 EJS templates** dry-run compile thành công 100%. | 🟢 PASS |
-| 5 | Thử nghiệm Production thiếu Secret | Node sub-process in lỗi FATAL và thoát với `ExitCode: 1`. | 🟢 PASS |
-| 6 | Thử nghiệm Production có Secret | Node server khởi động thành công và thoát với `ExitCode: 0`. | 🟢 PASS |
-| 7 | Thử nghiệm Development với `.env` | Server Express nạp port và secret từ `.env` thành công. | 🟢 PASS |
+- **Scope creep (đổi ngoài mục khai):** `db6b658` gộp 3 việc không liên quan (slot cả tuần + hub tin tức + tách cổng) trong 1 commit; `f4a369c` gộp 4 tính năng. Không có commit nào sửa mục B-02 (webhook VietQR) — đúng vì đã hoãn P3.
+- **File đổi không khai:** `database/schema.sql` +21 dòng ở các commit này **nhưng vẫn là dialect MySQL** → sửa cho tài liệu, không cải thiện khả năng chạy.
+- **Số liệu khai vs thật:** audit cũ khai `server.ts` 2 220 dòng / 45 view / 52 test / 90 endpoint; hiện tại 2 788 dòng / 48 view dry-run PASS (`test_render_views.js`) / 87 test (`assert(` call = 87, khớp 87 PASS) — số liệu cũ đã lỗi thời, không phải gian lận.
+- **Test bị sửa cho dễ pass?** Không thấy dấu hiệu (không `skip/only/todo`: 0).
 
 ---
 
-## 7. KIỂM ĐỊNH CHẤT LƯỢNG TEST (PHASE 4 - MUTATION CHECK)
-- **Số lượng kiểm chứng trong `test_full_suite.js`**: **53 câu lệnh `assert(...)` thực tế**, kiểm tra sâu từ mã trạng thái HTTP, cookie session, dữ liệu trả về đến trạng thái trong SQLite.
-- **Kiểm tra Revert / Đột biến (Mutation Test)**:
-  | Hạng mục kiểm tra | Thao tác đột biến thử nghiệm | Kết quả quan sát | Kết luận chất lượng |
-  |:---|:---|:---|:---:|
-  | **Cơ chế Fail-Fast của SESSION_SECRET** | Chạy Node ở `NODE_ENV=production` và gán `SESSION_SECRET=""` | Quá trình khởi động bị chặn ngay lập tức, tiến trình exit code 1 với log cảnh báo rõ ràng. | ✅ Test bắt lỗi thật, không phải test tượng trưng |
-  | **Cơ chế bảo vệ IDOR** | Gửi request xem bệnh án của bệnh nhân khác | Trả về mã HTTP 403 Forbidden, test assert `res.statusCode === 403` pass. | ✅ Test assert nghiêm ngặt |
-  | **Chống Double-Booking** | Đặt 2 lượt khám cùng bác sĩ trùng giờ | Bị chặn và báo lỗi trùng khung giờ khám, test assert `error_message` pass. | ✅ Logic bắt lỗi chặt chẽ |
+## 5. Quét tồn dư (Phase 2)
+
+| Mẫu | Kết quả |
+|---|---|
+| `console.log/debug` | 4 (banner khởi động `server.ts:2780-2783`) — chấp nhận |
+| `debugger`, `@ts-ignore`, `eval(`, `TODO|FIXME|HACK` | 0 |
+| `as any` | 47 (`strict:false`) |
+| `redirect('back')` | **14** (`server.ts:700,715,751,762,844,848,…`) — hỏng trên Express 5 |
+| `hashSync('password'` | **2** (`server.ts:720` khách, `:1824` lễ tân đặt hộ) |
+| `res.status(403).redirect` | 4 (thực tế 302) |
+| SQL nối chuỗi | 0 |
+| `.env`/`.sqlite`/khoá bị track | 0 |
+| File 0-byte | 0 |
+| `<%-` in raw trong views | 26 (badge helpers, layout body, `main.ejs:243`, `articles/detail.ejs:68`) |
 
 ---
 
-## 8. SMOKE TEST LUỒNG SỐNG CÒN THỜI GIAN THỰC (PHASE 5)
-Chạy server thật trên port 3000 và thực hiện kiểm thử endpoint qua `curl`:
+## 6. Kết quả chạy lại (Phase 3)
 
-| STT | Luồng kiểm thử | Lệnh gọi | Kết quả mong đợi | Kết quả thực tế | Đánh giá |
-|:---:|:---|:---|:---:|:---:|:---:|
-| 1 | Trang chủ công khai | `GET http://localhost:3000/` | HTTP 200 OK | **HTTP 200** | 🟢 ĐẠT |
-| 2 | Danh sách bác sĩ | `GET http://localhost:3000/doctors` | HTTP 200 OK | **HTTP 200** | 🟢 ĐẠT |
-| 3 | Trang đặt lịch khám | `GET http://localhost:3000/appointments/book` | HTTP 200 OK | **HTTP 200** | 🟢 ĐẠT |
-| 4 | Chặn truy cập Admin trái phép | `GET http://localhost:3000/admin/dashboard` | HTTP 302 Redirect về `/login` | **HTTP 302** | 🟢 ĐẠT |
-| 5 | Đăng nhập sai mật khẩu | `POST http://localhost:3000/login` (sai mật khẩu) | HTTP 302 Redirect về `/login` kèm flash error | **HTTP 302** | 🟢 ĐẠT |
-
----
-
-## 9. REGRESSION & TÁC DỤNG PHỤ (PHASE 6)
-- **Kiểm tra chức năng cũ**: Không có bất kỳ chức năng cũ nào bị hỏng hay thay đổi hành vi. Toàn bộ 4 vai trò (Admin, Doctor, Receptionist, Patient) và màn hình sảnh chờ hoạt động bình thường.
-- **Kiểm tra tương thích ngược**: Trong môi trường development/test, nếu chưa có `.env`, server vẫn cung cấp fallback developer placeholder an toàn để lập trình viên và test suite chạy mượt mà mà không bị crash.
-- **Rủi ro phát sinh**: Không có rủi ro bảo mật mới phát sinh.
+| Bước | Kết quả |
+|---|---|
+| `git clone` + `npm ci` | ✅ 130 package, 0 vulnerabilities, lockfile không đổi |
+| `npm run build` (tsc) | ✅ 0 lỗi |
+| `npm test` trên **clone sạch** (DB mới) | ❌ FAIL tại "Trang chủ hiển thị bình thường": `SqliteError: no such column: status`; DB mới `users=0`, `specialties` thiếu `image,status` |
+| `npm test` ×3 trên **bản sao DB local** (mỗi lần DB mới) | ✅ 87/87, 87/87, 87/87 — không flaky |
+| `node test_render_views.js` | ✅ 48 PASS / 0 FAIL (nhưng mock thủ công, hard-code `D:/MediBook`) |
+| Smoke route (51 path / 4 vai trò) | ✅ 0 NOK; RBAC âm: patient→admin/doctor/receptionist/backup = 302 `/`; anon→`/login` |
+| Production không `SESSION_SECRET` | ✅ exit 1 |
+| Migration trên DB trống | ❌ xem trên (schema code ≠ schema code truy vấn); `seed.sql` lỗi `no column named image` |
+| Lint / coverage | Không có |
 
 ---
 
-## 10. ĐIỂM SỐ & PHÁN QUYẾT TỔNG THỂ (PHASE 7)
+## 7. Chất lượng test (Phase 4)
 
-$$\text{Tỷ lệ lời khai đúng} = \frac{8 \text{ (CONFIRMED)}}{8 \text{ (Tổng mục khai)}} \times 100 = \mathbf{100.0\%}$$
+**Số liệu:** 1 file test chính, 87 `assert(` (khớp 87 PASS), 0 `skip/only/todo`, 1 assertion chỉ kiểm kiểu (`typeof`). Test dùng HTTP thật + SQLite thật (không mock xác thực) — tốt. Điểm yếu: dùng DB thật mặc định; runner **dừng ở assertion đầu tiên đỏ**; phụ thuộc DB local cũ; 0 test cho admin CRUD POST, hồ sơ, xin nghỉ phép, live board, tin tức.
 
-- **Số mục CONFIRMED (✅)**: 8 / 8
-- **Số mục FALSE-CLAIM (❌)**: 0
-- **Số mục REGRESSION (🔴)**: 0
-- **Điểm tin cậy (0 - 100)**: **`100`**
-- **Kết luận chung**: **TIN ĐƯỢC TUYỆT ĐỐI**. Work Item W-01 đã được hoàn thành chính xác, đầy đủ và đạt mọi tiêu chí trong Definition of Done.
-
----
-
-## 11. DANH MỤC VIỆC CÒN PHẢI LÀM (R-xx)
-
-| ID | Work Item | Mức ưu tiên | Mục tiêu | File liên quan | Việc cần làm |
-|:---|:---:|:---:|:---|:---|:---|
-| **R-01** | **W-02** | **P0** | Endpoint Health Check `/health` | `src/server.ts` | Thêm route `GET /health` truy vấn `SELECT 1` SQLite và trả về JSON status để load balancer/UptimeRobot giám sát. |
-| **R-02** | **W-03** | **P0** | Security Headers & Rate Limit | `src/server.ts`, `package.json` | Cài đặt `helmet` để ẩn `X-Powered-By` và thêm `express-rate-limit` chống brute-force đăng nhập tại `/login`. |
-| **R-03** | **W-04** | **P0** | Tài liệu Triển khai `DEPLOY.md` | `DEPLOY.md` | Soạn thảo hướng dẫn deploy chi tiết trên Ubuntu VPS + Nginx + PM2, cảnh báo bắt buộc dùng ổ đĩa bền vững cho SQLite. |
-| **R-04** | **W-05** | **P1 (MUST)** | Chính sách Quyền riêng tư & Điều khoản y tế | `views/pages/privacy.ejs`, `src/server.ts` | Xây dựng trang `/privacy` và `/terms` tuân thủ Nghị định 13/2023/NĐ-CP về bảo vệ dữ liệu cá nhân y tế. |
+| Mục | Phá cái gì (trên bản clone) | Test có đỏ? | Kết luận |
+|---|---|---|---|
+| C-05 | M1a: bỏ check trùng slot ở app | Xanh | App-check thừa; DB index đủ chặn (tốt, phòng thủ chiều sâu) |
+| C-05 | M1b: M1a + bỏ UNIQUE index | **Đỏ** (`Partial Unique Index … tồn tại`) | Bảo vệ, nhưng bằng assertion "index tồn tại" |
+| C-11 | M2: bỏ chặn IDOR lịch khám | **Đỏ** | Test mạnh |
+| C-11 | M3: bỏ cô lập bác sĩ | **Đỏ** | Test mạnh |
+| C-10 | M4: bỏ chặn bác sĩ tự đặt lịch | **Đỏ** | Test mạnh — nhưng chỉ phủ nhánh đã đăng nhập |
+| C-07 | M5: giảm giá cho mọi khoảng ngày | **Đỏ** | Test mạnh |
+| C-11 | M6: `requireRole` luôn cho qua | **Đỏ** (pass=13) | Test mạnh |
+| C-06 | M7: bumping không tìm ra ca | **Đỏ** | Test mạnh |
+| C-12 | M8: bỏ trừ kho thuốc | **Xanh** 87/87 | ⚠ **Test vô giá trị** cho kho |
+| C-02/Core | M9: bỏ chặn nghỉ phép | **Đỏ** | Test mạnh |
+| C-01 | M10: bỏ fail-fast `SESSION_SECRET` | **Xanh** | ⚠ Không test cho cấu hình production |
 
 ---
 
-## 12. ĐIỀU CHƯA CHẮC CHẮN (❓) VÀ HƯỚNG DẪN NGƯỜI DÙNG TỰ THỬ
-- Hiện tại toàn bộ thử nghiệm đã được kiểm chứng độc lập trên môi trường Node.js local.
-- **Cách người dùng tự kiểm tra cơ chế Fail-Fast**:
-  1. Mở PowerShell trong thư mục `D:\MediBook`.
-  2. Chạy lệnh:
-     ```powershell
-     $proc = Start-Process -FilePath "node" -ArgumentList "-e", "`"process.env.NODE_ENV='production'; process.env.SESSION_SECRET=''; require('./dist/server');`"" -PassThru -Wait -NoNewWindow
-     Write-Output "ExitCode: $($proc.ExitCode)"
-     ```
-  3. Màn hình sẽ xuất hiện thông báo lỗi `❌ LỖI KHỞI ĐỘNG (FATAL)...` và in ra `ExitCode: 1`.
+## 8. Smoke test luồng sống còn (Phase 5)
+
+| Luồng | Đường đúng | Đường sai | Kết quả |
+|---|---|---|---|
+| Đăng nhập/RBAC | `patient@medibook.local`/`password` → `/my-appointments` | sai mật khẩu ×15; patient→`/admin/*` | ✅ đúng / ⚠ **không giới hạn thử sai**; RBAC chặn đúng |
+| Đặt lịch (đã đăng nhập) | Test nhóm 4 | trùng slot, nghỉ phép, quá khứ | ✅ (test) |
+| Vòng đời khám (đặt→check-in→khám→thu tiền→đánh giá) | Test nhóm 5 | IDOR, bác sĩ khác (nhóm 10) | ✅ (test) |
+| Đặt lịch **khách** | Tạo tài khoản mới + auto-login | email đã tồn tại (admin/doctor/lễ tân) | ❌ **đăng nhập vào tài khoản nạn nhân**; bác sĩ tự đặt lịch được |
+| Bảng gọi số công khai | `/api/queue/live` | — | ⚠ 200 không cần đăng nhập (PII) |
+| Clone sạch | `npm ci && build && test` | — | ❌ trang chủ lỗi |
+
+---
+
+## 9. Regression & tác dụng phụ (Phase 6)
+
+- Chức năng đã ✅ ở audit cũ **không thụt lùi**: 87/87 (nhiều hơn 52) + 51/51 route trên DB local; không thấy lỗi mới do 3 commit gần nhất.
+- Lỗi **tồn tại từ trước, không phải regression**: ATO + mật khẩu mặc định (từ `6590313`), `redirect('back')` (từ commit đầu), schema thiếu cột (xác nhận ở 4 commit mốc).
+- **Tác dụng phụ bảo mật mới do thêm tính năng:** nhánh khách tạo thêm 1 đường lách guard "bác sĩ tự đặt lịch" (C-10); tính năng giường nội trú/live board thêm bề mặt PII công khai.
+- Điểm Chất lượng & rủi ro: audit cũ chấm Bảo mật/Toàn vẹn/Hiệu năng/UX/Bảo trì đều 🟢; audit mới: Bảo mật 🔴 (xác thực/CSRF/XSS), Dữ liệu 🟡, Vận hành 🟡, Bảo trì 🟠.
+
+---
+
+## 10. Điểm số
+
+| Nhãn | Số lời khai | Điểm | Tổng |
+|---|---|---|---|
+| ✅ | 11 (C-01,02,03,05,06,07,08,09,11,13,14) | 1.0 | 11.0 |
+| 🟡 | 0 | 0.7 | 0 |
+| 🟠 | 4 (C-04,10,12,16) | 0.4 | 1.6 |
+| ❌ | 1 (C-15) | 0 | 0 |
+| 🔴 | 0 | −0.5 | 0 |
+
+- **Tỷ lệ lời khai đúng** = (✅ 11 + 🟡 0) / 16 = **68.8 %**. Điểm theo trọng số nhãn = 12.6 / 16 = 78.8 %.
+- **Điểm tin cậy** = 68.8 − 10 (1 FALSE-CLAIM) − 9 (3 điểm yếu test: kho, fail-fast, runner dừng sớm) − 10 (clone sạch không chạy) ≈ **40 / 100**.
+- **Tiến độ dự án sau sửa** (cùng công thức/trọng số audit): **73.3 %** ước tính (26.4/36), **52.8 %** VERIFIED; so với "100 %" ở audit cũ: **−26.7 điểm %** (điều chỉnh về sự thật).
+- **Kết luận: TIN MỘT PHẦN.**
+
+---
+
+## 11. Việc còn phải làm (R-xx)
+
+**R-01 (P0, M) — Clone sạch phải chạy & test được**
+- Hiện trạng: 🟠 C-16; `src/db.ts` (`CREATE TABLE specialties` không có `image,status`), `database/schema.sql`+`seed.sql` là MySQL, `server.ts:132` truy vấn `status`.
+- Việc: thêm cột thiếu vào `initDb()` (mọi bảng/cột code dùng), seed SQLite hợp lệ (script/`users=0`), bỏ SQL MySQL; cho test dùng `DATABASE_PATH` tạm.
+- Hoàn thành: clone sạch → `npm ci && npm run build && npm test` = 87/87 PASS; không đụng `database/medibook.sqlite`.
+- Phụ thuộc: B-02 (audit). Không sửa: logic nghiệp vụ, unique index slot.
+
+**R-02 (P0, M) — Đóng đường đặt lịch khách (ATO, mật khẩu mặc định, lách guard bác sĩ)**
+- Hiện trạng: ❌/🟠 C-15, C-10; `server.ts:710-742`, `:1824`.
+- Việc: không auto-login user đã tồn tại; bỏ `hashSync('password')` (cả `:1824`); áp guard "bác sĩ không tự đặt" cho mọi nhánh.
+- Hoàn thành: test mới — khách dùng email admin/doctor ⇒ không có session; đăng nhập `password` với tài khoản vừa tạo thất bại; bác sĩ (khách) đặt slot của mình ⇒ bị từ chối.
+- Phụ thuộc: B-01 (audit).
+
+**R-03 (P0, S) — Sửa `res.redirect('back')` ×14 và XSS `main.ejs:243`** (audit B-03/B-04). Hoàn thành: không còn `redirect('back')`; payload `</script><img onerror>` được escape.
+
+**R-04 (P1, M) — Kho thuốc đúng nghĩa**
+- Hiện trạng: 🟠 C-12; `server.ts:1523-1556`.
+- Việc: bọc trong transaction, chặn kê quá tồn, hoàn kho khi sửa đơn, lấy giá từ `medicines.unit_price` thay vì form.
+- Hoàn thành: test kiểm tồn trước/sau (giảm đúng `q`), sửa đơn không trừ đôi, kê quá tồn bị từ chối; mutation M8 phải **đỏ**.
+
+**R-05 (P1, S) — Test cho cấu hình production & runner không dừng sớm**: test spawn `NODE_ENV=production` thiếu `SESSION_SECRET` ⇒ exit 1 (M10 đỏ); đổi `assert` thành thu thập lỗi, báo tổng kết cuối.
+
+**R-06 (P1, S) — Tách cổng admin/lễ tân rõ ràng (C-04)**: quyết định admin có được vào `/receptionist/*` không; nếu không → bỏ `'admin'` khỏi `requireRole` ở route lễ tân và thêm test.
+
+**R-07 (P2, S) — Phí khám lấy từ `services.price`** (`server.ts:1432`), không hard-code 200 000.
+
+**R-08 (P2, S) — Trả đúng 403** thay vì `status(403).redirect` (`middleware.ts:35`, `server.ts:1246,1271,1296`).
+
+---
+
+## 12. Điều chưa chắc chắn (❓) & cách tự thử
+
+- **Trừ kho lần 2 khi lưu lại đơn thuốc** (C-12) mới ở mức đọc code. Tự thử: khám xong 1 ca → mở lại `/doctor/examine/:id` → lưu lại cùng đơn → xem `medicines.stock_quantity` có giảm tiếp không.
+- **Lệch số slot T2/CN** của vài bác sĩ (C-02): chưa phân biệt do lịch đặt thử hay do `doctor_schedules`; tự thử trên DB sạch sau R-01.
+- **Production thật** (HTTPS, reverse proxy, cookie `secure`) chưa kiểm.
+- Cách tự tái hiện nhanh lỗi clone sạch: `git clone <repo> x && cd x && npm ci && npm run build && npm test`.
 
 ---
 
 ## 13. HANDOFF CHO AI KHÁC
-```text
-DỰ ÁN: MediBook (D:\MediBook)
-HIỆN TRẠNG ĐÃ KIỂM CHỨNG: Work Item W-01 ĐẠT 100% CONFIRMED (0 false-claim, 0 regression).
-TIẾN ĐỘ KIỂM THỬ: 52/52 test suites PASS, 45/45 views PASS, build 0 lỗi.
-MỤC TIÊU TIẾP THEO: Triển khai Work Item W-02 (Endpoint Health Check GET /health).
-RÀNG BUỘC PHẢI GIỮ:
-  - Tiếp tục sử dụng Node 22 native loadEnvFile, không thêm dependency không cần thiết.
-  - Bảo toàn 100% Prepared Statements của better-sqlite3 và cấu hình WAL mode.
-  - Không phá vỡ 52 integration tests hiện có khi thêm route /health.
-```
 
-> **Câu lệnh mẫu cho người dùng dán kèm:**  
-> *"Đọc `PROJECT_VERIFY.md`. Với mục R-01 (Work Item W-02: Endpoint Health Check /health), viết cho tôi một prompt hoàn chỉnh để AI Agent code làm nốt, gồm bối cảnh, file liên quan, yêu cầu, tiêu chí hoàn thành kiểm tra được, và những gì KHÔNG được sửa."*
+- **Tình trạng thật:** logic lâm sàng (đặt lịch, hàng đợi, khám, thu tiền, giường, IDOR) chạy đúng và có test mạnh **trên DB local cũ**; **clone sạch không chạy** (schema thiếu cột); bảo mật xác thực/phiên yếu.
+- **Chắc chắn (✅):** C-01,02,03,05,06,07,08,09,11,13,14. **Chưa chắc:** C-04, C-10, C-12, C-16 (🟠); C-15 sai.
+- **Thứ tự làm:** R-01 → R-02 → R-03 → R-04 → R-05 → R-06.
+- **Giữ nguyên:** unique index `uq_appointment_doctor_slot` (`db.ts:457`), thuật toán hàng đợi ưu tiên/bumping, 87 test hiện có phải vẫn PASS (và chạy được trên clone sạch).
+- **Cấm động tới:** `package-lock.json`, `.env*`, `database/medibook.sqlite*` (dữ liệu local), `docs/`.
+- **Bản sao tạm của verifier:** `%TEMP%\mb-verify-A` (có thể xoá); script probe nằm ở thư mục scratch ngoài dự án.
+
+> Câu dán kèm: *"Đọc PROJECT_VERIFY.md. Với mỗi mục R-xx (từ P0), viết cho tôi một prompt hoàn chỉnh để AI Agent sửa nốt, gồm bối cảnh, file liên quan, yêu cầu, tiêu chí hoàn thành kiểm tra được, và những gì KHÔNG được sửa."*

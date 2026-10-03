@@ -1,244 +1,249 @@
-# 📋 BÁO CÁO KIỂM TOÁN HIỆN TRẠNG DỰ ÁN (PROJECT AUDIT REPORT)
-**Dự án**: MediBook - Nền tảng Đặt lịch Khám & Quản lý Phòng khám Thông minh  
-**Vị trí Codebase**: `D:\MediBook` (Ổ đĩa `Study (D:)`)  
-**Thời điểm kiểm toán**: 2026-10-03T11:00:00+07:00  
-**Kiểm toán viên**: Senior Technical Auditor & Tech Lead  
-**Tiêu chuẩn kiểm toán**: Tuân thủ nghiêm ngặt 7 Phase Protocol của `/project-audit-scanner` (100% bằng chứng thực tế, không đoán, không khen)  
+# PROJECT_AUDIT.md — MediBook
+
+> Kiểm toán ngày 2026-10-04 · commit `bec294b` (nhánh `main`) · Auditor: chỉ-đọc (không sửa file dự án; mọi thí nghiệm chạy trên **bản sao DB tạm** `VACUUM INTO` ngoài dự án).
+> Bằng chứng = `file:dòng` hoặc lệnh đã chạy. README/commit message KHÔNG được dùng làm bằng chứng.
 
 ---
 
-## 1. TÓM TẮT ĐIỀU HÀNH
-- **Bản chất dự án**: MediBook là hệ thống quản lý phòng khám đa khoa nguyên khối (Node.js Express 5 + TypeScript + SQLite WAL + EJS), hỗ trợ 4 vai trò độc lập (Admin, Doctor, Receptionist, Patient) kèm cơ chế đa vai trò (Multi-Role Switcher), phân luồng cấp cứu Triage (`CC-`, `UT-`), và màn hình sảnh chờ TV có phát thanh loa tiếng Việt tự động.
-- **Tiến độ VERIFIED (Code chạy thật & Test PASS)**: **`100.0%`** (32/32 Use Case nghiệp vụ cốt lõi đã có code thực thi và kiểm chứng bằng test tự động).
-- **Tiến độ ước tính**: **`100.0%`** (Độ tin cậy: **CAO TUYỆT ĐỐI**).
-- **3 Điểm mạnh lớn nhất**:
-  1. *Quy trình nghiệp vụ lâm sàng khép kín & bảo đảm ACID*: Đặt lịch khám -> Phân tầng cấp cứu Triage (`CC-`, `UT-`) -> Gọi số sảnh chờ tự động (phát loa Web Speech + chuông Ding-Dong) -> Khám bệnh, đo sinh hiệu (HA, mạch, nhiệt độ, SpO2, BMI), phân loại Ngoại trú / Nội trú (xếp phòng/giường) -> Kê đơn thuốc điện tử snapshot giá -> Tự động trừ tồn kho dược phẩm -> Quyết toán viện phí & In biên lai tích hợp VietQR động NAPAS 24/7.
-  2. *Cơ chế Đa Vai Trò (Multi-Role) & Bảo mật sâu*: Bảng `user_roles` cho phép 1 tài khoản nắm đồng thời nhiều vai trò (Admin + Bác sĩ), chuyển đổi tức thì (`/switch-role/:role`). Ngăn chặn triệt để lỗ hổng IDOR trên y bạ và cô lập dữ liệu bệnh nhân giữa các bác sĩ (Doctor Data Isolation).
-  3. *Chất lượng Code & Kiểm thử tự động hoàn chỉnh*: 52/52 kịch bản E2E test PASS 100%, 45/45 EJS views dry-run thành công, 100% SQL sử dụng Prepared Statements an toàn chống SQL Injection, 9 B-Tree Secondary Indexes tăng tốc truy vấn, tích hợp sao lưu CSDL một chạm (`/admin/backup-db`).
-- **3 Rủi ro & Điểm cần lưu ý**:
-  1. *Giới hạn cơ sở dữ liệu phân tán*: SQLite WAL hoạt động tối ưu cho phòng khám đơn cơ sở (<100 nhân viên thao tác đồng thời), nhưng nếu mở rộng thành chuỗi phòng khám liên cơ sở thì cần chuyển sang PostgreSQL/MySQL.
-  2. *Cơ chế Realtime qua HTTP Polling*: Màn hình TV sảnh chờ đang tự động polling 4s (`/api/queue/live`), hoạt động ổn định nhưng nếu có hàng trăm TV màn hình cùng kết nối thì nên cân nhắc nâng cấp lên WebSocket/Socket.io.
-  3. *Session Secret & Biến môi trường*: Secret session hiện được đặt mặc định trong code, khuyến nghị nạp từ file cấu hình `.env` cho môi trường production ngoài Internet.
-- **Việc nên làm ngay**: Khởi chạy dự án bằng lệnh `npm start` và trải nghiệm toàn bộ hệ thống tại `http://localhost:3000`.
+## 1. Tóm tắt điều hành
+
+MediBook là web đặt lịch khám + quản lý phòng khám (4 vai trò: bệnh nhân / lễ tân / bác sĩ / admin) — Node.js + Express 5 + EJS + SQLite (better-sqlite3), viết bằng TypeScript.
+
+| Chỉ số | Giá trị |
+|---|---|
+| **Tiến độ VERIFIED** (chỉ tính ✅) | **52.8 %** (19 / 36 điểm trọng số) |
+| **Tiến độ ước tính** | **73.3 %** (26.4 / 36) — độ tin cậy: **vừa** |
+
+**3 điểm mạnh**
+1. Nghiệp vụ lâm sàng cốt lõi chạy thật & có test: đặt lịch → check-in → hàng đợi ưu tiên → khám/kê đơn → thu tiền (`npm test` = 87/87 PASS, build 0 lỗi).
+2. Chống double-booking ở tầng DB (`uq_appointment_doctor_slot`, `src/db.ts:457`) + test race-condition; chống IDOR hồ sơ bệnh án.
+3. 51/51 trang (4 vai trò + public) render đúng; RBAC chặn đúng (patient → `/admin/*` bị redirect).
+
+**3 rủi ro lớn nhất (đã tái hiện bằng lệnh chạy thật)**
+1. 🔴 **Chiếm tài khoản qua "đặt lịch khách"**: gửi form với email của admin/doctor/lễ tân → được đăng nhập vào đúng user đó (`src/server.ts:718-741`). Tài khoản khách mới còn có mật khẩu mặc định `password` (`:720`).
+2. 🔴 **Bản clone mới KHÔNG chạy được**: `db.ts` không tạo cột `specialties.status/image` mà code truy vấn ⇒ trang chủ 500 (`no such column: status`); `schema.sql`/`seed.sql` là dialect **MySQL** nên không cứu được; DB mới có **0 user**. "87/87 PASS" chỉ đúng với file SQLite local cũ (không nằm trong git).
+3. 🔴 **XSS lưu trữ** qua tên người dùng (`views/layouts/main.ejs:243`) + `res.redirect('back')` ×14 **hỏng trên Express 5** (Location = chuỗi `back`).
+
+**Việc nên làm ngay:** B-01 → B-04 (P0) bên dưới.
 
 ---
 
-## 2. TỔNG QUAN & KIẾN TRÚC
+## 2. Tổng quan & kiến trúc
 
-### 2.1. Mục đích & Đối tượng sử dụng
-- **Mục đích**: Tự động hóa và số hóa toàn diện quy trình tiếp đón người bệnh, phân tầng ưu tiên cấp cứu, khám chữa bệnh lâm sàng, kê đơn điện tử, trừ tồn kho thuốc, thu viện phí và báo cáo tài chính phòng khám đa khoa.
-- **Người dùng (Actors)**:
-  - `Bệnh nhân (Patient)`: Tra cứu bác sĩ/chuyên khoa, đặt lịch khám trực tuyến (chọn diện ưu tiên), xem lịch của tôi, xem kết quả khám & đơn thuốc, đánh giá bác sĩ 5 sao.
-  - `Lễ tân & Thu ngân (Receptionist)`: Tiếp đón bệnh nhân vãng lai, check-in phân luồng cấp cứu Triage (mã `CC-`, `UT-`), thu viện phí (tiền khám + tiền thuốc), in hóa đơn kèm mã VietQR động.
-  - `Bác sĩ (Doctor)`: Quản lý hàng đợi ưu tiên theo phòng khám, gọi bệnh nhân (kích hoạt loa TV sảnh chờ), khám bệnh, đo sinh hiệu (HA, mạch, nhiệt độ, SpO2, BMI), chẩn đoán ICD-10, phân loại Nội trú (xếp buồng/giường) / Ngoại trú, kê đơn thuốc điện tử nhiều thuốc kèm tự động trừ tồn kho, quản lý ca trực & xin nghỉ phép.
-  - `Quản trị viên (Admin)`: Quản trị đa vai trò người dùng, bác sĩ, chuyên khoa, dịch vụ, kho thuốc & tồn kho (có bộ lọc tìm kiếm tức thì), duyệt lịch trực, tải file sao lưu database `.sqlite` một chạm, xem báo cáo doanh thu KPI và audit log.
-  - `Màn hình gọi số sảnh chờ (Live TV Display)`: Bảng điện tử tự động cập nhật số đang khám và danh sách chờ theo phòng, tích hợp phát thanh loa mời bệnh nhân và chuông báo Ding-Dong.
+- **Người dùng:** bệnh nhân (kể cả khách), lễ tân/thu ngân, bác sĩ, quản trị viên; 1 người nhiều role (`user_roles`) + `/switch-role/:role`.
+- **Stack:** Node 22.22.2, Express 5.2.1, EJS 6, express-session (MemoryStore mặc định), connect-flash, bcryptjs, better-sqlite3 11.8.1, TypeScript 7.0.2 (`strict:false`).
+- **Entry point:** `server.js` → `dist/server.js` (build từ `src/server.ts`). Không có Dockerfile, CI, lint.
+- **Cách chạy (lệnh thật):** `npm install` → `npm run build` (tsc) → `npm start` (cổng `PORT`, mặc định 3000) → `npm test` (chạy `test_full_suite.js`, cổng 3001).
 
-### 2.2. Stack công nghệ & Thống kê Codebase thật
-- **Nền tảng & Framework**: Node.js `v22.22.2`, Express `v5.2.1`, TypeScript `v7.0.2` (biên dịch ra `dist/server.js`).
-- **Cơ sở dữ liệu**: SQLite 3 qua thư viện `better-sqlite3` `v11.8.1`, kích hoạt chế độ `WAL (Write-Ahead Logging)`, `foreign_keys = ON` và 9 Secondary B-Tree Indexes.
-- **Template Engine**: EJS `v6.0.1` với 4 Layouts chuyên biệt (`main.ejs`, `admin.ejs`, `doctor.ejs`, `receptionist.ejs`).
-- **Thống kê mã nguồn thực tế (loại trừ `node_modules`, `dist`, `.git`, `.vscode`)**:
-  - Tổng số file dự án: **93 files**.
-  - Tổng dòng code text/code: **14,408 lines**:
-    - **EJS Templates**: 45 files - **4,998 lines**
-    - **TypeScript Server & Logic**: 4 files - **2,431 lines** (`server.ts`: 2220 lines, `db.ts`: 382 lines, `helpers.ts`: 85 lines, `middleware.ts`: 36 lines)
-    - **CSS Styling**: 2 files - **2,489 lines** (`main.css`: 1835 lines, `admin.css`: 654 lines)
-    - **JavaScript Tests & Client Scripts**: 6 files - **1,039 lines** (`test_full_suite.js`: 534 lines, `test_render_views.js`: 107 lines, `queue.js`: 290 lines, `booking.js`: 122 lines, `app.js`: 112 lines, `server.js`: 9 lines)
-    - **SQL Schema & Seed**: 2 files - **455 lines** (`schema.sql`: 293 lines, `seed.sql`: 162 lines)
-    - **Markdown Docs & Reports**: 8 files - **993 lines**
-    - **JSON Configs**: 3 files - **2,003 lines** (`package.json`, `package-lock.json`, `tsconfig.json`)
-  - Số lượng Route Handlers đăng ký trong `src/server.ts`: **90 endpoints**.
-  - Số lượng Bảng trong SQLite: **23 tables**.
-
-### 2.3. Sơ đồ Kiến trúc & Luồng Dữ liệu
 ```mermaid
-flowchart TD
-    subgraph ClientLayer["Giao Diện Người Dùng (Responsive Web)"]
-        PatientPortal["Cổng Bệnh nhân (Web/Mobile)"]
-        RecepDesk["Quầy Tiếp đón & Thu ngân (POS Web)"]
-        DoctorDesk["Bàn khám Bác sĩ (Clinic Web/Tablet)"]
-        AdminDesk["Bảng Quản trị Admin (Dashboard Web)"]
-        TVBoard["Màn hình Sảnh chờ (TV Fullscreen + Web Speech)"]
-    end
-
-    subgraph MiddlewareLayer["Tầng Trung Gian & Bảo Mật"]
-        AuthMW["Session & RBAC Middleware"]
-        RoleSwitcher["Multi-Role Switcher Engine (/switch-role/:role)"]
-        SecurityMW["IDOR Protection & Doctor Data Isolation Guard"]
-    end
-
-    subgraph ServiceLayer["Tầng Xử Lý Nghiệp Vụ (90 Endpoints)"]
-        BookingEngine["Module Đặt lịch (Chống quá khứ & Double-booking)"]
-        TriageQueue["Module Điều phối Triage (Cấp cứu CC- / Ưu tiên UT-)"]
-        ClinicalExam["Module Khám lâm sàng, Sinh hiệu & Đơn thuốc (Trừ kho tự động)"]
-        CashierPOS["Module Thu viện phí & VietQR NAPAS 24/7"]
-        BackupModule["Module Sao lưu CSDL 1-chạm (/admin/backup-db)"]
-    end
-
-    subgraph StorageLayer["Cơ Sở Dữ Liệu SQLite (23 Tables - WAL Mode + 9 Indexes)"]
-        DB[(medibook.sqlite: users, user_roles, patients, doctors, appointments, examination_queues, medical_records, prescriptions, prescription_items, medicines, payments...)]
-    end
-
-    ClientLayer <--> MiddlewareLayer
-    MiddlewareLayer --> ServiceLayer
-    ServiceLayer <--> StorageLayer
-    TVBoard -.->|Auto Polling 4s| TriageQueue
+flowchart LR
+  Browser -->|HTTP form/EJS + 3 JS nhỏ| Express[src/server.ts 2788 dòng - toàn bộ route]
+  Express --> MW[src/middleware.ts requireAuth/requireRole]
+  Express --> H[src/helpers.ts badge/format]
+  Express --> DB[(SQLite database/medibook.sqlite - WAL)]
+  DBinit[src/db.ts initDb: 26 CREATE TABLE + index + seed danh mục] --> DB
+  Express -->|res.render| Views[views/*.ejs 48 file, 4 layout]
 ```
 
----
+**Số liệu (lệnh thật):** 99 file tracked (`git ls-files`); `src/*.ts` = 3 735 dòng (server 2 788, db 812, helpers 94, middleware 41); `views` 48 file EJS (~5 780 dòng không rỗng); `public/assets` CSS ~2 490 + JS 3 file (~490); test 2 file (884 + ~100 dòng); 20 commit. Route: ~100 handler trong `src/server.ts` (grep `app.(get|post|use)`).
 
-## 3. BẢNG TÍNH NĂNG CHI TIẾT (KIỂM TOÁN TỪNG CHỨC NĂNG)
-
-| ID | Tên tính năng | Nhóm Actor | Trạng thái | Bằng chứng Code thực tế | Kết quả kiểm chứng | Còn thiếu |
-|:---|:---|:---|:---:|:---|:---:|:---|
-| **F-01** | Đăng nhập hệ thống & Phân quyền RBAC | Dùng chung | ✅ VERIFIED | `src/server.ts:147-200`, `src/middleware.ts:1-36` | Test PASS (Nhóm 2 & 3) | Không |
-| **F-02** | Đăng xuất an toàn | Dùng chung | ✅ VERIFIED | `src/server.ts:273-285` | Test PASS (Nhóm 3) | Không |
-| **F-03** | Chuyển đổi vai trò làm việc linh hoạt (`Switch Role`) | Dùng chung | ✅ VERIFIED | `src/server.ts:252-272`, `table user_roles` | Test PASS (Nhóm 7) | Không |
-| **F-04** | Quản lý hồ sơ cá nhân & Đổi mật khẩu | Dùng chung | ✅ VERIFIED | `src/server.ts:842-865`, `src/server.ts:892-947`, `views/profile/index.ejs` | Test PASS | Không |
-| **F-05** | Trang chủ & Khám phá Chuyên khoa | Bệnh nhân/Khách | ✅ VERIFIED | `src/server.ts:104-146`, `views/home/index.ejs` | Test PASS (Nhóm 1) | Không |
-| **F-06** | Tra cứu danh sách & Hồ sơ chi tiết Bác sĩ | Bệnh nhân/Khách | ✅ VERIFIED | `src/server.ts:346-410`, `views/doctors/index.ejs`, `views/doctors/detail.ejs` | Test PASS (Nhóm 1) | Không |
-| **F-07** | Đặt lịch khám trực tuyến (Chống quá khứ & Double-booking) | Bệnh nhân | ✅ VERIFIED | `src/server.ts:411-518`, `src/server.ts:519-674`, `views/appointments/book.ejs` | Test PASS (Nhóm 4) | Không |
-| **F-08** | Phân loại Đối tượng ưu tiên khi đặt lịch (Triage Online) | Bệnh nhân | ✅ VERIFIED | `src/server.ts:530-570`, `views/appointments/book.ejs:106-140` | Test PASS (Nhóm 8) | Không |
-| **F-09** | Quản lý Lịch của tôi & Chi tiết phiếu khám | Bệnh nhân | ✅ VERIFIED | `src/server.ts:824-841`, `views/appointments/index.ejs` | Test PASS (Nhóm 3) | Không |
-| **F-10** | Hủy lịch hẹn khám trước giờ khám | Bệnh nhân | ✅ VERIFIED | `src/server.ts:742-776` | Test PASS | Không |
-| **F-11** | Xem Bệnh án điện tử & Đơn thuốc (Chống IDOR, Khổ in A4/A5) | Bệnh nhân | ✅ VERIFIED | `src/server.ts:692-741`, `views/appointments/detail.ejs` | Test PASS (Nhóm 5 & 10) | Không |
-| **F-12** | Đánh giá chất lượng Bác sĩ 5 sao | Bệnh nhân | ✅ VERIFIED | `src/server.ts:777-823`, `table reviews` | Test PASS (Nhóm 5) | Không |
-| **F-13** | Lưu Bác sĩ yêu thích (Bookmark) | Bệnh nhân | ✅ VERIFIED | `src/server.ts:866-891`, `table favorite_doctors` | Test PASS | Không |
-| **F-14** | Bàn tiếp đón Lễ tân & Tổng quan phân luồng | Lễ tân | ✅ VERIFIED | `src/server.ts:1288-1316`, `views/receptionist/dashboard.ejs` | Test PASS (Nhóm 5) | Không |
-| **F-15** | Check-in cấp STT phân tầng Triage (`CC-`, `UT-`, Online) | Lễ tân | ✅ VERIFIED | `src/server.ts:1317-1402`, `views/receptionist/checkin.ejs` | Test PASS (Nhóm 8) | Không |
-| **F-16** | Đăng ký khám vãng lai tại quầy (Walk-in Booking) | Lễ tân | ✅ VERIFIED | `src/server.ts:1447-1554`, `views/receptionist/walkin_booking.ejs` | Test PASS (Nhóm 5) | Không |
-| **F-17** | Thu viện phí & Quyết toán (Tiền khám + Tiền thuốc) | Thu ngân | ✅ VERIFIED | `src/server.ts:1555-1599`, `views/receptionist/payments.ejs` | Test PASS (Nhóm 5) | Không |
-| **F-18** | In biên lai thu tiền tích hợp mã VietQR động NAPAS 24/7 | Thu ngân | ✅ VERIFIED | `src/server.ts:1600-1638`, `views/receptionist/receipt_print.ejs` | Test PASS (Nhóm 5) | Không |
-| **F-19** | Màn hình sảnh chờ TV có Loa phát thanh & Chuông Ding-Dong | Sảnh chờ | ✅ VERIFIED | `src/server.ts:1403-1429`, `views/receptionist/live_board.ejs`, `public/assets/js/queue.js:80-160` | Test PASS (Web Audio & Speech) | Không |
-| **F-20** | API Realtime Hàng đợi phòng khám (`/api/queue/live`) | Sảnh chờ | ✅ VERIFIED | `src/server.ts:1430-1446`, `public/assets/js/queue.js:10-50` | Test PASS (HTTP 200 JSON) | Không |
-| **F-21** | Bảng điều khiển Bác sĩ & Tổng quan ca trực | Bác sĩ | ✅ VERIFIED | `src/server.ts:948-982`, `views/doctor/dashboard.ejs` | Test PASS (Nhóm 3) | Không |
-| **F-22** | Hàng đợi khám sắp xếp theo mức độ ưu tiên Triage | Bác sĩ | ✅ VERIFIED | `src/server.ts:983-1013`, `views/doctor/queue.ejs` | Test PASS (Nhóm 8) | Không |
-| **F-23** | Gọi bệnh nhân vào phòng (Cô lập bác sĩ - Doctor Isolation) | Bác sĩ | ✅ VERIFIED | `src/server.ts:1014-1088` | Test PASS (Nhóm 5 & 10) | Không |
-| **F-24** | Khám bệnh, nhập sinh hiệu (tự tính BMI), chẩn đoán ICD-10 | Bác sĩ | ✅ VERIFIED | `src/server.ts:1089-1180`, `views/doctor/examine.ejs` | Test PASS (Nhóm 5) | Không |
-| **F-25** | Phân loại Khám lần đầu / Tái khám, Ngoại trú / Nội trú (Phòng/Giường) | Bác sĩ | ✅ VERIFIED | `src/server.ts:1140-1185`, `views/doctor/examine.ejs:140-175`, `table medical_records` | Test PASS (Nhóm 9) | Không |
-| **F-26** | Kê đơn thuốc điện tử & Tự động trừ tồn kho dược phẩm | Bác sĩ | ✅ VERIFIED | `src/server.ts:1186-1260`, `table prescriptions, prescription_items` | Test PASS (Nhóm 9 & 10) | Không |
-| **F-27** | Quản lý ca trực tuần & Gửi đơn xin nghỉ phép | Bác sĩ | ✅ VERIFIED | `src/server.ts:1266-1287`, `views/doctor/schedule.ejs` | Test PASS | Không |
-| **F-28** | Dashboard KPI Admin & Báo cáo Doanh thu lũy kế | Admin | ✅ VERIFIED | `src/server.ts:1639-1672`, `views/admin/dashboard.ejs` | Test PASS (Nhóm 6) | Không |
-| **F-29** | Quản lý Người dùng & Gán đa vai trò (`user_roles`) | Admin | ✅ VERIFIED | `src/server.ts:1673-1818`, `views/admin/users/` | Test PASS (Nhóm 7) | Không |
-| **F-30** | Quản lý Bác sĩ, Chuyên khoa & Dịch vụ khám (Có Live Search) | Admin | ✅ VERIFIED | `src/server.ts:1819-1952`, `views/admin/doctors/`, `views/admin/specialties/`, `views/admin/services/` | Test PASS | Không |
-| **F-31** | Quản lý Kho dược phẩm & Tồn kho thuốc (Có Live Search) | Admin | ✅ VERIFIED | `src/server.ts:1953-1988`, `views/admin/medicines/` | Test PASS | Không |
-| **F-32** | Quản trị Lịch hẹn & Nhật ký kiểm toán bảo mật (`activity_logs`) | Admin | ✅ VERIFIED | `src/server.ts:2039-2159`, `src/server.ts:2185-2215`, `views/admin/appointments/`, `views/admin/logs/` | Test PASS (Nhóm 10) | Không |
+**Tích hợp ngoài:** không có (không email/SMS/thanh toán thật). VietQR = chỉ sinh nội dung/URL hiển thị trên biên lai (không gọi cổng thanh toán).
 
 ---
 
-## 4. KẾT QUẢ XÁC MINH BẰNG CHẠY THẬT (AUTOMATED & SMOKE TESTS)
+## 3. Bảng tính năng
 
-| Lệnh thực hiện | Kết quả | Chi tiết đầu ra thực tế | Trạng thái |
-|:---|:---:|:---|:---:|
-| `npm run build` (`tsc`) | **PASS** | Biên dịch toàn bộ TypeScript sang `dist/*.js` với **0 lỗi, 0 cảnh báo**. | 🟢 VERIFIED |
-| `node test_render_views.js` | **PASS** | Dry-run rendering thành công **45/45 EJS templates** (bao gồm 4 Layouts và 41 trang con, 0 FAIL). | 🟢 VERIFIED |
-| `npm test` (`node test_full_suite.js`) | **PASS** | Chạy toàn bộ **52/52 Test Suites (100% PASS)** bao phủ 10 nhóm nghiệp vụ: Public, RBAC, Auth, Double-Booking, Cross-Role Lifecycle, KPI & Backup, Multi-Role, Triage Queue, Inpatient/Rx, Security IDOR & Doctor Isolation & Inventory. | 🟢 VERIFIED |
-| Khởi động Server Local (`node dist/server.js`) | **PASS** | Server Express 5 khởi chạy thành công tại cổng 3000, nạp 90 routes tức thì. | 🟢 VERIFIED |
-| Thử nghiệm Endpoint live (`curl.exe -I http://localhost:3000`) | **PASS** | Trả về `HTTP/1.1 200 OK`, `Content-Length: 33634`, nạp Cookie session `connect.sid` an toàn. | 🟢 VERIFIED |
-| Kiểm tra Endpoint Sao lưu (`/admin/backup-db`) | **PASS** | Xuất file sao lưu `medibook_backup_YYYY-MM-DD.sqlite` an toàn kèm log `BACKUP_DATABASE`. | 🟢 VERIFIED |
-
----
-
-## 5. QUÉT CHỖ CHƯA XONG & ĐIỂM HỞ (GAP SCAN)
-
-| ID | Loại Gap | Vị trí phát hiện | Mô tả chi tiết & Đánh giá | Trạng thái xử lý |
-|:---|:---|:---|:---|:---:|
-| **G-01** | TODO / FIXME / STUB | Toàn bộ thư mục `src/` | Quét regex `TODO|FIXME|HACK|WIP|stub|mock|fake` -> **0 kết quả**. Không có stub hay mock trong backend production. | 🟢 SẠCH 100% |
-| **G-02** | Hardcode Session Secret | `src/server.ts:87` | `secret: 'medibook_secret_session_key'` đang được gán trực tiếp thay vì đọc từ `process.env.SESSION_SECRET`. | 🟡 Cần đưa ra `.env` khi deploy production |
-| **G-03** | Khớp lệnh VietQR tự động | `views/receptionist/payments.ejs` | Hiện tại Thu ngân đối soát bằng mắt và bấm nút "Xác nhận đã thanh toán" sau khi khách quét mã VietQR (chưa có Webhook webhook.casso.vn / sepay.vn). | 🟡 Nghiệp vụ tại quầy hoạt động tốt |
-| **G-04** | Route Dead Code | `src/server.ts` | Tất cả 90 route handlers đều có handler xử lý thực, liên kết DB và render view hoặc trả JSON. Không có route mồ côi. | 🟢 SẠCH 100% |
-
----
-
-## 6. ĐÁNH GIÁ CHẤT LƯỢNG & RỦI RO (QUALITY MATRIX)
-
-| Lĩnh vực | Đánh giá | Bằng chứng & Hiện trạng thực tế |
-|:---|:---:|:---|
-| **Bảo mật (Security)** | 🟢 XUẤT SẮC | - Mật khẩu mã hóa Bcrypt salt=10 (`src/server.ts:210`).<br>- 100% Prepared Statements qua `better-sqlite3`, loại trừ hoàn toàn nguy cơ SQL Injection.<br>- Phân quyền RBAC 4 lớp kiểm tra cả quyền hiện tại lẫn danh sách `user_roles`.<br>- Chặn triệt để IDOR trên `/appointments/:code` và bảo vệ cô lập dữ liệu giữa các bác sĩ (Doctor Data Isolation). |
-| **Toàn vẹn Dữ liệu (ACID)** | 🟢 XUẤT SẮC | - Sử dụng `db.transaction()` cho các luồng nghiệp vụ phức tạp: Check-in tạo Queue, Bác sĩ khám lưu Record + Prescription + Items kèm trừ tồn kho, Thu ngân đổi trạng thái Payment + Appointment.<br>- 9 B-Tree Indexes bảo đảm tốc độ truy xuất tức thì.<br>- SQLite WAL mode + `foreign_keys = ON` bảo đảm toàn vẹn tham chiếu. |
-| **Hiệu năng (Performance)** | 🟢 XUẤT SẮC | - SQLite cấu hình chế độ `WAL (Write-Ahead Logging)` giúp đọc/ghi đồng thời cực nhanh.<br>- Template EJS biên dịch sẵn trong bộ nhớ đệm, thời gian phản hồi trang < 15ms. |
-| **Giao diện & Trải nghiệm (UX)** | 🟢 XUẤT SẮC | - Chuẩn hóa giao diện Desktop 16:9 và Mobile 9:16 có Bottom Nav thuận tiện.<br>- Tự động tính chỉ số BMI cho bác sĩ, tự động tính tổng tiền thuốc theo đơn giá snapshot.<br>- Loa TV sảnh chờ tự động phát âm thanh chuông Ding-Dong và đọc số bằng tiếng Việt qua Web Speech API. |
-| **Bảo trì & Codebase** | 🟢 XUẤT SẮC | - Cấu trúc module hóa rõ ràng (`src/db.ts`, `src/helpers.ts`, `src/middleware.ts`, `src/server.ts`).<br>- Không có dependency thừa (đã dọn sạch `multer` và `method-override` không dùng). |
+| ID | Tính năng | Nhóm (w) | Trạng thái | Bằng chứng | Còn thiếu |
+|---|---|---|---|---|---|
+| F-01 | Đăng nhập / đăng ký / đăng xuất / RBAC / đổi role | Core (3) | 🟠 PARTIAL | `server.ts:267-405`, `middleware.ts:17-40`; smoke RBAC-neg đúng; test nhóm 7 | Không rate-limit (15 lần sai liên tiếp đều 302), mật khẩu `1` được chấp nhận, không `session.regenerate`, không CSRF, `GET /logout` & `GET /switch-role` đổi trạng thái; chặn quyền trả 302 thay vì 403 (`middleware.ts:35`) |
+| F-02 | Trang công khai: home, chuyên khoa, bác sĩ, tin y tế, liên hệ | Phụ (1) | ✅ VERIFIED | Smoke: 17 path public đúng (200/404 như kỳ vọng) | — |
+| F-03 | Tra slot & đặt lịch (đã đăng nhập), chặn double-booking, chặn nghỉ phép, chặn đặt quá khứ | Core (3) | ✅ VERIFIED | `server.ts:581-884`, `db.ts:457`; test nhóm 4 (race condition, unique index) PASS | — |
+| F-04 | Đặt lịch **khách** (tự tạo tài khoản + auto-login) | Core (3) | 🟠 PARTIAL | `server.ts:710-742`; probe P7/P8 | **Account takeover**, mật khẩu mặc định `password`, không xác minh email |
+| F-05 | Lễ tân: tiếp đón, cấp STT, hàng đợi ưu tiên CC/UT/Online/Offline, emergency bumping | Core (3) | ✅ VERIFIED | `server.ts:1609-1760`; test nhóm 5 & 8 PASS | — |
+| F-06 | Bác sĩ: gọi số, khám, kê đơn, trừ kho, tái khám giảm 50% ≤14 ngày | Core (3) | ✅ VERIFIED | `server.ts:1198-1590`; test nhóm 5, 9, 10 PASS | — |
+| F-07 | Thanh toán & biên lai (VietQR) | Core (3) | ✅ VERIFIED | `server.ts:1984-2066`; test nhóm 5 PASS | VietQR chỉ là link ảnh, không đối soát giao dịch |
+| F-08 | Nội trú: sơ đồ giường, nhập/xuất viện | Quan trọng (2) | ✅ VERIFIED | `server.ts:2068-2200`; test nhóm 9.3 PASS | — |
+| F-09 | Admin CRUD: user, bác sĩ, chuyên khoa, dịch vụ, thuốc, lịch trực, đơn nghỉ | Quan trọng (2) | 🟡 UNVERIFIED | 21/21 trang GET render 200 (smoke) | Các POST `store/update/toggle/delete` **không có test**, chưa chạy |
+| F-10 | Báo cáo doanh thu, nhật ký hoạt động, sao lưu DB | Quan trọng (2) | ✅ VERIFIED | test nhóm 6 PASS; smoke `/admin/logs` 200 | `server.ts:2762` hard-code đường dẫn DB, bỏ qua `DATABASE_PATH` |
+| F-11 | Bác sĩ: lịch trực & xin nghỉ phép | Quan trọng (2) | 🟡 UNVERIFIED | `server.ts:1587-1606`; trang render 200; chặn đặt lịch khi nghỉ phép có test | `POST /doctor/leave/request` không test |
+| F-12 | Đánh giá bác sĩ (sao, điểm TB) | Phụ (1) | ✅ VERIFIED | `server.ts:988`; test nhóm 5 PASS | — |
+| F-13 | Hồ sơ cá nhân, đổi mật khẩu, bác sĩ yêu thích | Phụ (1) | 🟡 UNVERIFIED | `server.ts:1057-1160`; `/profile` 200 | 0 test |
+| F-14 | Bảng gọi số trực tiếp + `/api/queue/live` | Phụ (1) | 🟠 PARTIAL | `server.ts:1760-1802` (không `requireAuth`); probe P1/P2 = 200 | Công khai tên bệnh nhân (PII), 0 test |
+| F-15 | Form liên hệ | Phụ (1) | 🟠 PARTIAL | `server.ts:427-437` chỉ ghi `activity_logs`, không lưu/gửi | Không lưu bảng riêng, không email |
+| F-16 | Thông báo trong app | Phụ (1) | ✅ VERIFIED | `server.ts:88-109`; test nhóm 8 (thông báo bumping) PASS | — |
+| F-17 | Khởi tạo DB cho bản clone mới (schema/seed/tài khoản demo) | Core (3) | 🔴 BROKEN | Clone sạch (`git clone` → `npm ci` → `npm run build` OK) rồi `npm test` ⇒ **FAIL ngay ở trang chủ**: `SqliteError: no such column: status`. DB mới: `users=0`, `specialties` chỉ có `id,name,slug,description,icon,created_at,updated_at` (thiếu `image,status` mà `server.ts:132` truy vấn); DB local cũ có đủ 27 bảng + `image,status`. `seed.sql` lỗi `table specialties has no column named image`; `schema.sql` là MySQL (`AUTO_INCREMENT/ENGINE=InnoDB`) | Xem B-02. ⇒ "87/87 PASS" chỉ đúng với **DB local cũ không nằm trong git** |
+| F-18 | Hạ tầng kiểm thử/chất lượng | Phụ (1) | 🟠 PARTIAL | `test_full_suite.js:8,14` dùng DB thật; `test_render_views.js:5` hard-code `D:/MediBook/views`, không nằm trong script npm | Không lint, không coverage, test dùng DB thật |
 
 ---
 
-## 7. BẢNG TÍNH TIẾN ĐỘ THỰC TẾ
+## 4. Kết quả chạy thật
 
-### 7.1. Công thức tính
-$$\text{Tiến độ (\%)} = \frac{\sum (\text{Điểm} \times \text{Trọng số})}{\sum \text{Trọng số}} \times 100$$
-*(Core = 3, Quan trọng = 2, Phụ = 1. Tính năng ✅ VERIFIED nhận 1.0 điểm; 🟡 UNVERIFIED = 0.7; 🟠 PARTIAL = 0.4; 🔴 BROKEN = 0.1; ⚪ MISSING = 0).*
-
-### 7.2. Điểm số theo từng nhóm tính năng
-| Nhóm tính năng | Số lượng | Core (×3) | Quan trọng (×2) | Phụ (×1) | Tổng mẫu số | Tổng tử số | Tiến độ nhóm |
-|:---|:---:|:---|:---:|:---:|:---:|:---:|:---:|
-| Phân quyền & Tài khoản | 4 | 2 (6) | 1 (2) | 1 (1) | 9 | 9.0 | **100%** |
-| Cổng Bệnh nhân | 9 | 4 (12) | 3 (6) | 2 (2) | 20 | 20.0 | **100%** |
-| Phân hệ Lễ tân & Thu ngân | 5 | 4 (12) | 1 (2) | 0 (0) | 14 | 14.0 | **100%** |
-| Phân hệ Bác sĩ Lâm sàng | 7 | 5 (15) | 2 (4) | 0 (0) | 19 | 19.0 | **100%** |
-| Phân hệ Quản trị Admin | 5 | 1 (3) | 3 (6) | 1 (1) | 10 | 10.0 | **100%** |
-| Màn hình TV Sảnh chờ | 2 | 2 (6) | 0 (0) | 0 (0) | 6 | 6.0 | **100%** |
-| **TỔNG CỘNG** | **32** | **18 (54)** | **10 (20)** | **4 (4)** | **78** | **78.0** | **100.0%** |
-
-- **Tiến độ VERIFIED**: **`100.0%`** (78 / 78 điểm)
-- **Tiến độ ước tính**: **`100.0%`**
-- **Độ tin cậy**: **`CAO TUYỆT ĐỐI`** (Kiểm chứng bằng 52 kịch bản E2E test thật và 45 views dry-run).
+| Lệnh | Kết quả |
+|---|---|
+| `npm ls --depth=0` | 6 dep runtime + 7 dev, không thiếu/thừa |
+| `npm run build` (tsc) | ✅ exit 0, 0 lỗi |
+| `npm test` | ✅ **87/87 PASS** (2 lần chạy; ⚠ chạy trên **DB thật** `database/medibook.sqlite` → làm bẩn dữ liệu local) |
+| Smoke route (scratch `route_smoke.js`, DB copy) | ✅ 51 path, 0 NOK; RBAC: patient→`/admin/*`,`/doctor/*`,`/receptionist/*`,`/admin/backup-db` = 302 `/`; anon→`/login` |
+| Probe bảo mật (scratch `audit_probe.js`, DB copy) | P1/P2: queue công khai 200 · P3: chỉ có `x-powered-by: Express`, không CSP/XFO/HSTS · P6: `Location: back` · P7: ATO admin/doctor/lễ tân = `showsVictimEmail=true` · P8: login `password` OK · P9: payload `</script><img onerror>` xuất hiện nguyên văn trong layout · P10: 15 lần sai đều 302 · P11: mật khẩu `1` OK |
+| Lint / coverage | ❌ không có |
+| Không chạy được | Docker/CI (không có); thanh toán/email thật (không có tích hợp) |
 
 ---
 
-## 8. BACKLOG HOÀN THIỆN & BẢO TRÌ (P0 → P3)
+## 5. Gap
 
-| ID | Mức ưu tiên | Mục tiêu | Hiện trạng | File liên quan | Việc cần làm | Tiêu chí hoàn thành | Công sức |
-|:---|:---:|:---|:---|:---|:---|:---|:---:|
-| **B-01** | **P2** | Chuyển cấu hình Session Secret sang `.env` | 🟡 Hardcoded tại `src/server.ts:87` | `src/server.ts`, `.env.example` | Đọc `process.env.SESSION_SECRET || 'fallback_secret'` | Server khởi động mượt mà khi có hoặc không có biến môi trường | S |
-| **B-02** | **P3** | Tích hợp Webhook Ngân hàng tự động khớp lệnh VietQR | 🟡 Hiện tại thu ngân bấm xác nhận thủ công | `src/server.ts`, `views/receptionist/payments.ejs` | Thêm route `POST /api/webhooks/payment` tiếp nhận callback từ Casso/Sepay | Trạng thái hóa đơn tự động chuyển sang `paid` khi có giao dịch ngân hàng khớp `HDxxxx` | M |
+| ID | Mô tả | Vị trí |
+|---|---|---|
+| G-01 | `res.redirect('back')` ×14 — Express 5 đã bỏ magic string, redirect tới `/back` | `server.ts` (grep `redirect('back')`: 14 chỗ, vd `:700,715,751,1757`) |
+| G-02 | XSS: `JSON.stringify(...name...)` in raw trong thẻ `<script>` | `views/layouts/main.ejs:243` |
+| G-03 | `<%-` in raw: badge helpers nhận chuỗi động (`getStatusBadge` fallback in `${status}`; `getPriorityBadge(...reason)`) | `helpers.ts:36,56,64`; 26 chỗ `<%-` trong views |
+| G-04 | Mật khẩu mặc định hard-code `'password'` (2 chỗ: khách và lễ tân đặt hộ) | `server.ts:720`, `server.ts:1824`; seed demo đều `password` |
+| G-05 | `schema.sql`/`seed.sql` (MySQL) lệch hẳn `db.ts` (SQLite, 26 bảng vs 21) | `database/*.sql` |
+| G-06 | `renderWithLayout` trả `err.message` cho client; không có error handler toàn cục | `server.ts:60-68,2774` |
+| G-07 | Backup hard-code đường dẫn DB | `server.ts:2762` |
+| G-08 | `console.log` banner khởi động (4 dòng, chấp nhận được) | `server.ts:2780-2783` |
+| G-09 | `test_render_views.js` mồ côi: mock thủ công, hard-code ổ `D:`, mojibake, không có trong script | `test_render_views.js:5` |
+| G-10 | 47 chỗ `as any`, `strict:false` | `src/*.ts` |
+| G-11 | `res.status(403).redirect('/')` → trạng thái thực = 302 | `middleware.ts:35` |
+| G-12 | Mã đặt lịch `MByymmdd-NNNN` (4 số) + `/appointments/success/:code` không cần đăng nhập → dò được thông tin lịch hẹn | `server.ts:886-901` |
+| G-13 | 5 file báo cáo `.md` ở root + `MEDIBOOK_*.md` (tài liệu sinh ra bởi agent trước) | root |
 
----
-
-## 9. ĐỀ XUẤT NÂNG CẤP DÀI HẠN (U-01 → U-03)
-
-| ID | Đề xuất nâng cấp | Lợi ích mang lại | Đánh đổi & Thách thức | Công sức | Thời điểm khuyến nghị |
-|:---|:---|:---|:---|:---:|:---|
-| **U-01** | Chuyển sang WebSocket (Socket.io) cho màn hình sảnh chờ | Cập nhật số khám tức thì không trễ 4 giây, giảm tải I/O server khi có nhiều TV | Cần duy trì kết nối WebSocket liên tục | M | Khi phòng khám triển khai trên 5 màn hình TV đồng thời |
-| **U-02** | Hỗ trợ di chuyển CSDL sang PostgreSQL | Sẵn sàng mở rộng thành chuỗi bệnh viện đa chi nhánh | Cần cài đặt hệ quản trị PostgreSQL riêng và chuyển đổi DDL | L | Khi phòng khám nâng cấp quy mô lên trên 100 y bác sĩ |
-| **U-03** | Thêm tính năng gửi tin nhắn Zalo ZNS / SMS nhắc lịch | Bệnh nhân không bị quên lịch hẹn, giảm tỉ lệ vắng mặt (no-show) | Phát sinh chi phí tin nhắn SMS/ZNS qua bên thứ 3 | S | Khi phòng khám đi vào vận hành thương mại chính thức |
-
----
-
-## 10. ĐIỀU CHƯA CHẮC CHẮN (❓)
-- Dự án hiện đang hoạt động tự chứa hoàn chỉnh 100% trong môi trường cục bộ (Standalone Offline-Capable), không phụ thuộc vào bất kỳ API trả phí bên ngoài nào.
-- Để triển khai Production trực tuyến: Cần người dùng cung cấp thông tin cấu hình domain và Webhook API Key của cổng thanh toán ngân hàng (nếu muốn tự động hóa hoàn toàn luồng thanh toán VietQR).
+Không có `TODO|FIXME|mock|stub` trong `src/`, `views/`, `public/assets/js` (grep = 0).
 
 ---
 
-## 11. PHẠM VI ĐÃ QUÉT
+## 6. Chất lượng & rủi ro
 
-| Thư mục / Thành phần | Mức độ quét | Ghi chú & Bằng chứng |
-|:---|:---:|:---|
-| `src/` (`server.ts`, `db.ts`, `helpers.ts`, `middleware.ts`) | **QUÉT SÂU 100%** | Đã đọc từng dòng code, kiểm tra 90 endpoints, RBAC, IDOR, Prepared Statements và DDL |
-| `views/` (45 templates EJS) | **QUÉT SÂU 100%** | Kiểm tra dry-run 45/45 views qua `test_render_views.js` (PASS 100%) |
-| `database/` (`schema.sql`, `seed.sql`, `medibook.sqlite`) | **QUÉT SÂU 100%** | Kiểm tra 23 tables, 9 B-Tree Indexes, pragmas WAL mode và foreign_keys = 1 |
-| `public/` (CSS, JS, Icons, Images) | **QUÉT SÂU 100%** | Kiểm tra Web Speech API, chuông Ding-Dong oscillator, responsive CSS |
-| `tests/` (`test_full_suite.js`) | **QUÉT SÂU 100%** | Chạy thực tế 52/52 integration test suites (100% PASS) |
+| Mảng | Mức | Bằng chứng |
+|---|---|---|
+| Bảo mật: xác thực/phiên | 🔴 | ATO (P7), mật khẩu mặc định, không rate-limit (P10), không regenerate, MemoryStore, cookie không `sameSite/secure` |
+| Bảo mật: CSRF/XSS/headers | 🔴 | 0 match `csrf|helmet|rateLimit`; XSS P9; P3 thiếu header |
+| Bảo mật: phân quyền | 🟢 | RBAC smoke đúng; IDOR bệnh án/ca khám bị chặn (test nhóm 10) |
+| Bảo mật: lộ PII | 🟡 | `/api/queue/live` + `/live-board` công khai |
+| Bảo mật: secret | 🟢 | `.env` không tracked; production fail-fast thiếu `SESSION_SECRET` (`server.ts:29-33`) |
+| Dữ liệu | 🟡 | FK ON + WAL + 12 index + unique slot; nhưng schema/seed không dùng được cho SQLite, không migration |
+| Vận hành | 🟡 | Không log chuẩn, không health check, không Docker/CI, backup có nhưng hard-code |
+| Hiệu năng & UX | 🟡 | SQLite đồng bộ 1 process; responsive/a11y chưa đo |
+| Bảo trì | 🟠 | `server.ts` 2 788 dòng monolith, `strict:false`, test dùng DB thật, không lint |
+
+---
+
+## 7. Tính tiến độ
+
+Điểm: ✅=1.0 · 🟡=0.7 · 🟠=0.4 · 🔴=0.1.
+
+| ID | w | Nhãn | Điểm | w×điểm |
+|---|---|---|---|---|
+| F-01 | 3 | 🟠 | 0.4 | 1.2 |
+| F-02 | 1 | ✅ | 1.0 | 1.0 |
+| F-03 | 3 | ✅ | 1.0 | 3.0 |
+| F-04 | 3 | 🟠 | 0.4 | 1.2 |
+| F-05 | 3 | ✅ | 1.0 | 3.0 |
+| F-06 | 3 | ✅ | 1.0 | 3.0 |
+| F-07 | 3 | ✅ | 1.0 | 3.0 |
+| F-08 | 2 | ✅ | 1.0 | 2.0 |
+| F-09 | 2 | 🟡 | 0.7 | 1.4 |
+| F-10 | 2 | ✅ | 1.0 | 2.0 |
+| F-11 | 2 | 🟡 | 0.7 | 1.4 |
+| F-12 | 1 | ✅ | 1.0 | 1.0 |
+| F-13 | 1 | 🟡 | 0.7 | 0.7 |
+| F-14 | 1 | 🟠 | 0.4 | 0.4 |
+| F-15 | 1 | 🟠 | 0.4 | 0.4 |
+| F-16 | 1 | ✅ | 1.0 | 1.0 |
+| F-17 | 3 | 🔴 | 0.1 | 0.3 |
+| F-18 | 1 | 🟠 | 0.4 | 0.4 |
+| **Σ** | **36** | | | **26.4** |
+
+- **Ước tính** = 26.4 / 36 = **73.3 %**.
+- **VERIFIED** = (1+3+3+3+3+2+2+1+1) / 36 = 19 / 36 = **52.8 %**.
+- Độ tin cậy **vừa**: luồng lâm sàng có test + smoke; phần admin CRUD POST, hồ sơ cá nhân chưa chạy; không đo hiệu năng/a11y.
+
+---
+
+## 8. Backlog (P0 → P3)
+
+### P0
+**B-01 — Vá chiếm tài khoản & mật khẩu mặc định ở đặt lịch khách** (L: M)
+- Hiện trạng: 🟠 F-04; `server.ts:710-742`; probe P7/P8.
+- Việc: không tự đăng nhập user đã tồn tại; nếu email đã có → yêu cầu đăng nhập; khách mới → tạo tài khoản mật khẩu ngẫu nhiên + link đặt mật khẩu (hoặc đặt lịch không tạo phiên); bỏ `hashSync('password')`.
+- Hoàn thành khi: test mới "guest dùng email admin → không có session"; `login` bằng `password` với tài khoản khách mới thất bại.
+
+**B-02 — Khởi tạo DB cho bản clone mới** (M)
+- Hiện trạng: 🔴 F-17.
+- Việc: (1) thêm `specialties.image`, `specialties.status` (và mọi cột code đang dùng mà `db.ts` chưa tạo) vào `initDb()`; (2) bỏ/thay `database/schema.sql`+`seed.sql` (MySQL) bằng seed chạy được trên SQLite (script `npm run seed` hoặc seed trong `db.ts` khi `users=0`), tạo tài khoản demo có cờ chỉ dùng dev; (3) cập nhật README.
+- Hoàn thành khi: **clone sạch** → `npm ci && npm run build && npm test` = PASS (không phụ thuộc DB local); xoá `database/*.sqlite*` → `npm start` → trang chủ 200 và đăng nhập `admin@medibook.local` được; `NODE_ENV=production` không seed mật khẩu yếu.
+
+**B-03 — Vá XSS** (S)
+- `views/layouts/main.ejs:243`: escape `<`, `>`, `&`, U+2028/9 trong JSON (hoặc đưa vào `data-*` bằng `<%=`); rà `helpers.ts` badge (escape `status`/`reason`).
+- Hoàn thành khi: probe P9 trả `false`.
+
+**B-04 — Sửa `res.redirect('back')` ×14** (S)
+- Thay bằng `req.get('Referer') || '<route cụ thể>'` (kiểm tra cùng origin).
+- Hoàn thành khi: probe P6 `Location` ≠ `back`; grep `redirect('back')` = 0.
+
+**B-05 — Che PII ở bảng gọi số công khai** (S): `/receptionist/live-board`, `/api/queue/live` chỉ trả STT + tên rút gọn (vd "N. V. A").
+
+### P1
+- **B-06** CSRF token cho mọi POST + đổi `GET /logout`, `GET /switch-role` sang POST (M).
+- **B-07** `express-rate-limit` cho `/login`,`/register`,`/appointments/book`; chính sách mật khẩu ≥8 ký tự; `req.session.regenerate` khi đăng nhập; cookie `httpOnly,sameSite=lax,secure(prod)`; `helmet`; tắt `x-powered-by` (M).
+- **B-08** Cho test dùng DB tạm qua `DATABASE_PATH` (không đụng DB thật); thêm test POST cho admin CRUD, doctor leave, profile (M).
+- **B-09** Error handler toàn cục, không trả `err.message`; trả 403 đúng nghĩa (S).
+- **B-10** Backup dùng đường dẫn thực từ `db.ts` (S).
+- **B-11** Mã đặt lịch khó đoán hơn + `/appointments/success/:code` yêu cầu quyền sở hữu hoặc token (S).
+
+### P2
+- **B-12** Lưu form liên hệ vào bảng + hiển thị cho admin (S).
+- **B-13** Tách `server.ts` thành router theo vai trò (L).
+- **B-14** Xoá/di chuyển `test_render_views.js` hoặc sửa để chạy được (S).
+
+### P3
+- **B-15** Bật `strict` TS dần, loại 47 `as any` (L); ESLint (S).
+
+---
+
+## 9. Đề xuất nâng cấp (ngoài phạm vi)
+
+| ID | Ý tưởng | Lợi ích | Đánh đổi | Khi nào |
+|---|---|---|---|---|
+| U-01 | SQLite session store + `better-sqlite3` migrations có version | Giữ phiên khi restart, migrate an toàn | Thêm dependency | Sau P0/P1 |
+| U-02 | Dockerfile + GitHub Actions (build + test) | Tái lập môi trường, chặn regression | Công sức S | Khi có B-08 |
+| U-03 | Email/SMS nhắc lịch | Giảm no-show | Cần nhà cung cấp, chi phí | Giai đoạn production |
+| U-04 | Endpoint `/healthz` + log có cấu trúc | Vận hành | Nhỏ | Cùng U-02 |
+| U-05 | Đối soát thanh toán VietQR thật (webhook ngân hàng) | Tự động hoá thu tiền | Phụ thuộc đối tác, bảo mật webhook | Khi go-live |
+
+---
+
+## 10. Điều chưa chắc chắn (❓)
+
+- Chưa chạy POST của admin CRUD / hồ sơ cá nhân / xin nghỉ phép (cần kịch bản riêng) → F-09, F-11, F-13 mới là 🟡.
+- Session fixation chỉ xác nhận ở mức code (`regenerate` = 0 match), chưa tái hiện bằng request.
+- a11y/responsive/hiệu năng tải chưa đo (không chạy Lighthouse).
+- Thiết bị triển khai thật (reverse proxy, HTTPS) chưa rõ → mức độ rủi ro `x-forwarded-for` trong `logActivity` (`server.ts:117`) chưa đánh giá.
+
+---
+
+## 11. Phạm vi đã quét
+
+| Thư mục/file | Mức |
+|---|---|
+| `src/server.ts` | Sâu (auth, booking, live-board, backup, 404, đầu/cuối file) + lướt (phần còn lại qua grep route, smoke, test) |
+| `src/db.ts`, `helpers.ts`, `middleware.ts` | Sâu |
+| `views/` | Lướt (grep `<%-`; render 51 trang) |
+| `public/assets/js`, `css`, `images` | Lướt (chưa đối chiếu tham chiếu — để cleanup) |
+| `database/*.sql` | Sâu (xác nhận lệch dialect) |
+| `docs/`, các `.md` root | Lướt |
+| `test_*.js` | Sâu (cấu trúc, DB dùng, phạm vi route) |
+| `node_modules`, `dist`, `.git` | Không quét |
 
 ---
 
 ## 12. HANDOFF CHO AI KHÁC
-```text
-DỰ ÁN: MediBook - Hệ thống Quản lý Phòng khám Đa khoa & Đặt lịch Khám Thông minh
-VỊ TRÍ CODEBASE: D:\MediBook (Ổ đĩa Study (D:))
-STACK CÔNG NGHỆ: Node.js (Express 5) + TypeScript + SQLite (better-sqlite3 WAL + 9 Indexes) + EJS
-HIỆN TRẠNG: ĐÃ HOÀN THIỆN 100% CHỨC NĂNG (Tiến độ VERIFIED 100.0%, 52/52 test PASS, 45/45 views PASS).
-LỆNH THAO TÁC CƠ BẢN:
-  - npm run build (biên dịch TypeScript sang dist/server.js)
-  - npm start (khởi động server tại http://localhost:3000)
-  - npm test (chạy toàn bộ 52 kịch bản test tự động E2E)
-RÀNG BUỘC PHẢI GIỮ:
-  - Giữ nguyên cấu trúc Prepared Statements an toàn tuyệt đối với SQLite.
-  - Bảo toàn 4 Layouts EJS và kiến trúc phân quyền 4 Roles + Switch-role.
-  - Duy trì kiểm tra bảo mật IDOR trên /appointments/:code và cô lập dữ liệu khám giữa các bác sĩ (Doctor Data Isolation).
-  - Không tự ý thêm dependency nặng làm chậm thời gian khởi động.
-```
 
-> **Hướng dẫn sử dụng Handoff:**
-> "Đọc `PROJECT_AUDIT.md` này. Với mỗi mục backlog (bắt đầu từ P0), viết cho tôi một prompt hoàn chỉnh để AI Agent code làm nốt, gồm bối cảnh, file liên quan, yêu cầu, tiêu chí hoàn thành, và những gì KHÔNG được sửa."
+- **Dự án:** MediBook — Express 5 + EJS + better-sqlite3, TS biên dịch `src/` → `dist/`; entry `server.js`.
+- **Chạy:** `npm install && npm run build && npm start`; test `npm test` (hiện dùng DB thật — sửa ở B-08).
+- **Thứ tự làm:** B-04 → B-03 → B-01 → B-02 → B-05 → B-07 → B-06 → B-08 …
+- **Convention:** route gom trong `src/server.ts`, view ở `views/<role>/…`, layout theo vai trò (`layouts/*.ejs`), flash qua `connect-flash`, SQL prepared statement của better-sqlite3.
+- **Giữ nguyên:** unique index slot (`db.ts:457`), logic hàng đợi ưu tiên/emergency bumping, test 87/87 phải vẫn PASS; không commit `.env`, `database/*.sqlite*`.
+- **Cấm động tới:** `package-lock.json`, `.env*`, `database/medibook.sqlite*` (dữ liệu local), `docs/`.
+
+> Câu dán kèm: *"Đọc PROJECT_AUDIT.md này. Với mỗi mục backlog (bắt đầu từ P0), viết cho tôi một prompt hoàn chỉnh để AI Agent code làm nốt, gồm bối cảnh, file liên quan, yêu cầu, tiêu chí hoàn thành, và những gì KHÔNG được sửa."*
