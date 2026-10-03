@@ -1,6 +1,7 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
+import { seedDemoData, createInitialAdmin } from './seed';
 
 // Automatically load .env if present
 const envPath = path.resolve(process.cwd(), '.env');
@@ -430,7 +431,17 @@ function initDb() {
     "ALTER TABLE examination_queues ADD COLUMN bumped_reason TEXT",
     "ALTER TABLE patients ADD COLUMN priority_category TEXT DEFAULT 'normal'",
     "ALTER TABLE payments ADD COLUMN cashier_user_id INTEGER",
-    "ALTER TABLE medical_records ADD COLUMN bed_id INTEGER REFERENCES beds (id)"
+    "ALTER TABLE medical_records ADD COLUMN bed_id INTEGER REFERENCES beds (id)",
+    // Các cột được code truy vấn nhưng trước đây chưa có trong CREATE TABLE (clone sạch bị lỗi "no such column")
+    "ALTER TABLE specialties ADD COLUMN image TEXT",
+    "ALTER TABLE specialties ADD COLUMN status TEXT NOT NULL DEFAULT 'active'",
+    "ALTER TABLE receptionists ADD COLUMN department TEXT DEFAULT 'Bộ phận Tiếp đón & Thu ngân'",
+    "ALTER TABLE receptionists ADD COLUMN shift_default TEXT DEFAULT 'Sáng - Chiều'",
+    "ALTER TABLE doctor_schedules ADD COLUMN slot_duration INTEGER DEFAULT 30",
+    "ALTER TABLE doctor_schedules ADD COLUMN status TEXT DEFAULT 'active'",
+    "ALTER TABLE medicines ADD COLUMN category TEXT",
+    "ALTER TABLE payments ADD COLUMN note TEXT",
+    "ALTER TABLE reviews ADD COLUMN is_anonymous INTEGER DEFAULT 0"
   ];
 
   for (const sql of migrations) {
@@ -463,6 +474,27 @@ function initDb() {
     } catch (e) {
       // Safely ignore if index already exists
     }
+  }
+
+  // Bootstrap dữ liệu cho DB trống (clone mới). Không seed mật khẩu yếu ở production.
+  try {
+    const userCount = (db.prepare('SELECT count(*) as c FROM users').get() as any).c;
+    if (userCount === 0) {
+      if (process.env.NODE_ENV === 'production') {
+        const adminEmail = (process.env.ADMIN_INITIAL_EMAIL || 'admin@medibook.local').trim();
+        const created = createInitialAdmin(db, adminEmail, process.env.ADMIN_INITIAL_PASSWORD || '');
+        if (created) {
+          console.warn(`ℹ️ Đã tạo tài khoản quản trị ban đầu: ${adminEmail}. Hãy đổi mật khẩu sau lần đăng nhập đầu tiên.`);
+        } else {
+          console.warn('⚠️ CSDL trống và chưa có tài khoản nào. Đặt ADMIN_INITIAL_PASSWORD (>= 8 ký tự) trong môi trường để tạo quản trị viên đầu tiên.');
+        }
+      } else {
+        seedDemoData(db);
+        console.warn('ℹ️ CSDL trống: đã nạp dữ liệu DEMO (tài khoản demo dùng mật khẩu "password" — chỉ cho môi trường phát triển).');
+      }
+    }
+  } catch (e) {
+    console.error('❌ Không thể nạp dữ liệu khởi tạo:', e);
   }
 
   // Populate roles table if empty

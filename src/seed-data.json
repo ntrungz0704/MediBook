@@ -1,0 +1,703 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "role": "admin",
+      "name": "Quản trị viên Hệ thống",
+      "email": "admin@medibook.vn",
+      "phone": "0901000001",
+      "avatar": "avatar-admin.svg",
+      "status": "active"
+    },
+    {
+      "id": 2,
+      "role": "receptionist",
+      "name": "Lễ tân Hoàng Thị Mai",
+      "email": "receptionist@medibook.vn",
+      "phone": "0902000002",
+      "avatar": "avatar-receptionist.svg",
+      "status": "active"
+    },
+    {
+      "id": 3,
+      "role": "doctor",
+      "name": "BS. CKII. Nguyễn Minh Đức",
+      "email": "doctor.duc@medibook.vn",
+      "phone": "0903000003",
+      "avatar": "avatar-doctor1.svg",
+      "status": "active"
+    },
+    {
+      "id": 4,
+      "role": "patient",
+      "name": "Bệnh nhân Trần Văn Nam",
+      "email": "patient@medibook.vn",
+      "phone": "0904000004",
+      "avatar": "avatar-patient1.svg",
+      "status": "active"
+    },
+    {
+      "id": 5,
+      "role": "doctor",
+      "name": "ThS. BS. Trần Thị Mai",
+      "email": "bs.mai@medibook.vn",
+      "phone": "0903000005",
+      "avatar": "avatar-doctor2.svg",
+      "status": "active"
+    },
+    {
+      "id": 6,
+      "role": "doctor",
+      "name": "BS. CKI. Lê Quang Huy",
+      "email": "bs.huy@medibook.vn",
+      "phone": "0903000006",
+      "avatar": "avatar-doctor3.svg",
+      "status": "active"
+    },
+    {
+      "id": 7,
+      "role": "doctor",
+      "name": "BS. Phạm Thúy An",
+      "email": "bs.an@medibook.vn",
+      "phone": "0903000007",
+      "avatar": "avatar-doctor4.svg",
+      "status": "active"
+    },
+    {
+      "id": 8,
+      "role": "patient",
+      "name": "Lê Bùi Hồng Phúc",
+      "email": "hongphuc@gmail.com",
+      "phone": "0905000008",
+      "avatar": "avatar-patient2.svg",
+      "status": "active"
+    },
+    {
+      "id": 9,
+      "role": "doctor",
+      "name": "BS. CKI. Trần Thị Lan Hương",
+      "email": "bs.huong@medibook.vn",
+      "phone": "0903000009",
+      "avatar": "doctor-5.jpg",
+      "status": "active"
+    },
+    {
+      "id": 10,
+      "role": "doctor",
+      "name": "ThS. BS. Trần Đức Minh",
+      "email": "bs.ducminh@medibook.vn",
+      "phone": "0903000010",
+      "avatar": "doctor-6.jpg",
+      "status": "active"
+    },
+    {
+      "id": 11,
+      "role": "doctor",
+      "name": "BS. CKII. Nguyễn Văn Bình",
+      "email": "bs.binh@medibook.vn",
+      "phone": "0903000011",
+      "avatar": "doctor-7.jpg",
+      "status": "active"
+    },
+    {
+      "id": 12,
+      "role": "doctor",
+      "name": "BS. CKI. Trần Thu Hường",
+      "email": "bs.thuhuong@medibook.vn",
+      "phone": "0903000012",
+      "avatar": "doctor-8.jpg",
+      "status": "active"
+    },
+    {
+      "id": 13,
+      "role": "admin",
+      "name": "Quản trị viên MediBook",
+      "email": "admin@medibook.local",
+      "phone": null,
+      "avatar": null,
+      "status": "active"
+    },
+    {
+      "id": 14,
+      "role": "doctor",
+      "name": "Bác sĩ Minh",
+      "email": "doctor@medibook.local",
+      "phone": null,
+      "avatar": null,
+      "status": "active"
+    },
+    {
+      "id": 15,
+      "role": "receptionist",
+      "name": "Lễ tân Hoa",
+      "email": "receptionist@medibook.local",
+      "phone": null,
+      "avatar": null,
+      "status": "active"
+    },
+    {
+      "id": 16,
+      "role": "patient",
+      "name": "Bệnh nhân Nam",
+      "email": "patient@medibook.local",
+      "phone": "0901234567",
+      "avatar": null,
+      "status": "active"
+    }
+  ],
+  "user_roles": [
+    {
+      "user_id": 1,
+      "role": "admin"
+    },
+    {
+      "user_id": 2,
+      "role": "receptionist"
+    },
+    {
+      "user_id": 3,
+      "role": "doctor"
+    },
+    {
+      "user_id": 5,
+      "role": "doctor"
+    },
+    {
+      "user_id": 6,
+      "role": "doctor"
+    },
+    {
+      "user_id": 7,
+      "role": "doctor"
+    },
+    {
+      "user_id": 9,
+      "role": "doctor"
+    },
+    {
+      "user_id": 10,
+      "role": "doctor"
+    },
+    {
+      "user_id": 11,
+      "role": "doctor"
+    },
+    {
+      "user_id": 12,
+      "role": "doctor"
+    },
+    {
+      "user_id": 13,
+      "role": "admin"
+    },
+    {
+      "user_id": 14,
+      "role": "doctor"
+    },
+    {
+      "user_id": 15,
+      "role": "receptionist"
+    },
+    {
+      "user_id": 13,
+      "role": "doctor"
+    },
+    {
+      "user_id": 1,
+      "role": "doctor"
+    }
+  ],
+  "patients": [
+    {
+      "id": 1,
+      "user_id": 4,
+      "dob": "1995-05-15",
+      "gender": "male",
+      "blood_group": "O+",
+      "address": "Quận 1, TP. Hồ Chí Minh",
+      "emergency_contact": "Nguyễn Thị Hoa (Vợ) - 0912333444",
+      "health_insurance_no": "DN4791234567890",
+      "medical_history": "Tiền sử dị ứng nhẹ với Penicillin, không có bệnh nền tim mạch.",
+      "priority_category": "normal"
+    },
+    {
+      "id": 2,
+      "user_id": 8,
+      "dob": "2000-08-20",
+      "gender": "female",
+      "blood_group": "A+",
+      "address": "Quận 3, TP. Hồ Chí Minh",
+      "emergency_contact": "Lê Văn An (Bố) - 0988777666",
+      "health_insurance_no": "DN4799876543210",
+      "medical_history": "Không có tiền sử bệnh lý mạn tính.",
+      "priority_category": "normal"
+    },
+    {
+      "id": 3,
+      "user_id": 16,
+      "dob": null,
+      "gender": "other",
+      "blood_group": null,
+      "address": null,
+      "emergency_contact": null,
+      "health_insurance_no": null,
+      "medical_history": null,
+      "priority_category": "normal"
+    }
+  ],
+  "specialties": [
+    {
+      "id": 1,
+      "name": "Nội tổng quát",
+      "slug": "noi-tong-quat",
+      "description": "Chăm sóc sức khỏe toàn diện và chẩn đoán ban đầu",
+      "icon": "stethoscope",
+      "image": "noi-tong-quat.svg",
+      "status": "active"
+    },
+    {
+      "id": 2,
+      "name": "Nhi khoa",
+      "slug": "nhi-khoa",
+      "description": "Vì sự phát triển khỏe mạnh và an toàn của trẻ em",
+      "icon": "baby",
+      "image": "nhi-khoa.svg",
+      "status": "active"
+    },
+    {
+      "id": 3,
+      "name": "Sản phụ khoa",
+      "slug": "san-phu-khoa",
+      "description": "Đồng hành cùng sức khỏe và sự tự tin phụ nữ Việt",
+      "icon": "female",
+      "image": "san-phu-khoa.svg",
+      "status": "active"
+    },
+    {
+      "id": 4,
+      "name": "Da liễu",
+      "slug": "da-lieu",
+      "description": "Làn da khỏe mạnh, điều trị mụn và thẩm mỹ an toàn",
+      "icon": "sparkles",
+      "image": "da-lieu.svg",
+      "status": "active"
+    },
+    {
+      "id": 5,
+      "name": "Tai mũi họng",
+      "slug": "tai-mui-hong",
+      "description": "Hô hấp dễ dàng, chẩn đoán nội soi kỹ thuật số",
+      "icon": "head-side",
+      "image": "tai-mui-hong.svg",
+      "status": "active"
+    },
+    {
+      "id": 6,
+      "name": "Cơ xương khớp",
+      "slug": "co-xuong-khop",
+      "description": "Vận động linh hoạt, trị liệu phục hồi chức năng",
+      "icon": "bone",
+      "image": "co-xuong-khop.svg",
+      "status": "active"
+    },
+    {
+      "id": 7,
+      "name": "Tim mạch",
+      "slug": "tim-mach",
+      "description": "Trái tim khỏe mạnh, theo dõi huyết áp & tim đồ",
+      "icon": "heart-pulse",
+      "image": "tim-mach.svg",
+      "status": "active"
+    },
+    {
+      "id": 8,
+      "name": "Tiêu hóa",
+      "slug": "tieu-hoa",
+      "description": "Hệ tiêu hóa khỏe, điều trị dạ dày đại tràng",
+      "icon": "stomach",
+      "image": "tieu-hoa.svg",
+      "status": "active"
+    }
+  ],
+  "doctors": [
+    {
+      "id": 1,
+      "user_id": 3,
+      "title": "BS. CKII",
+      "bio": "Chuyên gia đầu ngành Nội khoa với hơn 10 năm kinh nghiệm công tác tại các bệnh viện lớn.",
+      "experience_years": 10,
+      "consultation_fee": 200000,
+      "rating": 5,
+      "rating_count": 5,
+      "room_number": "P.101"
+    },
+    {
+      "id": 2,
+      "user_id": 5,
+      "title": "ThS. BS",
+      "bio": "Tận tâm chu đáo, chuyên gia sản phụ khoa và chăm sóc sức khỏe toàn diện cho trẻ em.",
+      "experience_years": 8,
+      "consultation_fee": 250000,
+      "rating": 4.8,
+      "rating_count": 276,
+      "room_number": "P.102"
+    },
+    {
+      "id": 3,
+      "user_id": 6,
+      "title": "BS. CKI",
+      "bio": "Bác sĩ Tim mạch giàu kinh nghiệm, điều trị thành công hàng ngàn ca tăng huyết áp & mạch vành.",
+      "experience_years": 12,
+      "consultation_fee": 300000,
+      "rating": 4.85,
+      "rating_count": 189,
+      "room_number": "P.103"
+    },
+    {
+      "id": 4,
+      "user_id": 7,
+      "title": "BS",
+      "bio": "Bác sĩ Nhi khoa thân thiện, khéo léo giúp các bé thoải mái trong suốt quá trình thăm khám.",
+      "experience_years": 6,
+      "consultation_fee": 200000,
+      "rating": 4.8,
+      "rating_count": 365,
+      "room_number": "P.104"
+    },
+    {
+      "id": 5,
+      "user_id": 9,
+      "title": "BS. CKI",
+      "bio": "Chuyên gia Da liễu thẩm mỹ, hơn 9 năm kinh nghiệm điều trị mụn, nám, viêm da cơ địa và phục hồi da chuyên sâu.",
+      "experience_years": 9,
+      "consultation_fee": 250000,
+      "rating": 4.9,
+      "rating_count": 215,
+      "room_number": "P.105"
+    },
+    {
+      "id": 6,
+      "user_id": 10,
+      "title": "ThS. BS",
+      "bio": "Thạc sĩ Tai Mũi Họng giàu kinh nghiệm, chuyên điều trị viêm xoang mạn, viêm amidan, tầm soát thính học bằng nội soi công nghệ cao.",
+      "experience_years": 11,
+      "consultation_fee": 280000,
+      "rating": 4.85,
+      "rating_count": 182,
+      "room_number": "P.106"
+    },
+    {
+      "id": 7,
+      "user_id": 11,
+      "title": "BS. CKII",
+      "bio": "Chuyên gia Cơ xương khớp hàng đầu, nguyên phó khoa chấn thương chỉnh hình, điều trị thoái hóa khớp, cột sống và phục hồi chức năng vận động.",
+      "experience_years": 15,
+      "consultation_fee": 350000,
+      "rating": 4.95,
+      "rating_count": 420,
+      "room_number": "P.107"
+    },
+    {
+      "id": 8,
+      "user_id": 12,
+      "title": "BS. CKI",
+      "bio": "Bác sĩ Tiêu hóa - Gan mật tận tâm, chuyên sâu nội soi tiêu hóa không đau, điều trị trào ngược dạ dày, viêm đại tràng và tầm soát ung thư đường tiêu hóa sớm.",
+      "experience_years": 10,
+      "consultation_fee": 300000,
+      "rating": 4.88,
+      "rating_count": 310,
+      "room_number": "P.108"
+    },
+    {
+      "id": 9,
+      "user_id": 14,
+      "title": "BS.CKI",
+      "bio": null,
+      "experience_years": 1,
+      "consultation_fee": 200000,
+      "rating": 5,
+      "rating_count": 1,
+      "room_number": "P.101"
+    },
+    {
+      "id": 10,
+      "user_id": 13,
+      "title": "Bác sĩ",
+      "bio": "Bác sĩ phòng khám MediBook",
+      "experience_years": 1,
+      "consultation_fee": 200000,
+      "rating": 5,
+      "rating_count": 0,
+      "room_number": "P.101"
+    }
+  ],
+  "doctor_specialties": [
+    {
+      "id": 1,
+      "doctor_id": 1,
+      "specialty_id": 1,
+      "is_primary": 1
+    },
+    {
+      "id": 2,
+      "doctor_id": 2,
+      "specialty_id": 2,
+      "is_primary": 0
+    },
+    {
+      "id": 3,
+      "doctor_id": 2,
+      "specialty_id": 3,
+      "is_primary": 1
+    },
+    {
+      "id": 4,
+      "doctor_id": 3,
+      "specialty_id": 7,
+      "is_primary": 1
+    },
+    {
+      "id": 5,
+      "doctor_id": 4,
+      "specialty_id": 2,
+      "is_primary": 1
+    },
+    {
+      "id": 6,
+      "doctor_id": 5,
+      "specialty_id": 4,
+      "is_primary": 1
+    },
+    {
+      "id": 7,
+      "doctor_id": 6,
+      "specialty_id": 5,
+      "is_primary": 1
+    },
+    {
+      "id": 8,
+      "doctor_id": 7,
+      "specialty_id": 6,
+      "is_primary": 1
+    },
+    {
+      "id": 9,
+      "doctor_id": 8,
+      "specialty_id": 8,
+      "is_primary": 1
+    },
+    {
+      "id": 10,
+      "doctor_id": 10,
+      "specialty_id": 6,
+      "is_primary": 0
+    }
+  ],
+  "receptionists": [
+    {
+      "id": 1,
+      "user_id": 2,
+      "staff_code": "LT-001",
+      "department": "Bộ phận Tiếp đón & Thu ngân",
+      "shift_default": "Ca Sáng (07:30 - 16:30)"
+    },
+    {
+      "id": 2,
+      "user_id": 15,
+      "staff_code": "LT99",
+      "department": "Tiếp đón",
+      "shift_default": "Sáng - Chiều"
+    }
+  ],
+  "services": [
+    {
+      "id": 1,
+      "specialty_id": 1,
+      "name": "Khám Nội tổng quát định kỳ",
+      "description": "Kiểm tra tổng quát các cơ quan, huyết áp, nhịp tim và tư vấn lối sống",
+      "price": 200000,
+      "duration_minutes": 30,
+      "status": "active"
+    },
+    {
+      "id": 2,
+      "specialty_id": 1,
+      "name": "Gói khám tầm soát sức khỏe tổng quát VIP",
+      "description": "Khám lâm sàng toàn diện kèm định hướng xét nghiệm chuyên sâu",
+      "price": 500000,
+      "duration_minutes": 45,
+      "status": "active"
+    },
+    {
+      "id": 3,
+      "specialty_id": 2,
+      "name": "Khám Nhi tổng quát & Dinh dưỡng",
+      "description": "Đánh giá tăng trưởng chiều cao, cân nặng và bệnh lý hô hấp tiêu hóa",
+      "price": 250000,
+      "duration_minutes": 30,
+      "status": "active"
+    },
+    {
+      "id": 4,
+      "specialty_id": 3,
+      "name": "Khám Sản phụ khoa & Tư vấn thai kỳ",
+      "description": "Khám phụ khoa định kỳ, tư vấn tiền sản và chăm sóc mẹ bầu",
+      "price": 300000,
+      "duration_minutes": 30,
+      "status": "active"
+    },
+    {
+      "id": 5,
+      "specialty_id": 4,
+      "name": "Khám Da liễu & Soi da công nghệ cao",
+      "description": "Chẩn đoán viêm da, dị ứng, mụn trứng cá và điều trị sắc tố",
+      "price": 250000,
+      "duration_minutes": 30,
+      "status": "active"
+    },
+    {
+      "id": 6,
+      "specialty_id": 5,
+      "name": "Khám Tai Mũi Họng nội soi kỹ thuật số",
+      "description": "Nội soi tầm soát viêm xoang, viêm họng, amidan, polyp",
+      "price": 280000,
+      "duration_minutes": 30,
+      "status": "active"
+    },
+    {
+      "id": 7,
+      "specialty_id": 6,
+      "name": "Khám Cơ Xương Khớp & Tư vấn thoái hóa",
+      "description": "Kiểm tra thoái hóa khớp, cột sống, đau thần kinh tọa",
+      "price": 300000,
+      "duration_minutes": 30,
+      "status": "active"
+    },
+    {
+      "id": 8,
+      "specialty_id": 7,
+      "name": "Khám Tim mạch chuyên sâu & Đo điện tim",
+      "description": "Tầm soát xơ vữa, tăng huyết áp, rối loạn nhịp tim",
+      "price": 350000,
+      "duration_minutes": 30,
+      "status": "active"
+    },
+    {
+      "id": 9,
+      "specialty_id": 8,
+      "name": "Khám Tiêu hóa & Tư vấn nội soi",
+      "description": "Chẩn đoán trào ngược dạ dày, viêm loét HP, đại tràng co thắt",
+      "price": 250000,
+      "duration_minutes": 30,
+      "status": "active"
+    }
+  ],
+  "medicines": [
+    {
+      "id": 1,
+      "code": "MED-001",
+      "name": "Paracetamol 500mg",
+      "category": "Giảm đau, hạ sốt",
+      "unit": "Viên",
+      "unit_price": 2000,
+      "stock_quantity": 1000,
+      "usage_instruction": "Uống sau bữa ăn, cách 4-6 giờ nếu sốt",
+      "status": "active"
+    },
+    {
+      "id": 2,
+      "code": "MED-002",
+      "name": "Amoxicillin 500mg",
+      "category": "Kháng sinh đường hô hấp",
+      "unit": "Viên",
+      "unit_price": 3500,
+      "stock_quantity": 500,
+      "usage_instruction": "Uống sáng 1 viên, chiều 1 viên sau ăn",
+      "status": "active"
+    },
+    {
+      "id": 3,
+      "code": "MED-003",
+      "name": "Cetirizine 10mg",
+      "category": "Kháng histamin chống dị ứng",
+      "unit": "Viên",
+      "unit_price": 4000,
+      "stock_quantity": 600,
+      "usage_instruction": "Uống 1 viên vào buổi tối trước khi đi ngủ",
+      "status": "active"
+    },
+    {
+      "id": 4,
+      "code": "MED-004",
+      "name": "Omeprazole 20mg",
+      "category": "Ức chế tiết acid dạ dày",
+      "unit": "Viên",
+      "unit_price": 5000,
+      "stock_quantity": 900,
+      "usage_instruction": "Uống 1 viên trước bữa ăn sáng 30 phút",
+      "status": "active"
+    },
+    {
+      "id": 5,
+      "code": "MED-005",
+      "name": "Amlodipine 5mg",
+      "category": "Hạ huyết áp",
+      "unit": "Viên",
+      "unit_price": 4500,
+      "stock_quantity": 700,
+      "usage_instruction": "Uống 1 viên vào buổi sáng mỗi ngày",
+      "status": "active"
+    },
+    {
+      "id": 6,
+      "code": "MED-006",
+      "name": "Vitamin C 500mg",
+      "category": "Tăng cường sức đề kháng",
+      "unit": "Viên sủi",
+      "unit_price": 3000,
+      "stock_quantity": 1200,
+      "usage_instruction": "Hòa tan vào 200ml nước, uống sau bữa ăn sáng",
+      "status": "active"
+    },
+    {
+      "id": 7,
+      "code": "MED-007",
+      "name": "Men vi sinh Enterogermina",
+      "category": "Hỗ trợ tiêu hóa",
+      "unit": "Ống",
+      "unit_price": 12000,
+      "stock_quantity": 500,
+      "usage_instruction": "Uống 1-2 ống/ngày sau ăn",
+      "status": "active"
+    },
+    {
+      "id": 8,
+      "code": "MED-008",
+      "name": "Siro ho Prospan 100ml",
+      "category": "Thuốc ho thảo dược",
+      "unit": "Chai",
+      "unit_price": 85000,
+      "stock_quantity": 200,
+      "usage_instruction": "Uống 5ml/lần, 3 lần/ngày",
+      "status": "active"
+    }
+  ],
+  "doctor_leaves": [
+    {
+      "id": 1,
+      "doctor_id": 1,
+      "start_date": "2026-11-25",
+      "end_date": "2026-11-25",
+      "reason": "Đi hội thảo Tim mạch",
+      "status": "approved"
+    },
+    {
+      "id": 22,
+      "doctor_id": 9,
+      "start_date": "2026-11-28",
+      "end_date": "2026-11-28",
+      "reason": "Đi công tác nước ngoài",
+      "status": "approved"
+    }
+  ]
+}

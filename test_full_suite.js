@@ -5,6 +5,25 @@
 
 const http = require('http');
 const querystring = require('querystring');
+const os = require('os');
+const path = require('path');
+const fs = require('fs');
+
+// Cô lập dữ liệu: mặc định chạy trên CSDL SQLite tạm (được seed demo tự động), KHÔNG đụng database/medibook.sqlite.
+// Muốn dùng CSDL khác thì đặt DATABASE_PATH trước khi chạy.
+let tempDbPath = null;
+if (!process.env.DATABASE_PATH) {
+  tempDbPath = path.join(os.tmpdir(), `medibook_test_${process.pid}_${Date.now()}.sqlite`);
+  process.env.DATABASE_PATH = tempDbPath;
+}
+process.env.NODE_ENV = 'test';
+process.on('exit', () => {
+  if (!tempDbPath) return;
+  for (const suffix of ['', '-wal', '-shm', '-journal']) {
+    try { fs.unlinkSync(tempDbPath + suffix); } catch (e) { /* ignore */ }
+  }
+});
+
 const db = require('./dist/db');
 
 const PORT = 3001;
