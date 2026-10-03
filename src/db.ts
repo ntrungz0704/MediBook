@@ -2,8 +2,27 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
 
+// Automatically load .env if present
+const envPath = path.resolve(process.cwd(), '.env');
+if (fs.existsSync(envPath) && typeof process.loadEnvFile === 'function') {
+  try {
+    process.loadEnvFile(envPath);
+  } catch {
+    // Ignore if already loaded or not available
+  }
+}
+
 const ROOT_DIR = path.resolve(__dirname, '..');
-const dbPath = path.join(ROOT_DIR, 'database/medibook.sqlite');
+const dbPath = process.env.DATABASE_PATH
+  ? path.resolve(process.cwd(), process.env.DATABASE_PATH)
+  : path.join(ROOT_DIR, 'database/medibook.sqlite');
+
+// Ensure directory exists
+const dbDir = path.dirname(dbPath);
+if (!fs.existsSync(dbDir)) {
+  fs.mkdirSync(dbDir, { recursive: true });
+}
+
 const db = new Database(dbPath);
 
 // Enable Foreign Keys & WAL mode for high performance

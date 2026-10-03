@@ -1,7 +1,18 @@
 node_modules/
+dist/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# SQLite Runtime databases
+database/*.sqlite
 database/*.sqlite-journal
 database/*.sqlite-wal
 database/*.sqlite-shm
+
+# Logs and system files
 *.log
 npm-debug.log*
 .DS_Store

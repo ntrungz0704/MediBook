@@ -1,7 +1,19 @@
+const fs = require('fs');
+const path = require('path');
+
+// Automatically load .env file if available in working directory (Node 20.12+)
+const envPath = path.resolve(process.cwd(), '.env');
+if (fs.existsSync(envPath) && typeof process.loadEnvFile === 'function') {
+  try {
+    process.loadEnvFile(envPath);
+  } catch (err) {
+    console.warn('⚠️ Cảnh báo: Không thể nạp file .env:', err);
+  }
+}
+
 const express = require('express');
 const session = require('express-session');
 const flash = require('connect-flash');
-const path = require('path');
 const bcrypt = require('bcryptjs');
 const db = require('./db');
 const helpers = require('./helpers');
@@ -9,6 +21,21 @@ const { requireAuth, requireRole } = require('./middleware');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const NODE_ENV = process.env.NODE_ENV || 'development';
+const isProduction = NODE_ENV === 'production';
+
+// Production validation: SESSION_SECRET is required when NODE_ENV=production
+const sessionSecret = process.env.SESSION_SECRET;
+if (isProduction && (!sessionSecret || sessionSecret.trim() === '')) {
+  console.error('❌ LỖI KHỞI ĐỘNG (FATAL): Biến môi trường SESSION_SECRET là bắt buộc khi chạy ở chế độ production (NODE_ENV=production)!');
+  console.error('👉 Vui lòng cấu hình SESSION_SECRET trong file .env hoặc trên hệ thống máy chủ.');
+  process.exit(1);
+}
+
+// In development or test mode, provide safe developer placeholder if not configured
+const activeSessionSecret = (sessionSecret && sessionSecret.trim() !== '')
+  ? sessionSecret.trim()
+  : 'dev_insecure_session_secret_for_local_development_only';
 
 // View engine (point to views in root directory)
 const ROOT_DIR = path.resolve(__dirname, '..');
@@ -22,7 +49,7 @@ app.use(express.json());
 
 // Session & Flash
 app.use(session({
-  secret: 'medibook-secret-key-node',
+  secret: activeSessionSecret,
   resave: false,
   saveUninitialized: false,
   cookie: { maxAge: 1000 * 60 * 60 * 24 } // 1 day
@@ -2217,3 +2244,6 @@ app.listen(PORT, () => {
   console.log(`👉 Truy cập website: http://localhost:${PORT}`);
   console.log(`=======================================================`);
 });
+
+export = app;
+
