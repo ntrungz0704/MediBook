@@ -1446,6 +1446,51 @@ app.post('/doctor/examine/:appointmentId', requireRole('doctor'), (req, res) => 
   const admDate = tType === 'inpatient' ? (admission_date || null) : null;
   const disDate = tType === 'inpatient' ? (discharge_date || null) : null;
 
+  // Chuẩn hóa danh sách thuốc & kiểm tra tồn kho TRƯỚC khi ghi bất kỳ dữ liệu nào.
+  // Giá lấy từ danh mục thuốc (không tin giá do client gửi lên).
+  const toArr = (v: any) => (Array.isArray(v) ? v : (v === undefined ? [] : [v]));
+  const rxNames = toArr(req.body.med_name);
+  const rxItems: any[] = [];
+  for (let i = 0; i < rxNames.length; i++) {
+    const mId = parseInt(toArr(req.body.med_id)[i]) || null;
+    const med = mId ? db.prepare('SELECT id, name, unit, unit_price FROM medicines WHERE id = ?').get(mId) as any : null;
+    if (mId && !med) {
+      req.flash('error', 'Thuốc được chọn không tồn tại trong danh mục.');
+      return redirectBack(req, res);
+    }
+    const name = String(rxNames[i] || '').trim() || (med ? med.name : '');
+    if (!name) continue;
+    rxItems.push({
+      mId, name,
+      dosage: toArr(req.body.med_dosage)[i] || '',
+      unit: toArr(req.body.med_unit)[i] || (med ? med.unit : 'Viên'),
+      q: Math.max(1, parseFloat(toArr(req.body.med_quantity)[i]) || 1),
+      p: med ? Number(med.unit_price) || 0 : Math.max(0, parseFloat(toArr(req.body.med_price)[i]) || 0),
+      morning: toArr(req.body.med_morning)[i] || '0',
+      noon: toArr(req.body.med_noon)[i] || '0',
+      afternoon: toArr(req.body.med_afternoon)[i] || '0',
+      night: toArr(req.body.med_night)[i] || '0',
+      instructions: toArr(req.body.med_instructions)[i] || ''
+    });
+  }
+  if (rxItems.length > 0) {
+    const need = new Map<number, number>();
+    for (const it of rxItems) if (it.mId) need.set(it.mId, (need.get(it.mId) || 0) + it.q);
+    const oldItems = db.prepare(`
+      SELECT pi.medicine_id, pi.quantity FROM prescription_items pi
+      JOIN prescriptions p ON p.id = pi.prescription_id
+      WHERE p.medical_record_id = (SELECT id FROM medical_records WHERE appointment_id = ?)
+    `).all(appt.id) as any[];
+    for (const [mid, qty] of need) {
+      const med = db.prepare('SELECT name, stock_quantity FROM medicines WHERE id = ?').get(mid) as any;
+      const restorable = oldItems.filter(o => o.medicine_id === mid).reduce((s, o) => s + Number(o.quantity), 0);
+      if (qty > Number(med.stock_quantity) + restorable) {
+        req.flash('error', `Không đủ tồn kho cho thuốc "${med.name}" (còn ${Number(med.stock_quantity) + restorable}, yêu cầu ${qty}).`);
+        return redirectBack(req, res);
+      }
+    }
+  }
+
   // Check previous completed visit for parent_visit_id & 14-day 50% discount
   const prevCompletedVisit = db.prepare(`
     SELECT mr.id as medical_record_id, a.id as appointment_id, a.appointment_date
@@ -1525,63 +1570,48 @@ app.post('/doctor/examine/:appointmentId', requireRole('doctor'), (req, res) => 
     } catch (e) {}
   }
 
-  // 2. Save prescriptions and items
-  const { med_name, med_id, med_dosage, med_unit, med_quantity, med_morning, med_noon, med_afternoon, med_night, med_instructions, med_price, prescription_notes } = req.body;
+  // 2. Save prescriptions and items (transaction: hoàn kho đơn cũ -> ghi đơn mới -> trừ kho)
+  const { prescription_notes } = req.body;
 
   let totalMedFee = 0;
-  if (med_name) {
-    const names = Array.isArray(med_name) ? med_name : [med_name];
-    const ids = Array.isArray(med_id) ? med_id : [med_id];
-    const dosages = Array.isArray(med_dosage) ? med_dosage : [med_dosage];
-    const units = Array.isArray(med_unit) ? med_unit : [med_unit];
-    const quantities = Array.isArray(med_quantity) ? med_quantity : [med_quantity];
-    const mornings = Array.isArray(med_morning) ? med_morning : [med_morning];
-    const noons = Array.isArray(med_noon) ? med_noon : [med_noon];
-    const afternoons = Array.isArray(med_afternoon) ? med_afternoon : [med_afternoon];
-    const nights = Array.isArray(med_night) ? med_night : [med_night];
-    const instructions = Array.isArray(med_instructions) ? med_instructions : [med_instructions];
-    const prices = Array.isArray(med_price) ? med_price : [med_price];
+  if (rxItems.length > 0) {
+    totalMedFee = rxItems.reduce((sum, it) => sum + it.q * it.p, 0);
 
-    names.forEach((name, i) => {
-      const q = Math.max(1, parseFloat(quantities[i]) || 1);
-      const p = Math.max(0, parseFloat(prices[i]) || 0);
-      totalMedFee += (q * p);
-    });
+    const savePrescription = db.transaction(() => {
+      let pres = db.prepare('SELECT id FROM prescriptions WHERE medical_record_id = ?').get(recordId) as any;
+      let presId;
+      if (pres) {
+        const oldRows = db.prepare('SELECT medicine_id, quantity FROM prescription_items WHERE prescription_id = ?').all(pres.id) as any[];
+        for (const o of oldRows) {
+          if (o.medicine_id) db.prepare('UPDATE medicines SET stock_quantity = stock_quantity + ? WHERE id = ?').run(o.quantity, o.medicine_id);
+        }
+        db.prepare(`UPDATE prescriptions SET total_amount = ?, usage_instructions = ? WHERE id = ?`).run(totalMedFee, prescription_notes || '', pres.id);
+        db.prepare('DELETE FROM prescription_items WHERE prescription_id = ?').run(pres.id);
+        presId = pres.id;
+      } else {
+        const presRes = db.prepare(`
+          INSERT INTO prescriptions (medical_record_id, appointment_id, doctor_id, patient_id, total_amount, usage_instructions)
+          VALUES (?, ?, ?, ?, ?, ?)
+        `).run(recordId, appt.id, appt.doctor_id, appt.patient_id, totalMedFee, prescription_notes || '');
+        presId = presRes.lastInsertRowid;
+      }
 
-    let pres = db.prepare('SELECT id FROM prescriptions WHERE medical_record_id = ?').get(recordId) as any;
-    let presId;
-    if (pres) {
-      db.prepare(`UPDATE prescriptions SET total_amount = ?, usage_instructions = ? WHERE id = ?`).run(totalMedFee, prescription_notes || '', pres.id);
-      db.prepare('DELETE FROM prescription_items WHERE prescription_id = ?').run(pres.id);
-      presId = pres.id;
-    } else {
-      const presRes = db.prepare(`
-        INSERT INTO prescriptions (medical_record_id, appointment_id, doctor_id, patient_id, total_amount, usage_instructions)
-        VALUES (?, ?, ?, ?, ?, ?)
-      `).run(recordId, appt.id, appt.doctor_id, appt.patient_id, totalMedFee, prescription_notes || '');
-      presId = presRes.lastInsertRowid;
-    }
-
-    const insertItem = db.prepare(`
-      INSERT INTO prescription_items (prescription_id, medicine_id, medicine_name, dosage, unit, quantity, morning, noon, afternoon, night, instructions, unit_price, amount)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-
-    names.forEach((name, i) => {
-      const q = Math.max(1, parseFloat(quantities[i]) || 1);
-      const p = Math.max(0, parseFloat(prices[i]) || 0);
-      const mId = parseInt(ids[i]) || null;
-      insertItem.run(
-        presId, mId, name, dosages[i] || '', units[i] || 'Viên', q,
-        mornings[i] || '0', noons[i] || '0', afternoons[i] || '0', nights[i] || '0',
-        instructions[i] || '', p, q * p
-      );
-
-      // Decrement stock quantity safely in medicines table
-      if (mId) {
-        db.prepare('UPDATE medicines SET stock_quantity = MAX(0, stock_quantity - ?) WHERE id = ?').run(q, mId);
+      const insertItem = db.prepare(`
+        INSERT INTO prescription_items (prescription_id, medicine_id, medicine_name, dosage, unit, quantity, morning, noon, afternoon, night, instructions, unit_price, amount)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      for (const it of rxItems) {
+        insertItem.run(
+          presId, it.mId, it.name, it.dosage, it.unit, it.q,
+          it.morning, it.noon, it.afternoon, it.night,
+          it.instructions, it.p, it.q * it.p
+        );
+        if (it.mId) {
+          db.prepare('UPDATE medicines SET stock_quantity = stock_quantity - ? WHERE id = ?').run(it.q, it.mId);
+        }
       }
     });
+    savePrescription();
   }
 
   // 3. Mark appointment and queue as completed
