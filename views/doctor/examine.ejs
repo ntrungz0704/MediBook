@@ -60,20 +60,56 @@
       </div>
     </div>
 
+    <!-- 14-day Discount & Follow-up Eligibility Banner -->
+    <% if (prevCompletedVisit) { %>
+      <div class="card-box" style="padding: 16px; background: <%= isWithin14Days ? '#ecfdf5' : '#f8fafc' %>; border: 1.5px solid <%= isWithin14Days ? '#10b981' : '#cbd5e1' %>;">
+        <div style="font-size: 13px; font-weight: 800; color: <%= isWithin14Days ? '#065f46' : '#334155' %>; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+          <span><%= isWithin14Days ? '🏷️ ĐỦ ĐIỀU KIỆN GIẢM 50% TÁI KHÁM' : 'ℹ️ THÔNG TIN TÁI KHÁM' %></span>
+        </div>
+        <div style="font-size: 12.5px; color: <%= isWithin14Days ? '#047857' : '#64748b' %>; line-height: 1.4;">
+          <% if (isWithin14Days) { %>
+            Bệnh nhân đã khám vào ngày <strong><%= formatDate(prevCompletedVisit.appointment_date) %></strong> (cách <strong><%= daysDiff %> ngày</strong> &le; 14 ngày).
+            <div style="margin-top: 6px; font-weight: 700; color: #059669;">
+              Tiền công khám được áp dụng: <span style="text-decoration: line-through; color: #94a3b8;">200.000 ₫</span> &rarr; <strong>100.000 ₫</strong> (-50%)
+            </div>
+          <% } else { %>
+            Lần khám trước vào ngày <strong><%= formatDate(prevCompletedVisit.appointment_date) %></strong> (cách <strong><%= daysDiff %> ngày</strong> &gt; 14 ngày). Áp dụng phí tiêu chuẩn: <strong>200.000 ₫</strong>.
+          <% } %>
+        </div>
+      </div>
+    <% } %>
+
     <!-- Past Visit Records -->
     <div class="card-box" style="padding: 20px;">
       <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px; border-bottom: 1px solid var(--border-light); padding-bottom: 8px;">
-        📜 Lịch sử các lần khám trước
+        📜 Lịch sử các lần khám trước (<%= pastRecords ? pastRecords.length : 0 %>)
       </h3>
 
       <% if (!pastRecords || pastRecords.length === 0) { %>
         <p style="font-size: 13px; color: var(--text-muted);">Đây là lần đầu bệnh nhân đến khám tại MediBook.</p>
       <% } else { %>
-        <div style="display:flex; flex-direction:column; gap:12px; font-size: 13px;">
-          <% pastRecords.forEach(pr => { %>
-            <div style="border-left: 3px solid var(--primary); padding-left: 10px;">
-              <div style="font-weight: 700; color: #0f172a;"><%= formatDate(pr.created_at) %></div>
-              <div style="color: #334155;">Chẩn đoán: <%= pr.clinical_diagnosis %></div>
+        <div style="display:flex; flex-direction:column; gap:14px; font-size: 13px;">
+          <% pastRecords.forEach((pr, idx) => { %>
+            <div style="border-left: 3px solid var(--primary); padding-left: 12px; background:#f8fafc; padding: 10px; border-radius: 0 8px 8px 0;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <strong style="color: #0f172a;"><%= formatDate(pr.appointment_date || pr.created_at) %></strong>
+                <span class="badge badge-sm badge-info"><%= pr.visit_type === 'follow_up' ? 'Tái khám' : 'Khám đầu' %></span>
+              </div>
+              <div style="color: #0369a1; font-weight:600; margin-bottom:2px;">Bác sĩ: <%= pr.doctor_name || 'Bác sĩ chuyên khoa' %></div>
+              <div style="color: #334155; margin-bottom: 4px;"><strong>Chẩn đoán:</strong> <%= pr.clinical_diagnosis %></div>
+              <% if (pr.doctor_notes) { %>
+                <div style="color: #64748b; font-size: 12px; margin-bottom: 4px;"><em>Lời dặn: <%= pr.doctor_notes %></em></div>
+              <% } %>
+              <% if (pr.prescription && pr.prescription.items && pr.prescription.items.length > 0) { %>
+                <div style="margin-top: 6px; padding-top: 6px; border-top: 1px dashed #cbd5e1; font-size: 12px;">
+                  <strong style="color: #475569;">Đơn thuốc trước:</strong>
+                  <ul style="margin: 4px 0 0 16px; padding: 0; color: #334155;">
+                    <% pr.prescription.items.forEach(item => { %>
+                      <li><%= item.medicine_name %> (<%= item.quantity %> <%= item.unit %>) - <%= item.instructions || 'Theo chỉ định' %></li>
+                    <% }); %>
+                  </ul>
+                </div>
+              <% } %>
             </div>
           <% }); %>
         </div>
@@ -163,11 +199,25 @@
         <div id="inpatient_details_box" style="display: <%= (currentRecord && currentRecord.treatment_type === 'inpatient') ? 'grid' : 'none' %>; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 14px; margin-top: 14px; padding-top: 14px; border-top: 1px dashed #cbd5e1; background: #fffbeb; padding: 12px; border-radius: 6px; border: 1px solid #fde68a;">
           <div class="form-group" style="margin-bottom:0;">
             <label style="font-size: 12px; font-weight: 700; color: #92400e;">Số phòng điều trị <span style="color:red;">*</span></label>
-            <input type="text" name="inpatient_room" id="inp_room" class="form-control form-control-sm" placeholder="VD: Phòng 402 - Khoa Nội" value="<%= (currentRecord && currentRecord.inpatient_room) || '' %>">
+            <input type="text" name="inpatient_room" id="inp_room" list="room_options" class="form-control form-control-sm" placeholder="VD: P.401 - Phòng Nội Trú Tim Mạch" value="<%= (currentRecord && currentRecord.inpatient_room) || '' %>">
+            <datalist id="room_options">
+              <% if (typeof allRooms !== 'undefined' && allRooms) { %>
+                <% allRooms.forEach(r => { %>
+                  <option value="<%= r.room_number %> - <%= r.room_name %>"></option>
+                <% }); %>
+              <% } %>
+            </datalist>
           </div>
           <div class="form-group" style="margin-bottom:0;">
             <label style="font-size: 12px; font-weight: 700; color: #92400e;">Số giường bệnh <span style="color:red;">*</span></label>
-            <input type="text" name="inpatient_bed" id="inp_bed" class="form-control form-control-sm" placeholder="VD: Giường 08 (G-08)" value="<%= (currentRecord && currentRecord.inpatient_bed) || '' %>">
+            <input type="text" name="inpatient_bed" id="inp_bed" list="bed_options" class="form-control form-control-sm" placeholder="VD: G-01" value="<%= (currentRecord && currentRecord.inpatient_bed) || '' %>">
+            <datalist id="bed_options">
+              <% if (typeof availableBeds !== 'undefined' && availableBeds) { %>
+                <% availableBeds.forEach(b => { %>
+                  <option value="<%= b.bed_number %> (<%= b.room_number %> - Trống)"></option>
+                <% }); %>
+              <% } %>
+            </datalist>
           </div>
           <div class="form-group" style="margin-bottom:0;">
             <label style="font-size: 12px; font-weight: 700; color: #92400e;">Ngày nhập viện</label>

@@ -1,0 +1,447 @@
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+  <div>
+    <h1 style="font-size: 24px; font-weight: 800; color: #0f172a; margin: 0 0 6px 0; display: flex; align-items: center; gap: 10px;">
+      <span>🛏️</span> Sơ đồ Giường bệnh Nội trú
+    </h1>
+    <p style="color: #64748b; font-size: 14px; margin: 0;">
+      Theo dõi và điều phối 4 trạng thái phòng/giường bệnh thời gian thực theo quy chuẩn quản lý phòng khám nội trú.
+    </p>
+  </div>
+
+  <div style="display: flex; gap: 10px; align-items: center;">
+    <button onclick="window.location.reload();" class="btn btn-secondary btn-sm" style="display:flex; align-items:center; gap:6px;">
+      <span>🔄</span> Làm mới sơ đồ
+    </button>
+  </div>
+</div>
+
+<!-- 1. KPI Stats Cards -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+  <!-- Total Beds -->
+  <div class="card-box" style="padding: 16px; border-left: 4px solid #0284c7; display: flex; justify-content: space-between; align-items: center;">
+    <div>
+      <div style="font-size: 12.5px; font-weight: 600; color: #64748b; text-transform: uppercase;">Tổng số giường</div>
+      <div style="font-size: 26px; font-weight: 800; color: #0f172a; margin-top: 4px;"><%= totalBeds %></div>
+      <div style="font-size: 12px; color: #0284c7; font-weight: 600; margin-top: 2px;"><%= rooms.length %> phòng điều trị</div>
+    </div>
+    <div style="width: 44px; height: 44px; border-radius: 10px; background: #e0f2fe; display: flex; align-items: center; justify-content: center; font-size: 22px;">
+      🛏️
+    </div>
+  </div>
+
+  <!-- Available Beds -->
+  <div class="card-box" style="padding: 16px; border-left: 4px solid #10b981; display: flex; justify-content: space-between; align-items: center;">
+    <div>
+      <div style="font-size: 12.5px; font-weight: 600; color: #065f46; text-transform: uppercase;">🟢 Giường trống</div>
+      <div style="font-size: 26px; font-weight: 800; color: #047857; margin-top: 4px;"><%= availableCount %></div>
+      <div style="font-size: 12px; color: #059669; font-weight: 600; margin-top: 2px;">Sẵn sàng tiếp nhận</div>
+    </div>
+    <div style="width: 44px; height: 44px; border-radius: 10px; background: #d1fae5; display: flex; align-items: center; justify-content: center; font-size: 22px;">
+      ✅
+    </div>
+  </div>
+
+  <!-- Occupied Beds -->
+  <div class="card-box" style="padding: 16px; border-left: 4px solid #ef4444; display: flex; justify-content: space-between; align-items: center;">
+    <div>
+      <div style="font-size: 12.5px; font-weight: 600; color: #991b1b; text-transform: uppercase;">🔴 Đang có bệnh nhân</div>
+      <div style="font-size: 26px; font-weight: 800; color: #b91c1c; margin-top: 4px;"><%= occupiedCount %></div>
+      <div style="font-size: 12px; color: #dc2626; font-weight: 600; margin-top: 2px;">Công suất: <%= occupancyRate %>%</div>
+    </div>
+    <div style="width: 44px; height: 44px; border-radius: 10px; background: #fee2e2; display: flex; align-items: center; justify-content: center; font-size: 22px;">
+      👤
+    </div>
+  </div>
+
+  <!-- Cleaning Beds -->
+  <div class="card-box" style="padding: 16px; border-left: 4px solid #f59e0b; display: flex; justify-content: space-between; align-items: center;">
+    <div>
+      <div style="font-size: 12.5px; font-weight: 600; color: #92400e; text-transform: uppercase;">🟡 Đang dọn vệ sinh</div>
+      <div style="font-size: 26px; font-weight: 800; color: #d97706; margin-top: 4px;"><%= cleaningCount %></div>
+      <div style="font-size: 12px; color: #b45309; font-weight: 600; margin-top: 2px;">Khử khuẩn & thay drap</div>
+    </div>
+    <div style="width: 44px; height: 44px; border-radius: 10px; background: #fef3c7; display: flex; align-items: center; justify-content: center; font-size: 22px;">
+      🧹
+    </div>
+  </div>
+
+  <!-- Maintenance Beds -->
+  <div class="card-box" style="padding: 16px; border-left: 4px solid #64748b; display: flex; justify-content: space-between; align-items: center;">
+    <div>
+      <div style="font-size: 12.5px; font-weight: 600; color: #334155; text-transform: uppercase;">⚫ Hỏng / Bảo trì</div>
+      <div style="font-size: 26px; font-weight: 800; color: #475569; margin-top: 4px;"><%= maintenanceCount %></div>
+      <div style="font-size: 12px; color: #64748b; font-weight: 600; margin-top: 2px;">Đang kiểm định thiết bị</div>
+    </div>
+    <div style="width: 44px; height: 44px; border-radius: 10px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 22px;">
+      ⚙️
+    </div>
+  </div>
+</div>
+
+<!-- 2. Filter & Legend Toolbar -->
+<div class="card-box" style="padding: 18px; margin-bottom: 24px;">
+  <form method="GET" action="/receptionist/beds" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+    <!-- Filters -->
+    <div style="display: flex; gap: 14px; align-items: center; flex-wrap: wrap;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <label style="font-size: 13.5px; font-weight: 600; color: #334155;">Khoa / Phòng:</label>
+        <select name="room_id" class="form-control form-control-sm" style="min-width: 190px;" onchange="this.form.submit()">
+          <option value="all" <%= selectedRoomId === 'all' ? 'selected' : '' %>>-- Tất cả các phòng --</option>
+          <% rooms.forEach(r => { %>
+            <option value="<%= r.id %>" <%= String(selectedRoomId) === String(r.id) ? 'selected' : '' %>>
+              <%= r.room_number %> - <%= r.room_name %>
+            </option>
+          <% }); %>
+        </select>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <label style="font-size: 13.5px; font-weight: 600; color: #334155;">Trạng thái:</label>
+        <select name="status" class="form-control form-control-sm" style="min-width: 170px;" onchange="this.form.submit()">
+          <option value="all" <%= selectedStatus === 'all' ? 'selected' : '' %>>-- Tất cả trạng thái --</option>
+          <option value="available" <%= selectedStatus === 'available' ? 'selected' : '' %>>🟢 Giường trống (Available)</option>
+          <option value="occupied" <%= selectedStatus === 'occupied' ? 'selected' : '' %>>🔴 Đang có bệnh nhân (Occupied)</option>
+          <option value="cleaning" <%= selectedStatus === 'cleaning' ? 'selected' : '' %>>🟡 Đang dọn vệ sinh (Cleaning)</option>
+          <option value="maintenance" <%= selectedStatus === 'maintenance' ? 'selected' : '' %>>⚫ Hỏng / Bảo trì (Maintenance)</option>
+        </select>
+      </div>
+
+      <% if (selectedStatus !== 'all' || selectedRoomId !== 'all') { %>
+        <a href="/receptionist/beds" class="btn btn-secondary btn-sm" style="text-decoration:none;">Xóa bộ lọc</a>
+      <% } %>
+    </div>
+
+    <!-- Status Legend -->
+    <div style="display: flex; gap: 14px; align-items: center; flex-wrap: wrap; font-size: 12.5px;">
+      <span style="display: inline-flex; align-items: center; gap: 5px; color: #065f46; font-weight: 600;">
+        <span style="width: 10px; height: 10px; border-radius: 50%; background: #10b981;"></span> Giường trống
+      </span>
+      <span style="display: inline-flex; align-items: center; gap: 5px; color: #991b1b; font-weight: 600;">
+        <span style="width: 10px; height: 10px; border-radius: 50%; background: #ef4444;"></span> Đang nằm
+      </span>
+      <span style="display: inline-flex; align-items: center; gap: 5px; color: #92400e; font-weight: 600;">
+        <span style="width: 10px; height: 10px; border-radius: 50%; background: #f59e0b;"></span> Đang dọn
+      </span>
+      <span style="display: inline-flex; align-items: center; gap: 5px; color: #334155; font-weight: 600;">
+        <span style="width: 10px; height: 10px; border-radius: 50%; background: #64748b;"></span> Bảo trì
+      </span>
+    </div>
+  </form>
+</div>
+
+<!-- 3. Rooms and Beds Interactive Matrix -->
+<div style="display: flex; flex-direction: column; gap: 24px;">
+  <% if (roomsWithBeds.length === 0) { %>
+    <div class="card-box" style="padding: 40px; text-align: center; color: #64748b;">
+      <div style="font-size: 36px; margin-bottom: 12px;">🛏️</div>
+      <h3>Không tìm thấy giường bệnh phù hợp</h3>
+      <p style="margin-top: 6px;">Vui lòng chọn lại bộ lọc trạng thái hoặc khoa phòng phía trên.</p>
+    </div>
+  <% } else { %>
+    <% roomsWithBeds.forEach(room => { %>
+      <div class="card-box" style="padding: 20px;">
+        <!-- Room Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border-light); flex-wrap: wrap; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 16px; font-weight: 800; background: #0284c7; color: #fff; padding: 4px 10px; border-radius: 6px;">
+              <%= room.room_number %>
+            </span>
+            <div>
+              <h3 style="font-size: 17px; font-weight: 700; color: #0f172a; margin: 0;">
+                <%= room.room_name %>
+              </h3>
+              <div style="font-size: 12.5px; color: #64748b; margin-top: 2px;">
+                <%= room.department_name || 'Khoa Nội' %> &bull; Phân loại: <strong><%= room.room_type === 'icu' ? 'Hồi sức tích cực (ICU)' : (room.room_type === 'emergency' ? 'Cấp cứu' : 'Nội trú tiêu chuẩn') %></strong>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="badge" style="background: <%= room.occupied_beds > 0 ? '#fee2e2;color:#991b1b;' : '#d1fae5;color:#065f46;' %> font-weight: 700;">
+              <%= room.occupied_beds %> / <%= room.beds.length %> giường đang sử dụng
+            </span>
+          </div>
+        </div>
+
+        <!-- Bed Cards Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px;">
+          <% room.beds.forEach(bed => { %>
+            <% 
+              let borderColor = '#cbd5e1';
+              let bgColor = '#ffffff';
+              let badgeColor = '#64748b';
+              let badgeBg = '#f1f5f9';
+              let statusLabel = 'Không xác định';
+
+              if (bed.status === 'available') {
+                borderColor = '#10b981';
+                bgColor = '#f0fdf4';
+                badgeColor = '#065f46';
+                badgeBg = '#d1fae5';
+                statusLabel = '🟢 Giường trống';
+              } else if (bed.status === 'occupied') {
+                borderColor = '#f43f5e';
+                bgColor = '#fff1f2';
+                badgeColor = '#991b1b';
+                badgeBg = '#fee2e2';
+                statusLabel = '🔴 Đang có bệnh nhân';
+              } else if (bed.status === 'cleaning') {
+                borderColor = '#f59e0b';
+                bgColor = '#fffbeb';
+                badgeColor = '#92400e';
+                badgeBg = '#fef3c7';
+                statusLabel = '🟡 Đang dọn vệ sinh';
+              } else if (bed.status === 'maintenance') {
+                borderColor = '#64748b';
+                bgColor = '#f8fafc';
+                badgeColor = '#334155';
+                badgeBg = '#e2e8f0';
+                statusLabel = '⚫ Hỏng / Bảo trì';
+              }
+
+              // Calculate days admitted if occupied
+              let daysAdmitted = 0;
+              if (bed.admission_date) {
+                const diffTime = Math.abs(new Date().getTime() - new Date(bed.admission_date).getTime());
+                daysAdmitted = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+              }
+            %>
+
+            <div class="bed-interactive-card" 
+                 onclick="openBedDetailModal(<%= JSON.stringify(bed) %>, <%= JSON.stringify(room) %>)"
+                 style="border: 2px solid <%= borderColor %>; background: <%= bgColor %>; border-radius: 10px; padding: 14px; cursor: pointer; transition: all 0.2s ease; position: relative;"
+                 onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.08)';"
+                 onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+              
+              <!-- Bed Header -->
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="font-size: 18px;">
+                    <%= bed.status === 'available' ? '🛏️' : bed.status === 'occupied' ? '🧑‍⚕️' : bed.status === 'cleaning' ? '🧹' : '⚙️' %>
+                  </span>
+                  <strong style="font-size: 15px; color: #0f172a;"><%= bed.bed_number %></strong>
+                </div>
+
+                <span style="font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 12px; background: <%= badgeBg %>; color: <%= badgeColor %>;">
+                  <%= statusLabel %>
+                </span>
+              </div>
+
+              <!-- Bed Details -->
+              <div style="font-size: 13px; line-height: 1.5; color: #334155;">
+                <% if (bed.status === 'occupied') { %>
+                  <div style="font-weight: 700; color: #0f172a; margin-bottom: 2px;">
+                    👤 <%= bed.patient_name || 'Bệnh nhân nội trú' %>
+                  </div>
+                  <% if (bed.patient_phone) { %>
+                    <div style="font-size: 12px; color: #64748b;">
+                      📞 <%= bed.patient_phone %>
+                    </div>
+                  <% } %>
+                  <div style="font-size: 12px; color: #0369a1; font-weight: 600; margin-top: 4px;">
+                    🩺 <%= bed.doctor_name || 'Bác sĩ phụ trách' %>
+                  </div>
+                  <% if (bed.admission_date) { %>
+                    <div style="font-size: 11.5px; color: #991b1b; margin-top: 4px; font-weight: 600;">
+                      📅 Nằm viện: <%= daysAdmitted %> ngày (từ <%= formatDate(bed.admission_date) %>)
+                    </div>
+                  <% } %>
+                  <% if (bed.clinical_diagnosis) { %>
+                    <div style="font-size: 12px; color: #475569; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<%= bed.clinical_diagnosis %>">
+                      📋 <%= bed.clinical_diagnosis %>
+                    </div>
+                  <% } %>
+                <% } else if (bed.status === 'available') { %>
+                  <div style="color: #047857; font-weight: 600; margin-top: 4px;">
+                    ✅ Giường trống, sạch sẽ
+                  </div>
+                  <div style="font-size: 12px; color: #64748b; margin-top: 2px;">
+                    Sẵn sàng tiếp nhận ca nhập viện từ phòng khám.
+                  </div>
+                <% } else if (bed.status === 'cleaning') { %>
+                  <div style="color: #b45309; font-weight: 600; margin-top: 4px;">
+                    🧹 Đang dọn vệ sinh khử khuẩn
+                  </div>
+                  <div style="font-size: 12px; color: #92400e; margin-top: 2px;">
+                    <%= bed.notes || 'Chờ hoàn tất khử khuẩn để đón bệnh nhân' %>
+                  </div>
+                <% } else if (bed.status === 'maintenance') { %>
+                  <div style="color: #475569; font-weight: 600; margin-top: 4px;">
+                    ⚙️ Tạm ngưng do bảo trì
+                  </div>
+                  <div style="font-size: 12px; color: #64748b; margin-top: 2px;">
+                    <%= bed.notes || 'Đang bảo dưỡng hệ thống kỹ thuật' %>
+                  </div>
+                <% } %>
+              </div>
+
+              <!-- Click prompt -->
+              <div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(0,0,0,0.08); display: flex; justify-content: flex-end;">
+                <span style="font-size: 11.5px; font-weight: 600; color: #0284c7;">
+                  Chi tiết & Điều phối &rarr;
+                </span>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      </div>
+    <% }); %>
+  <% } %>
+</div>
+
+<!-- 4. Bed Detail & Status Adjustment Modal -->
+<div id="bedDetailModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 9999; align-items: center; justify-content: center; padding: 16px;">
+  <div class="card-box" style="max-width: 540px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 24px; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);">
+    
+    <!-- Modal Header -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border-light);">
+      <div>
+        <h3 id="modal_bed_title" style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0;">
+          Giường G-01 &bull; Phòng 401
+        </h3>
+        <p id="modal_room_subtitle" style="font-size: 13px; color: #64748b; margin: 2px 0 0 0;">
+          Khoa Tim Mạch - Nội trú tiêu chuẩn
+        </p>
+      </div>
+      <button onclick="closeBedDetailModal()" style="border: none; background: transparent; font-size: 22px; cursor: pointer; color: #64748b;">&times;</button>
+    </div>
+
+    <!-- Modal Body: Patient / Bed Info -->
+    <div id="modal_bed_info" style="margin-bottom: 20px;">
+      <!-- Populated via Javascript -->
+    </div>
+
+    <!-- Action Forms -->
+    <div style="border-top: 1px dashed var(--border); padding-top: 16px;">
+      <h4 style="font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 12px;">
+        ⚙️ Cập nhật trạng thái giường
+      </h4>
+
+      <form id="update_bed_status_form" method="POST" action="">
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label style="font-size: 12.5px; font-weight: 600;">Chuyển trạng thái sang:</label>
+          <select name="new_status" id="modal_select_status" class="form-control" required>
+            <option value="available">🟢 Giường trống (available) - Sẵn sàng nhận bệnh nhân</option>
+            <option value="occupied">🔴 Đang có bệnh nhân (occupied)</option>
+            <option value="cleaning">🟡 Đang dọn vệ sinh (cleaning) - Khử khuẩn thay drap</option>
+            <option value="maintenance">⚫ Hỏng / Bảo trì (maintenance) - Cần sửa chữa</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label style="font-size: 12.5px; font-weight: 600;">Ghi chú hoạt động / Lý do chuyển:</label>
+          <input type="text" name="notes" id="modal_status_notes" class="form-control form-control-sm" placeholder="VD: Thay drap mới, sửa van oxy, bệnh nhân chuyển viện...">
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+          <div id="modal_discharge_btn_container">
+            <!-- Rendered if bed is occupied -->
+          </div>
+
+          <div style="display: flex; gap: 8px;">
+            <button type="button" onclick="closeBedDetailModal()" class="btn btn-secondary btn-sm">Hủy</button>
+            <button type="submit" class="btn btn-primary btn-sm">Lưu cập nhật</button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function openBedDetailModal(bed, room) {
+    document.getElementById('modal_bed_title').innerText = `${bed.bed_number} • ${room.room_number} - ${room.room_name}`;
+    document.getElementById('modal_room_subtitle').innerText = `${room.department_name || 'Khoa Nội'} • Phân loại: ${room.room_type || 'Nội trú'}`;
+
+    const form = document.getElementById('update_bed_status_form');
+    form.action = `/receptionist/beds/${bed.id}/status`;
+
+    const select = document.getElementById('modal_select_status');
+    select.value = bed.status;
+
+    document.getElementById('modal_status_notes').value = bed.notes || '';
+
+    // Render detailed patient & bed status content
+    const infoContainer = document.getElementById('modal_bed_info');
+    const dischargeContainer = document.getElementById('modal_discharge_btn_container');
+    dischargeContainer.innerHTML = '';
+
+    if (bed.status === 'occupied') {
+      let days = 1;
+      if (bed.admission_date) {
+        const diffTime = Math.abs(new Date().getTime() - new Date(bed.admission_date).getTime());
+        days = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+      }
+
+      infoContainer.innerHTML = `
+        <div style="background: #fff1f2; border: 1.5px solid #fecdd3; border-radius: 8px; padding: 14px; margin-bottom: 14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span style="font-weight:700; color:#991b1b; font-size:14px;">🔴 BỆNH NHÂN ĐANG ĐIỀU TRỊ</span>
+            <span class="badge badge-danger">Nằm viện: ${days} ngày</span>
+          </div>
+          <div style="font-size:13px; color:#334155; display:flex; flex-direction:column; gap:6px;">
+            <div>Họ và tên: <strong>${bed.patient_name || 'Bệnh nhân nội trú'}</strong></div>
+            <div>Số điện thoại: <strong>${bed.patient_phone || 'Chưa cập nhật'}</strong></div>
+            <div>Bác sĩ phụ trách: <strong style="color:#0284c7;">${bed.doctor_name || 'Bác sĩ điều trị'}</strong></div>
+            <div>Ngày nhập viện: <strong>${bed.admission_date ? new Date(bed.admission_date).toLocaleDateString('vi-VN') : 'Hôm nay'}</strong></div>
+            ${bed.clinical_diagnosis ? `<div>Chẩn đoán y tế: <em style="color:#0f172a;">${bed.clinical_diagnosis}</em></div>` : ''}
+            ${bed.notes ? `<div style="margin-top:4px; font-size:12px; color:#64748b;">Ghi chú: ${bed.notes}</div>` : ''}
+          </div>
+        </div>
+      `;
+
+      // Quick discharge button
+      dischargeContainer.innerHTML = `
+        <form method="POST" action="/receptionist/beds/${bed.id}/discharge" onsubmit="return confirm('Xác nhận làm thủ tục xuất viện cho bệnh nhân này? Giường sẽ tự động chuyển sang trạng thái Đang dọn vệ sinh.');">
+          <button type="submit" class="btn btn-warning btn-sm" style="color:#92400e; background:#fef3c7; border-color:#fde68a; font-weight:700;">
+            🚪 Xuất viện & Chuyển Dọn Dẹp
+          </button>
+        </form>
+      `;
+    } else if (bed.status === 'available') {
+      infoContainer.innerHTML = `
+        <div style="background: #ecfdf5; border: 1.5px solid #a7f3d0; border-radius: 8px; padding: 14px; margin-bottom: 14px;">
+          <div style="font-weight:700; color:#065f46; font-size:14px; margin-bottom:4px;">🟢 GIƯỜNG TRỐNG SẴN SÀNG</div>
+          <p style="font-size:13px; color:#047857; margin:0;">
+            Giường đã được dọn dẹp, khử khuẩn và có đầy đủ trang thiết bị. Bác sĩ hoặc tiếp tân có thể xếp bệnh nhân nội trú vào giường này bất kỳ lúc nào.
+          </p>
+        </div>
+      `;
+    } else if (bed.status === 'cleaning') {
+      infoContainer.innerHTML = `
+        <div style="background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 8px; padding: 14px; margin-bottom: 14px;">
+          <div style="font-weight:700; color:#92400e; font-size:14px; margin-bottom:4px;">🟡 ĐANG DỌN VỆ SINH & KHỬ TRÙNG</div>
+          <p style="font-size:13px; color:#78350f; margin:0 0 6px 0;">
+            ${bed.notes || 'Hộ lý đang thay drap giường và khử khuẩn buồng bệnh.'}
+          </p>
+          <div style="font-size:12px; color:#b45309; font-weight:600;">
+            Sau khi hoàn tất, hãy bấm chuyển trạng thái sang "Giường trống" để tiếp nhận ca mới.
+          </div>
+        </div>
+      `;
+    } else if (bed.status === 'maintenance') {
+      infoContainer.innerHTML = `
+        <div style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 14px; margin-bottom: 14px;">
+          <div style="font-weight:700; color:#334155; font-size:14px; margin-bottom:4px;">⚫ TẠM NGƯNG BẢO TRÌ THIẾT BỊ</div>
+          <p style="font-size:13px; color:#475569; margin:0;">
+            ${bed.notes || 'Giường đang trong quá trình bảo dưỡng kỹ thuật định kỳ hoặc sửa chữa trang thiết bị.'}
+          </p>
+        </div>
+      `;
+    }
+
+    document.getElementById('bedDetailModal').style.display = 'flex';
+  }
+
+  function closeBedDetailModal() {
+    document.getElementById('bedDetailModal').style.display = 'none';
+  }
+
+  // Close modal when clicking outside box
+  document.getElementById('bedDetailModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeBedDetailModal();
+    }
+  });
+</script>

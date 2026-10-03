@@ -190,10 +190,13 @@ async function runTests() {
     // -------------------------------------------------------------
     // TEST 4: API Slot & Chống Đặt Lịch Quá Khứ, Chống Double-Booking
     // -------------------------------------------------------------
-    console.log('\n📌 NHÓM 4: Kiểm tra Logic Slot, Chống Đặt Quá Khứ & Chống Double-Booking');
+    console.log('\n📌 NHÓM 4: Kiểm tra Logic Slot, Chống Đặt Quá Khứ & Chống Double-Booking (Pha 1)');
     const doctorObj = db.prepare("SELECT d.id FROM doctors d JOIN users u ON d.user_id = u.id WHERE u.email = 'doctor@medibook.local'").get();
     
-    // Past date booking attempt
+    // 4.1 Past date API & booking attempt
+    res = await guest.get(`/api/slots?doctor_id=${doctorObj.id}&date=2020-01-01`);
+    assert(res.body.includes('Không thể đặt lịch vào ngày trong quá khứ') || !JSON.parse(res.body).success, '/api/slots từ chối ngày trong quá khứ');
+
     res = await patientClient.post('/appointments/book', {
       specialty_id: 1,
       doctor_id: doctorObj.id,
@@ -201,11 +204,36 @@ async function runTests() {
       start_time: '08:00:00',
       symptoms: 'Test quá khứ'
     });
-    // Check in database that no appointment exists for 2020-01-01
     const pastAppt = db.prepare('SELECT id FROM appointments WHERE appointment_date = ?').get('2020-01-01');
     assert(!pastAppt, 'Đã chặn thành công không cho đặt lịch vào ngày trong quá khứ');
 
-    // Valid booking on tomorrow
+    // 4.2 Doctor Leave API & booking attempt
+    const leaveTestDate = '2026-11-28';
+    db.prepare("DELETE FROM doctor_leaves WHERE doctor_id = ? AND start_date = ?").run(doctorObj.id, leaveTestDate);
+    db.prepare(`
+      INSERT INTO doctor_leaves (doctor_id, start_date, end_date, reason, status)
+      VALUES (?, ?, ?, 'Đi công tác nước ngoài', 'approved')
+    `).run(doctorObj.id, leaveTestDate, leaveTestDate);
+
+    res = await guest.get(`/api/slots?doctor_id=${doctorObj.id}&date=${leaveTestDate}`);
+    const leaveSlotJson = JSON.parse(res.body);
+    assert(leaveSlotJson.success === false && leaveSlotJson.error.includes('nghỉ phép'), '/api/slots tự động phát hiện lịch nghỉ phép approved của bác sĩ');
+
+    res = await patientClient.post('/appointments/book', {
+      specialty_id: 1,
+      doctor_id: doctorObj.id,
+      appointment_date: leaveTestDate,
+      start_time: '08:30:00',
+      symptoms: 'Test đặt khi bác sĩ nghỉ'
+    });
+    const leaveAppt = db.prepare('SELECT id FROM appointments WHERE doctor_id = ? AND appointment_date = ?').get(doctorObj.id, leaveTestDate);
+    assert(!leaveAppt, 'Chặn thành công không cho đặt lịch khi bác sĩ có lịch nghỉ phép đã duyệt');
+
+    // 4.3 Database Partial Unique Index Check
+    const uniqueIdx = db.prepare("SELECT name FROM sqlite_master WHERE type='index' AND name='uq_appointment_doctor_slot'").get();
+    assert(uniqueIdx, 'Partial Unique Index uq_appointment_doctor_slot tồn tại ở tầng SQLite Database');
+
+    // 4.4 Valid booking on tomorrow
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     const tomDateStr = tomorrow.toISOString().slice(0, 10);
@@ -225,7 +253,7 @@ async function runTests() {
     `).get(doctorObj.id, tomDateStr);
     assert(createdAppt && createdAppt.booking_code, `Đặt lịch khám thành công, mã hẹn: ${createdAppt?.booking_code}`);
 
-    // Attempt Double Booking for same doctor and same slot
+    // 4.5 Attempt Double Booking for same doctor and same slot
     const anotherPatient = new TestClient('Patient 2');
     await anotherPatient.post('/login', { email: 'patient@medibook.local', password: 'password' });
     await anotherPatient.post('/appointments/book', {
@@ -241,6 +269,40 @@ async function runTests() {
       WHERE doctor_id = ? AND appointment_date = ? AND start_time = '09:00:00' AND status NOT IN ('cancelled')
     `).get(doctorObj.id, tomDateStr);
     assert(duplicateCheck.cnt === 1, 'Chống Double-Booking thành công: không cho phép 2 bệnh nhân trùng 1 khung giờ của cùng bác sĩ');
+
+    // 4.6 Concurrent Booking Race Condition Simulation (Promise.all)
+    const raceSlotTime = '11:00:00';
+    db.prepare("DELETE FROM appointments WHERE doctor_id = ? AND appointment_date = ? AND start_time = ?").run(doctorObj.id, tomDateStr, raceSlotTime);
+
+    const clientA = new TestClient('Concurrent Patient A');
+    const clientB = new TestClient('Concurrent Patient B');
+    await clientA.post('/login', { email: 'patient@medibook.local', password: 'password' });
+    await clientB.post('/login', { email: 'patient@medibook.local', password: 'password' });
+
+    // Send 2 booking requests simultaneously
+    await Promise.all([
+      clientA.post('/appointments/book', {
+        specialty_id: 1,
+        doctor_id: doctorObj.id,
+        appointment_date: tomDateStr,
+        start_time: raceSlotTime,
+        symptoms: 'Tranh chấp đồng thời A'
+      }),
+      clientB.post('/appointments/book', {
+        specialty_id: 1,
+        doctor_id: doctorObj.id,
+        appointment_date: tomDateStr,
+        start_time: raceSlotTime,
+        symptoms: 'Tranh chấp đồng thời B'
+      })
+    ]);
+
+    const raceCheck = db.prepare(`
+      SELECT count(*) as cnt FROM appointments
+      WHERE doctor_id = ? AND appointment_date = ? AND start_time = ? AND status NOT IN ('cancelled')
+    `).get(doctorObj.id, tomDateStr, raceSlotTime);
+    assert(raceCheck.cnt === 1, 'Mô phỏng tranh chấp đồng thời (Race Condition): chính xác 1 yêu cầu ghi thành công, loại trừ hoàn toàn double-booking');
+
 
     // -------------------------------------------------------------
     // TEST 5: Full Lifecycle: Check-in -> Queue -> Examine -> Pay -> Review
@@ -410,6 +472,48 @@ async function runTests() {
     assert(sortedQueue.length >= 2, 'Hàng đợi phòng khám có đầy đủ các lượt chờ');
     assert(sortedQueue[0].priority_order <= sortedQueue[1].priority_order, 'Thuật toán sắp xếp hàng đợi ưu tiên CC (Order 1) trước UT (Order 2) và Online/Offline (Order 3, 4)');
 
+    // 8.2 TEST EMERGENCY BUMPING (Xử lý chen ngang ca cấp cứu)
+    // Dọn dẹp test data trước nếu có
+    const bumpAppts = db.prepare("SELECT id FROM appointments WHERE booking_code IN ('MB-BUMP-TEST', 'MB-EMERGENCY-BUMP')").all();
+    for (const ba of bumpAppts) {
+      db.prepare("DELETE FROM examination_queues WHERE appointment_id = ?").run(ba.id);
+      db.prepare("DELETE FROM appointments WHERE id = ?").run(ba.id);
+    }
+
+    // Tạo 1 bệnh nhân thông thường (Order 3) đang chờ trong phòng khám
+    const docRoom = db.prepare('SELECT room_number FROM doctors WHERE id = ?').get(doctorObj.id).room_number;
+    const normalApptRes = db.prepare(`
+      INSERT INTO appointments (booking_code, patient_id, doctor_id, appointment_date, start_time, end_time, status, source, priority_level)
+      VALUES ('MB-BUMP-TEST', 1, ?, ?, '15:00:00', '15:30:00', 'checked_in', 'online', 'online')
+    `).run(doctorObj.id, tomDateStr);
+    const normalQueueRes = db.prepare(`
+      INSERT INTO examination_queues (appointment_id, queue_number, room, status, priority_level, priority_order)
+      VALUES (?, 'P101-99', ?, 'waiting', 'online', 3)
+    `).run(normalApptRes.lastInsertRowid, docRoom);
+
+    // Ca cấp cứu bất ngờ tới (15:05:00) và được lễ tân check-in
+    const emergencyBumpAppt = db.prepare(`
+      INSERT INTO appointments (booking_code, patient_id, doctor_id, appointment_date, start_time, end_time, status, source, priority_level)
+      VALUES ('MB-EMERGENCY-BUMP', 2, ?, ?, '15:05:00', '15:35:00', 'confirmed', 'walkin', 'emergency')
+    `).run(doctorObj.id, tomDateStr);
+    
+    // Tiếp tân check-in ca cấp cứu
+    await recepClient.post(`/receptionist/checkin/${emergencyBumpAppt.lastInsertRowid}`, { priority_level: 'emergency' });
+
+    // Kiểm tra bệnh nhân thông thường đã được hệ thống đánh dấu is_bumped = 1 và nâng lên priority_order = 2
+    const bumpedQueue = db.prepare("SELECT * FROM examination_queues WHERE id = ?").get(normalQueueRes.lastInsertRowid);
+    const bumpedAppt = db.prepare("SELECT * FROM appointments WHERE id = ?").get(normalApptRes.lastInsertRowid);
+    assert(bumpedQueue && bumpedQueue.is_bumped === 1 && bumpedQueue.priority_order === 2, 'Emergency Bumping: Bệnh nhân bị hoãn được đánh dấu is_bumped = 1 và tự động nâng lên priority_order = 2 (Ưu tiên tiếp theo)');
+    assert(bumpedAppt && bumpedAppt.is_bumped === 1, 'Emergency Bumping: Lịch hẹn appointments được gắn cờ is_bumped = 1');
+
+    // Kiểm tra thông báo gửi cho bệnh nhân
+    const bumpNotif = db.prepare("SELECT * FROM notifications WHERE message LIKE '%tiếp nhận ca cấp cứu%' ORDER BY id DESC LIMIT 1").get();
+    assert(bumpNotif, 'Emergency Bumping: Tự động gửi thông báo giải thích và xin lỗi đến bệnh nhân bị lùi giờ khám');
+
+    // Dọn dẹp sau test
+    db.prepare("DELETE FROM examination_queues WHERE appointment_id IN (?, ?)").run(normalApptRes.lastInsertRowid, emergencyBumpAppt.lastInsertRowid);
+    db.prepare("DELETE FROM appointments WHERE id IN (?, ?)").run(normalApptRes.lastInsertRowid, emergencyBumpAppt.lastInsertRowid);
+
     // -------------------------------------------------------------
     // TEST 9: Phiếu Khám Lần Đầu/Tái Khám, Nội Trú (Số Phòng/Giường) & Kê Đơn Thuốc
     // -------------------------------------------------------------
@@ -460,6 +564,196 @@ async function runTests() {
     db.prepare('DELETE FROM medical_records WHERE id = ?').run(inpatientRecord.id);
     db.prepare('DELETE FROM examination_queues WHERE appointment_id IN (?, ?)').run(emergencyQueue.appointment_id, priorityQueue.appointment_id);
     db.prepare('DELETE FROM appointments WHERE id IN (?, ?)').run(emergencyQueue.appointment_id, priorityQueue.appointment_id);
+
+    // 9.2: KIỂM TRA TÁI KHÁM & CHÍNH SÁCH GIÁ 14 NGÀY (PHA 3)
+    const firstMR = db.prepare('SELECT id FROM medical_records WHERE appointment_id = ?').get(createdAppt.id);
+    assert(firstMR, 'Hồ sơ khám lần đầu tồn tại');
+
+    // Dọn dẹp dữ liệu cũ nếu sót lại từ lần chạy trước
+    const oldReexams = db.prepare("SELECT id FROM appointments WHERE booking_code IN ('MB-REEXAM-5D', 'MB-REEXAM-20D')").all();
+    for (const ore of oldReexams) {
+      db.prepare('DELETE FROM prescription_items WHERE prescription_id IN (SELECT id FROM prescriptions WHERE appointment_id = ?)').run(ore.id);
+      db.prepare('DELETE FROM prescriptions WHERE appointment_id = ?').run(ore.id);
+      db.prepare('DELETE FROM payments WHERE appointment_id = ?').run(ore.id);
+      db.prepare('DELETE FROM medical_records WHERE appointment_id = ?').run(ore.id);
+      db.prepare('DELETE FROM appointments WHERE id = ?').run(ore.id);
+    }
+
+    // Tạo lịch tái khám sau 5 ngày (<= 14 ngày)
+    const tomDate = new Date(tomDateStr);
+    const date5d = new Date(tomDate.getTime() + 5 * 86400000).toISOString().slice(0, 10);
+    const reexam1Res = db.prepare(`
+      INSERT INTO appointments (booking_code, patient_id, doctor_id, specialty_id, appointment_date, start_time, end_time, status, symptoms)
+      VALUES ('MB-REEXAM-5D', ?, ?, ?, ?, '15:30:00', '16:00:00', 'checked_in', 'Tái khám viêm mũi sau 5 ngày')
+    `).run(createdAppt.patient_id, doctorObj.id, doctorObj.specialty_id || 1, date5d);
+    const reexam1Id = reexam1Res.lastInsertRowid;
+
+    // Bác sĩ mở trang khám bệnh của ca tái khám
+    res = await doctorClient.get(`/doctor/examine/${reexam1Id}`);
+    assert(res.statusCode === 200, 'Bác sĩ truy cập trang khám bệnh ca tái khám thành công');
+    assert(res.body.includes('ĐỦ ĐIỀU KIỆN GIẢM 50% TÁI KHÁM'), 'Giao diện hiển thị banner thông báo ca tái khám đủ điều kiện giảm 50% phí');
+    assert(res.body.includes('Viêm mũi dị ứng cấp tính'), 'Giao diện hiển thị lịch sử chẩn đoán của ca khám trước');
+    assert(res.body.includes('Paracetamol 500mg'), 'Giao diện hiển thị danh mục thuốc đã kê của ca khám trước');
+
+    // Bác sĩ hoàn thành tái khám trong vòng 14 ngày
+    res = await doctorClient.post(`/doctor/examine/${reexam1Id}`, {
+      blood_pressure: '120/80',
+      heart_rate: '75',
+      temperature: '36.8',
+      weight: '68',
+      height: '172',
+      bmi: '23.0',
+      visit_type: 'follow_up',
+      treatment_type: 'outpatient',
+      clinical_diagnosis: 'Viêm mũi dị ứng thuyên giảm tốt',
+      med_name: ['Paracetamol 500mg'],
+      med_id: ['1'],
+      med_dosage: ['500mg'],
+      med_unit: ['Viên'],
+      med_quantity: ['5'],
+      med_morning: ['1'],
+      med_noon: ['0'],
+      med_afternoon: ['0'],
+      med_night: ['0'],
+      med_instructions: ['Uống khi đau'],
+      med_price: ['2000']
+    });
+
+    const reexam1MR = db.prepare('SELECT * FROM medical_records WHERE appointment_id = ?').get(reexam1Id);
+    assert(reexam1MR && reexam1MR.parent_visit_id === firstMR.id, 'Tái khám: parent_visit_id liên kết chính xác với hồ sơ khám lần đầu');
+
+    const reexam1Pay = db.prepare('SELECT * FROM payments WHERE appointment_id = ?').get(reexam1Id);
+    assert(reexam1Pay && reexam1Pay.service_fee === 100000 && reexam1Pay.discount === 100000, 'Tái khám ≤ 14 ngày: Phí khám giảm 50% (còn 100.000đ), giảm giá 100.000đ');
+    assert(reexam1Pay.final_amount === 110000, 'Tổng tiền thanh toán tính đúng = 100.000đ (khám) + 10.000đ (thuốc) = 110.000đ');
+
+    // Tạo ca tái khám quá 14 ngày (20 ngày sau lần đầu)
+    const date20d = new Date(tomDate.getTime() + 20 * 86400000).toISOString().slice(0, 10);
+    const reexam2Res = db.prepare(`
+      INSERT INTO appointments (booking_code, patient_id, doctor_id, specialty_id, appointment_date, start_time, end_time, status, symptoms)
+      VALUES ('MB-REEXAM-20D', ?, ?, ?, ?, '16:00:00', '16:30:00', 'checked_in', 'Tái khám sau 20 ngày')
+    `).run(createdAppt.patient_id, doctorObj.id, doctorObj.specialty_id || 1, date20d);
+    const reexam2Id = reexam2Res.lastInsertRowid;
+
+    // Bác sĩ hoàn tất khám ca quá 14 ngày
+    res = await doctorClient.post(`/doctor/examine/${reexam2Id}`, {
+      blood_pressure: '120/80',
+      clinical_diagnosis: 'Tái khám định kỳ sau 20 ngày',
+      visit_type: 'follow_up',
+      treatment_type: 'outpatient'
+    });
+
+    const reexam2Pay = db.prepare('SELECT * FROM payments WHERE appointment_id = ?').get(reexam2Id);
+    assert(reexam2Pay && reexam2Pay.service_fee === 200000 && reexam2Pay.discount === 0, 'Tái khám > 14 ngày: Phí khám quay về mức chuẩn 200.000đ, không giảm giá');
+
+    // Dọn dẹp ca tái khám test
+    db.prepare('DELETE FROM prescription_items WHERE prescription_id IN (SELECT id FROM prescriptions WHERE appointment_id IN (?, ?))').run(reexam1Id, reexam2Id);
+    db.prepare('DELETE FROM prescriptions WHERE appointment_id IN (?, ?)').run(reexam1Id, reexam2Id);
+    db.prepare('DELETE FROM payments WHERE appointment_id IN (?, ?)').run(reexam1Id, reexam2Id);
+    db.prepare('DELETE FROM medical_records WHERE appointment_id IN (?, ?)').run(reexam1Id, reexam2Id);
+    db.prepare('DELETE FROM appointments WHERE id IN (?, ?)').run(reexam1Id, reexam2Id);
+
+    // -------------------------------------------------------------
+    // TEST 9.3: QUẢN LÝ PHÒNG & SƠ ĐỒ GIƯỜNG BỆNH NỘI TRÚ (PHA 4)
+    // -------------------------------------------------------------
+    console.log('\n📌 NHÓM 9.3: Kiểm tra Phân hệ Quản lý Phòng & Sơ đồ Giường Bệnh (/receptionist/beds - Pha 4)');
+    
+    // Dọn dẹp test cũ nếu có
+    const oldBedAppts = db.prepare("SELECT id FROM appointments WHERE booking_code = 'MB-INPATIENT-BED-TEST'").all();
+    for (const oba of oldBedAppts) {
+      db.prepare('DELETE FROM payments WHERE appointment_id = ?').run(oba.id);
+      db.prepare('DELETE FROM medical_records WHERE appointment_id = ?').run(oba.id);
+      db.prepare('DELETE FROM appointments WHERE id = ?').run(oba.id);
+    }
+
+    // Tiếp tân xem trang Sơ đồ giường bệnh
+    res = await recepClient.get('/receptionist/beds');
+    assert(res.statusCode === 200, 'Tiếp tân truy cập thành công trang /receptionist/beds');
+    assert(res.body.includes('Sơ đồ Giường bệnh Nội trú'), 'Trang hiển thị tiêu đề Sơ đồ Giường bệnh Nội trú');
+    assert(res.body.includes('Giường trống') && res.body.includes('Đang có bệnh nhân') && res.body.includes('Đang dọn vệ sinh') && res.body.includes('Hỏng / Bảo trì'), 'Hiển thị đầy đủ 4 trạng thái giường bệnh: Available, Occupied, Cleaning, Maintenance');
+    assert(res.body.includes('P.401') && res.body.includes('P.402') && res.body.includes('P.501'), 'Sơ đồ hiển thị đầy đủ danh mục phòng bệnh theo khoa');
+
+    // Tìm một giường trống để test chuyển trạng thái
+    const testBed = db.prepare(`
+      SELECT b.*, r.room_number 
+      FROM beds b 
+      JOIN rooms r ON b.room_id = r.id 
+      WHERE b.status = 'available' 
+      LIMIT 1
+    `).get();
+    assert(testBed, 'Tìm thấy giường trống ban đầu để kiểm thử điều phối');
+
+    // 1. Chuyển giường sang trạng thái 'cleaning'
+    res = await recepClient.post(`/receptionist/beds/${testBed.id}/status`, {
+      new_status: 'cleaning',
+      notes: 'Khử khuẩn định kỳ phòng dịch'
+    });
+    let updatedBed = db.prepare('SELECT * FROM beds WHERE id = ?').get(testBed.id);
+    assert(updatedBed.status === 'cleaning' && updatedBed.notes === 'Khử khuẩn định kỳ phòng dịch', 'Cập nhật giường sang trạng thái "cleaning" (Đang dọn vệ sinh) kèm ghi chú thành công');
+
+    // 2. Chuyển giường sang trạng thái 'maintenance'
+    res = await recepClient.post(`/receptionist/beds/${testBed.id}/status`, {
+      new_status: 'maintenance',
+      notes: 'Bảo trì hệ thống oxy đầu giường'
+    });
+    updatedBed = db.prepare('SELECT * FROM beds WHERE id = ?').get(testBed.id);
+    assert(updatedBed.status === 'maintenance' && updatedBed.notes === 'Bảo trì hệ thống oxy đầu giường', 'Cập nhật giường sang trạng thái "maintenance" (Bảo trì / Sửa chữa) thành công');
+
+    // 3. Khôi phục giường về 'available'
+    res = await recepClient.post(`/receptionist/beds/${testBed.id}/status`, {
+      new_status: 'available',
+      notes: 'Đã hoàn tất bảo trì và khử khuẩn'
+    });
+    updatedBed = db.prepare('SELECT * FROM beds WHERE id = ?').get(testBed.id);
+    assert(updatedBed.status === 'available', 'Chuyển giường về trạng thái "available" (Trống sẵn sàng nhận bệnh) thành công');
+
+    // 4. Kiểm tra chức năng Xuất viện nhanh (/receptionist/beds/:id/discharge)
+    const occupiedBed = db.prepare(`SELECT * FROM beds WHERE status = 'occupied' LIMIT 1`).get();
+    assert(occupiedBed, 'Tìm thấy giường đang có bệnh nhân để kiểm tra xuất viện');
+    res = await recepClient.post(`/receptionist/beds/${occupiedBed.id}/discharge`, {});
+    const dischargedBed = db.prepare('SELECT * FROM beds WHERE id = ?').get(occupiedBed.id);
+    assert(dischargedBed.status === 'cleaning' && dischargedBed.current_patient_id === null, 'Thủ tục xuất viện: Giường giải phóng bệnh nhân và tự động chuyển sang "cleaning"');
+
+    // Khôi phục lại giường occupied sau test
+    db.prepare(`
+      UPDATE beds 
+      SET status = 'occupied', current_patient_id = ?, current_doctor_id = ?, admission_date = ? 
+      WHERE id = ?
+    `).run(occupiedBed.current_patient_id, occupiedBed.current_doctor_id, occupiedBed.admission_date, occupiedBed.id);
+
+    // 5. Kiểm tra Bác sĩ chỉ định nhập viện nội trú auto-assign vào giường trống
+    const bedToAssign = db.prepare(`
+      SELECT b.id, b.bed_number, r.room_number 
+      FROM beds b 
+      JOIN rooms r ON b.room_id = r.id 
+      WHERE r.room_number = 'P.401' AND b.status = 'available' 
+      LIMIT 1
+    `).get();
+    
+    if (bedToAssign) {
+      const inpatientApptRes = db.prepare(`
+        INSERT INTO appointments (booking_code, patient_id, doctor_id, specialty_id, appointment_date, start_time, end_time, status, symptoms)
+        VALUES ('MB-INPATIENT-BED-TEST', ?, ?, ?, ?, '17:00:00', '17:30:00', 'checked_in', 'Nhập viện theo dõi tim mạch')
+      `).run(createdAppt.patient_id, doctorObj.id, doctorObj.specialty_id || 1, tomDateStr);
+      const inApptId = inpatientApptRes.lastInsertRowid;
+
+      res = await doctorClient.post(`/doctor/examine/${inApptId}`, {
+        blood_pressure: '130/85',
+        clinical_diagnosis: 'Cơn rung nhĩ kịch phát / Chỉ định nhập viện',
+        visit_type: 'initial',
+        treatment_type: 'inpatient',
+        inpatient_room: 'P.401 - Phòng Nội Trú Tim Mạch',
+        inpatient_bed: bedToAssign.bed_number
+      });
+
+      const assignedBed = db.prepare('SELECT * FROM beds WHERE id = ?').get(bedToAssign.id);
+      assert(assignedBed.status === 'occupied' && assignedBed.current_patient_id === createdAppt.patient_id, 'Bác sĩ chỉ định nhập viện: Hệ thống tự động xếp bệnh nhân vào đúng giường và chuyển trạng thái sang "occupied"');
+
+      // Dọn dẹp ca test
+      db.prepare('UPDATE beds SET status = \'available\', current_patient_id = NULL, current_medical_record_id = NULL WHERE id = ?').run(bedToAssign.id);
+      db.prepare('DELETE FROM payments WHERE appointment_id = ?').run(inApptId);
+      db.prepare('DELETE FROM medical_records WHERE appointment_id = ?').run(inApptId);
+      db.prepare('DELETE FROM appointments WHERE id = ?').run(inApptId);
+    }
 
     // -------------------------------------------------------------
     // TEST 10: Security Hardening: IDOR Prevention, Doctor Data Isolation, Inventory Deduction & Status Validation
@@ -527,6 +821,7 @@ async function runTests() {
     process.exit(0);
   } catch (err) {
     console.error('\n❌ PHÁT HIỆN LỖI TRONG QUÁ TRÌNH KIỂM THỬ:', err.message);
+    console.error(err.stack);
     process.exit(1);
   }
 }

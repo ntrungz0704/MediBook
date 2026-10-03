@@ -178,6 +178,9 @@ function initDb() {
       source TEXT NOT NULL DEFAULT 'online',
       priority_level TEXT NOT NULL DEFAULT 'online',
       priority_reason TEXT,
+      is_bumped INTEGER DEFAULT 0,
+      bumped_from_slot TEXT,
+      estimated_start_time TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (patient_id) REFERENCES patients (id) ON DELETE CASCADE,
@@ -206,6 +209,8 @@ function initDb() {
       status TEXT NOT NULL DEFAULT 'waiting',
       priority_level TEXT NOT NULL DEFAULT 'online',
       priority_order INTEGER NOT NULL DEFAULT 3,
+      is_bumped INTEGER DEFAULT 0,
+      bumped_reason TEXT,
       checkin_time DATETIME DEFAULT CURRENT_TIMESTAMP,
       called_time DATETIME,
       finish_time DATETIME,
@@ -219,6 +224,7 @@ function initDb() {
       appointment_id INTEGER NOT NULL UNIQUE,
       patient_id INTEGER NOT NULL,
       doctor_id INTEGER NOT NULL,
+      parent_visit_id INTEGER,
       visit_type TEXT NOT NULL DEFAULT 'initial',
       treatment_type TEXT NOT NULL DEFAULT 'outpatient',
       inpatient_room TEXT,
@@ -371,10 +377,41 @@ function initDb() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
+
+    -- 13. Phân hệ Quản lý Phòng & Giường Bệnh Nội Trú (Pha 4)
+    CREATE TABLE IF NOT EXISTS rooms (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      room_number TEXT UNIQUE NOT NULL,
+      room_name TEXT NOT NULL,
+      department_name TEXT DEFAULT 'Khoa Nội',
+      room_type TEXT DEFAULT 'inpatient',
+      total_beds INTEGER DEFAULT 4,
+      status TEXT DEFAULT 'active',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS beds (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      room_id INTEGER NOT NULL,
+      bed_number TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'available',
+      current_patient_id INTEGER,
+      current_medical_record_id INTEGER,
+      current_doctor_id INTEGER,
+      admission_date DATETIME,
+      notes TEXT,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(room_id, bed_number),
+      FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE CASCADE,
+      FOREIGN KEY (current_patient_id) REFERENCES patients (id) ON DELETE SET NULL,
+      FOREIGN KEY (current_medical_record_id) REFERENCES medical_records (id) ON DELETE SET NULL,
+      FOREIGN KEY (current_doctor_id) REFERENCES doctors (id) ON DELETE SET NULL
+    );
   `);
 
   // Migrate existing tables gracefully (safe idempotent migrations)
   const migrations = [
+    "ALTER TABLE medical_records ADD COLUMN parent_visit_id INTEGER REFERENCES medical_records (id)",
     "ALTER TABLE medical_records ADD COLUMN visit_type TEXT NOT NULL DEFAULT 'initial'",
     "ALTER TABLE medical_records ADD COLUMN treatment_type TEXT NOT NULL DEFAULT 'outpatient'",
     "ALTER TABLE medical_records ADD COLUMN inpatient_room TEXT",
@@ -384,10 +421,16 @@ function initDb() {
     "ALTER TABLE appointments ADD COLUMN source TEXT NOT NULL DEFAULT 'online'",
     "ALTER TABLE appointments ADD COLUMN priority_level TEXT NOT NULL DEFAULT 'online'",
     "ALTER TABLE appointments ADD COLUMN priority_reason TEXT",
+    "ALTER TABLE appointments ADD COLUMN is_bumped INTEGER DEFAULT 0",
+    "ALTER TABLE appointments ADD COLUMN bumped_from_slot TEXT",
+    "ALTER TABLE appointments ADD COLUMN estimated_start_time TEXT",
     "ALTER TABLE examination_queues ADD COLUMN priority_level TEXT NOT NULL DEFAULT 'online'",
     "ALTER TABLE examination_queues ADD COLUMN priority_order INTEGER NOT NULL DEFAULT 3",
+    "ALTER TABLE examination_queues ADD COLUMN is_bumped INTEGER DEFAULT 0",
+    "ALTER TABLE examination_queues ADD COLUMN bumped_reason TEXT",
     "ALTER TABLE patients ADD COLUMN priority_category TEXT DEFAULT 'normal'",
-    "ALTER TABLE payments ADD COLUMN cashier_user_id INTEGER"
+    "ALTER TABLE payments ADD COLUMN cashier_user_id INTEGER",
+    "ALTER TABLE medical_records ADD COLUMN bed_id INTEGER REFERENCES beds (id)"
   ];
 
   for (const sql of migrations) {
@@ -408,7 +451,10 @@ function initDb() {
     "CREATE INDEX IF NOT EXISTS idx_prescription_items_pres ON prescription_items (prescription_id)",
     "CREATE INDEX IF NOT EXISTS idx_payments_status ON payments (payment_status)",
     "CREATE INDEX IF NOT EXISTS idx_user_roles_user ON user_roles (user_id)",
-    "CREATE INDEX IF NOT EXISTS idx_activity_logs_user ON activity_logs (user_id)"
+    "CREATE INDEX IF NOT EXISTS idx_activity_logs_user ON activity_logs (user_id)",
+    "CREATE INDEX IF NOT EXISTS idx_beds_room_status ON beds (room_id, status)",
+    "CREATE INDEX IF NOT EXISTS idx_beds_patient ON beds (current_patient_id)",
+    "CREATE UNIQUE INDEX IF NOT EXISTS uq_appointment_doctor_slot ON appointments(doctor_id, appointment_date, start_time) WHERE status NOT IN ('cancelled')"
   ];
 
   for (const idxSql of performanceIndexes) {
@@ -702,6 +748,46 @@ function initDb() {
       for (const a of seedArticles) {
         insertArticle.run(...a);
       }
+    }
+  } catch (e) {}
+
+  // Populate rooms & beds if empty (Pha 4)
+  try {
+    const roomCount = (db.prepare('SELECT count(*) as c FROM rooms').get() as any).c;
+    if (roomCount === 0) {
+      const insertRoom = db.prepare(`
+        INSERT INTO rooms (room_number, room_name, department_name, room_type, total_beds)
+        VALUES (?, ?, ?, ?, ?)
+      `);
+      const insertBed = db.prepare(`
+        INSERT INTO beds (room_id, bed_number, status, current_patient_id, current_doctor_id, admission_date, notes)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `);
+
+      // Lấy id bệnh nhân và bác sĩ mẫu nếu có
+      const defaultPatient = db.prepare('SELECT id FROM patients LIMIT 1').get() as any;
+      const defaultDoctor = db.prepare('SELECT id FROM doctors LIMIT 1').get() as any;
+      const pId = defaultPatient ? defaultPatient.id : null;
+      const dId = defaultDoctor ? defaultDoctor.id : null;
+
+      // Phòng 1: P.401 - Tim Mạch
+      const r1 = insertRoom.run('P.401', 'Phòng Nội Trú Tim Mạch', 'Khoa Tim Mạch', 'inpatient', 4);
+      insertBed.run(r1.lastInsertRowid, 'G-01', 'occupied', pId, dId, new Date(Date.now() - 2 * 86400000).toISOString(), 'Theo dõi sau can thiệp mạch vành');
+      insertBed.run(r1.lastInsertRowid, 'G-02', 'available', null, null, null, null);
+      insertBed.run(r1.lastInsertRowid, 'G-03', 'cleaning', null, null, null, 'Khử khuẩn và thay drap giường');
+      insertBed.run(r1.lastInsertRowid, 'G-04', 'available', null, null, null, null);
+
+      // Phòng 2: P.402 - Hô Hấp
+      const r2 = insertRoom.run('P.402', 'Phòng Nội Trú Hô Hấp', 'Khoa Hô Hấp', 'inpatient', 4);
+      insertBed.run(r2.lastInsertRowid, 'G-01', 'available', null, null, null, null);
+      insertBed.run(r2.lastInsertRowid, 'G-02', 'occupied', pId, dId, new Date(Date.now() - 1 * 86400000).toISOString(), 'Viêm phổi thùy đang điều trị kháng sinh');
+      insertBed.run(r2.lastInsertRowid, 'G-03', 'maintenance', null, null, null, 'Hệ thống van oxy áp lực cần kiểm định');
+      insertBed.run(r2.lastInsertRowid, 'G-04', 'available', null, null, null, null);
+
+      // Phòng 3: P.501 - Hồi Sức Tích Cực (ICU)
+      const r3 = insertRoom.run('P.501', 'Phòng Hồi Sức Cấp Cứu (ICU)', 'Hồi Sức Cấp Cứu', 'icu', 2);
+      insertBed.run(r3.lastInsertRowid, 'G-01', 'occupied', pId, dId, new Date(Date.now() - 3 * 86400000).toISOString(), 'Bệnh nhân thở máy hỗ trợ Monitor 24/7');
+      insertBed.run(r3.lastInsertRowid, 'G-02', 'available', null, null, null, null);
     }
   } catch (e) {}
 }

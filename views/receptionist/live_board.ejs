@@ -204,8 +204,14 @@
         </div>
 
         <% if (callingItem) { %>
-          <div class="calling-box">
-            <div class="calling-label">MỜI VÀO PHÒNG KHÁM</div>
+          <% const isEmergencyCalling = callingItem.priority_level === 'emergency' || (callingItem.queue_number && callingItem.queue_number.startsWith('CC-')); %>
+          <div class="calling-box" style="<%= isEmergencyCalling ? 'background:linear-gradient(135deg, #b91c1c, #ef4444); box-shadow:0 8px 20px rgba(239,68,68,0.5);' : '' %>">
+            <% if (isEmergencyCalling) { %>
+              <div style="background:#fff; color:#b91c1c; font-size:12px; font-weight:900; padding:2px 8px; border-radius:4px; display:inline-block; margin-bottom:6px; letter-spacing:1px;">
+                🚨 CA CẤP CỨU ĐANG KHÁM
+              </div>
+            <% } %>
+            <div class="calling-label"><%= isEmergencyCalling ? 'ĐANG TIẾP NHẬN CẤP CỨU' : 'MỜI VÀO PHÒNG KHÁM' %></div>
             <div class="calling-number"><%= callingItem.queue_number %></div>
             <div class="calling-patient"><%= callingItem.patient_name %></div>
           </div>
@@ -226,13 +232,19 @@
               <% waitingItems.slice(0, 6).forEach(wi => { %>
                 <% 
                   let pStyle = '';
+                  let extraLabel = '';
                   if (wi.priority_level === 'emergency' || (wi.queue_number && wi.queue_number.startsWith('CC-'))) {
                     pStyle = 'background:#dc2626; color:#fff; border:1px solid #f87171; box-shadow:0 0 8px rgba(220,38,38,0.5);';
+                  } else if (wi.is_bumped == 1) {
+                    pStyle = 'background:#b45309; color:#fff; border:1px solid #fbbf24; box-shadow:0 0 8px rgba(245,158,11,0.4);';
+                    extraLabel = ' (Ưu tiên)';
                   } else if (wi.priority_level === 'priority' || (wi.queue_number && wi.queue_number.startsWith('UT-'))) {
                     pStyle = 'background:#d97706; color:#fff; border:1px solid #fcd34d;';
                   }
                 %>
-                <span class="waiting-pill" style="<%= pStyle %>"><%= wi.queue_number %></span>
+                <span class="waiting-pill" style="<%= pStyle %>" title="<%= wi.is_bumped == 1 ? 'Đã nhường lượt cho ca cấp cứu khẩn cấp - Được ưu tiên kế tiếp' : '' %>">
+                  <%= wi.is_bumped == 1 ? '⚠️ ' : '' %><%= wi.queue_number %><%= extraLabel %>
+                </span>
               <% }); %>
             <% } %>
           </div>

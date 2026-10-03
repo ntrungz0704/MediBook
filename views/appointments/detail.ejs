@@ -27,6 +27,20 @@
     </div>
   </div>
 
+  <% if (app.is_bumped) { %>
+    <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 14px; box-shadow: 0 4px 12px rgba(245,158,11,0.08);">
+      <div style="font-size: 26px; line-height: 1;">🚨</div>
+      <div>
+        <div style="font-size: 15px; font-weight: 800; color: #92400e; margin-bottom: 4px;">
+          Thông báo điều phối: Ưu tiên ca cấp cứu khẩn cấp
+        </div>
+        <div style="font-size: 13.5px; color: #78350f; line-height: 1.5;">
+          Lịch khám của bạn tạm thời lùi lại khoảng 30 phút do phòng khám vừa tiếp nhận một trường hợp cấp cứu khẩn cấp. Bạn đã được hệ thống tự động nâng lên diện <strong>Ưu tiên kế tiếp (Priority Order 2)</strong> ngay sau khi ca cấp cứu hoàn tất. Phòng khám MediBook chân thành cảm ơn sự thông cảm của quý khách!
+        </div>
+      </div>
+    </div>
+  <% } %>
+
   <!-- Status Alert Card -->
   <div class="card-box" style="padding: 20px 24px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; border-left: 5px solid var(--primary);">
     <div>
