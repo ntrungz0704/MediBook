@@ -48,12 +48,70 @@ app.use(express.static(path.join(ROOT_DIR, 'public')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+// ---- Security hardening (không cần thêm dependency) ----
+app.disable('x-powered-by');
+if (process.env.TRUST_PROXY) {
+  app.set('trust proxy', process.env.TRUST_PROXY === 'true' ? 1 : process.env.TRUST_PROXY);
+}
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  next();
+});
+
+// Chống CSRF: request thay đổi dữ liệu từ trình duyệt phải cùng origin (Origin/Referer khớp Host)
+app.use((req, res, next) => {
+  if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') return next();
+  const source = req.get('Origin') || req.get('Referer');
+  if (source) {
+    let sameOrigin = false;
+    try { sameOrigin = new URL(source).host === req.get('host'); } catch (_) { sameOrigin = false; }
+    if (!sameOrigin) {
+      return res.status(403).type('text/plain').send('403 - Yêu cầu bị từ chối (nguồn gốc không hợp lệ).');
+    }
+  }
+  next();
+});
+
+// Giới hạn tần suất (in-memory, theo IP). Cấu hình qua biến môi trường.
+const LOGIN_MAX_FAILS = Number(process.env.RATE_LIMIT_LOGIN_MAX) || 10;
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const SIGNUP_MAX = Number(process.env.RATE_LIMIT_SIGNUP_MAX) || 20;
+const SIGNUP_WINDOW_MS = 60 * 60 * 1000;
+const rateStore = new Map<string, { count: number; resetAt: number }>();
+function rateBlocked(key: string, max: number): boolean {
+  const e = rateStore.get(key);
+  if (!e) return false;
+  if (e.resetAt <= Date.now()) { rateStore.delete(key); return false; }
+  return e.count >= max;
+}
+function rateHit(key: string, windowMs: number): void {
+  const now = Date.now();
+  if (rateStore.size > 5000) {
+    for (const [k, v] of rateStore) if (v.resetAt <= now) rateStore.delete(k);
+  }
+  const e = rateStore.get(key);
+  if (!e || e.resetAt <= now) rateStore.set(key, { count: 1, resetAt: now + windowMs });
+  else e.count++;
+}
+function rateClear(key: string): void { rateStore.delete(key); }
+
+const MIN_PASSWORD_LENGTH = 8;
+function passwordError(pw: any): string | null {
+  if (typeof pw !== 'string' || pw.length < MIN_PASSWORD_LENGTH) {
+    return `Mật khẩu phải có ít nhất ${MIN_PASSWORD_LENGTH} ký tự.`;
+  }
+  return null;
+}
+
 // Session & Flash
 app.use(session({
   secret: activeSessionSecret,
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 1000 * 60 * 60 * 24 } // 1 day
+  cookie: { maxAge: 1000 * 60 * 60 * 24, httpOnly: true, sameSite: 'lax', secure: isProduction ? 'auto' : false } // 1 day
 }));
 app.use(flash());
 
@@ -62,7 +120,7 @@ function renderWithLayout(res, view, data = {}, layout = 'layouts/main') {
   res.render(view, data, (err, body) => {
     if (err) {
       console.error('Render error:', err);
-      return res.status(500).send(err.message);
+      return res.status(500).send('Đã xảy ra lỗi khi hiển thị trang. Vui lòng thử lại sau.');
     }
     res.render(layout, { ...data, body });
   });
@@ -272,8 +330,14 @@ app.post('/login', (req, res) => {
     return res.redirect('/login');
   }
 
-  const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email.trim());
+  const loginKey = `login|${req.ip}|${String(email).trim().toLowerCase()}`;
+  if (rateBlocked(loginKey, LOGIN_MAX_FAILS)) {
+    return res.status(429).render('errors/error', { message: 'Bạn đã thử đăng nhập sai quá nhiều lần (429). Vui lòng thử lại sau 15 phút.' });
+  }
+
+  const user = db.prepare('SELECT * FROM users WHERE email = ?').get(String(email).trim());
   if (!user || !bcrypt.compareSync(password, user.password_hash)) {
+    rateHit(loginKey, LOGIN_WINDOW_MS);
     req.flash('error', 'Email hoặc mật khẩu không chính xác.');
     return res.redirect('/login');
   }
@@ -281,6 +345,17 @@ app.post('/login', (req, res) => {
   if (user.status !== 'active') {
     req.flash('error', 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.');
     return res.redirect('/login');
+  }
+
+  rateClear(loginKey);
+  const rawIntended = req.session.intendedUrl;
+  const intended = (typeof rawIntended === 'string' && rawIntended.startsWith('/') && !rawIntended.startsWith('//')) ? rawIntended : undefined;
+
+  // Chống session fixation: cấp session ID mới sau khi đăng nhập thành công
+  req.session.regenerate((regenErr: any) => {
+  if (regenErr) {
+    console.error('Session regenerate error:', regenErr);
+    return res.status(500).render('errors/error', { message: 'Không thể khởi tạo phiên đăng nhập.' });
   }
 
   // Query all roles assigned to this user (1 user can have multiple roles)
@@ -303,9 +378,7 @@ app.post('/login', (req, res) => {
   logActivity(user.id, 'USER_LOGIN', 'User', user.id, 'Đăng nhập thành công', req);
   req.flash('success', `Chào mừng trở lại, ${user.name}!`);
 
-  const intended = req.session.intendedUrl;
   if (intended) {
-    delete req.session.intendedUrl;
     // CRITICAL RBAC GUARD:
     // If an Admin logs in, do NOT redirect them into receptionist or doctor portal!
     // Admin always goes to /admin/dashboard unless intended is an admin URL.
@@ -322,6 +395,7 @@ app.post('/login', (req, res) => {
   }
 
   redirectByRole(res, user.role);
+  });
 });
 
 app.get('/register', (req, res) => {
@@ -339,6 +413,16 @@ app.post('/register', (req, res) => {
     req.flash('error', 'Mật khẩu xác nhận không khớp.');
     return res.redirect('/register');
   }
+  const pwErr = passwordError(password);
+  if (pwErr) {
+    req.flash('error', pwErr);
+    return res.redirect('/register');
+  }
+  const signupKey = `signup|${req.ip}`;
+  if (rateBlocked(signupKey, SIGNUP_MAX)) {
+    return res.status(429).render('errors/error', { message: 'Bạn thao tác quá nhiều lần (429). Vui lòng thử lại sau.' });
+  }
+  rateHit(signupKey, SIGNUP_WINDOW_MS);
 
   const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email.trim());
   if (existing) {
@@ -731,6 +815,10 @@ app.post('/appointments/book', (req, res) => {
 
     // Không bao giờ tự đăng nhập vào tài khoản đã tồn tại chỉ vì biết email (chống chiếm tài khoản)
     const guestEmail = String(patient_email).trim();
+    const guestKey = `signup|${req.ip}`;
+    if (rateBlocked(guestKey, SIGNUP_MAX)) {
+      return res.status(429).render('errors/error', { message: 'Bạn thao tác quá nhiều lần (429). Vui lòng thử lại sau.' });
+    }
     const existingUser = db.prepare('SELECT id FROM users WHERE LOWER(email) = LOWER(?)').get(guestEmail) as any;
     if (existingUser) {
       req.session.intendedUrl = '/appointments/book';
@@ -738,6 +826,7 @@ app.post('/appointments/book', (req, res) => {
       return res.redirect('/login');
     }
 
+    rateHit(guestKey, SIGNUP_WINDOW_MS);
     // Tài khoản mới: mật khẩu ngẫu nhiên, chỉ hiển thị một lần trên trang xác nhận
     const tempPassword = crypto.randomBytes(9).toString('base64url');
     const hash = bcrypt.hashSync(tempPassword, 10);
@@ -1163,6 +1252,11 @@ app.post('/profile/password', requireAuth, (req, res) => {
     return res.redirect('/profile');
   }
 
+  const profilePwErr = passwordError(new_password);
+  if (profilePwErr) {
+    req.flash('error', profilePwErr);
+    return res.redirect('/profile');
+  }
   const hash = bcrypt.hashSync(new_password, 10);
   db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(hash, req.session.user.id);
   req.flash('success', 'Đổi mật khẩu thành công!');
@@ -2343,7 +2437,19 @@ app.post('/admin/users/store', requireRole('admin'), (req, res) => {
   }
 
   const primaryRole = rolesList[0];
-  const hash = bcrypt.hashSync(password || 'password', 10);
+  let adminPassword = typeof password === 'string' ? password.trim() : '';
+  let generatedPassword: string | null = null;
+  if (adminPassword) {
+    const adminPwErr = passwordError(adminPassword);
+    if (adminPwErr) {
+      req.flash('error', adminPwErr);
+      return res.redirect('/admin/users/create');
+    }
+  } else {
+    generatedPassword = crypto.randomBytes(9).toString('base64url');
+    adminPassword = generatedPassword;
+  }
+  const hash = bcrypt.hashSync(adminPassword, 10);
 
   const uRes = db.prepare(`
     INSERT INTO users (role, name, email, password_hash, phone, status)
@@ -2368,7 +2474,7 @@ app.post('/admin/users/store', requireRole('admin'), (req, res) => {
   }
 
   logActivity(req.session.user.id, 'CREATE_USER', 'User', userId, `Tạo người dùng roles [${rolesList.join(', ')}]: ${email}`, req);
-  req.flash('success', 'Đã tạo tài khoản thành công!');
+  req.flash('success', generatedPassword ? `Đã tạo tài khoản thành công! Mật khẩu tạm thời (chỉ hiển thị một lần): ${generatedPassword}` : 'Đã tạo tài khoản thành công!');
   res.redirect('/admin/users');
 });
 
@@ -2398,7 +2504,11 @@ app.post('/admin/users/update/:id', requireRole('admin'), (req, res) => {
 
   const primaryRole = rolesList[0];
 
-  if (password && password.trim().length >= 6) {
+  if (password && password.trim() && passwordError(password.trim())) {
+    req.flash('error', passwordError(password.trim()));
+    return res.redirect('/admin/users/edit/' + req.params.id);
+  }
+  if (password && password.trim().length >= MIN_PASSWORD_LENGTH) {
     const hash = bcrypt.hashSync(password.trim(), 10);
     db.prepare(`UPDATE users SET name = ?, email = ?, phone = ?, role = ?, status = ?, password_hash = ? WHERE id = ?`)
       .run(name.trim(), email.trim(), phone ? phone.trim() : '', primaryRole, status, hash, req.params.id);
@@ -2819,7 +2929,9 @@ app.get('/admin/logs', requireRole('admin'), (req, res) => {
 
 // Admin Backup Database Endpoint (B-03)
 app.get('/admin/backup-db', requireRole('admin'), (req, res) => {
-  const dbFile = path.resolve(__dirname, '../database/medibook.sqlite');
+  // Dùng đúng file CSDL đang chạy (tôn trọng DATABASE_PATH) và flush WAL trước khi tải
+  try { db.pragma('wal_checkpoint(TRUNCATE)'); } catch (_) { /* không ở chế độ WAL */ }
+  const dbFile = db.name;
   const nowStr = new Date().toISOString().split('T')[0];
   const downloadName = `medibook_backup_${nowStr}.sqlite`;
   logActivity(req.session.user.id, 'BACKUP_DATABASE', 'System', null, 'Xuất file sao lưu CSDL medibook.sqlite', req);
@@ -2833,6 +2945,16 @@ app.get('/admin/backup-db', requireRole('admin'), (req, res) => {
 // 404 handler
 app.use((req, res) => {
   res.status(404).render('errors/error', { message: 'Trang bạn yêu cầu không tồn tại (404)' });
+});
+
+// Global error handler: không rò rỉ chi tiết lỗi cho client
+app.use((err: any, req: any, res: any, next: any) => {
+  console.error('Unhandled error:', err);
+  if (res.headersSent) return next(err);
+  const status = err && err.status >= 400 && err.status < 500 ? err.status : 500;
+  res.status(status).render('errors/error', {
+    message: status === 500 ? 'Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau.' : 'Yêu cầu không hợp lệ.'
+  });
 });
 
 // Start Server
