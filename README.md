@@ -45,6 +45,9 @@ npm run dev
 
 Tất cả các tài khoản demo đều sử dụng chung mật khẩu mặc định là: **`password`**
 
+> ⚠️ **Chỉ áp dụng cho môi trường phát triển/kiểm thử.** Dữ liệu demo (kèm mật khẩu `password`) chỉ được nạp khi CSDL SQLite còn trống và `NODE_ENV` khác `production`. Ở chế độ production, hệ thống **không** tạo tài khoản demo: đặt `ADMIN_INITIAL_PASSWORD` (≥ 8 ký tự, tuỳ chọn `ADMIN_INITIAL_EMAIL`) để tạo duy nhất 1 tài khoản Admin khi khởi động lần đầu, và bắt buộc có `SESSION_SECRET`.
+> Khách đặt lịch không đăng nhập sẽ nhận tài khoản mới với mật khẩu ngẫu nhiên (hiển thị một lần ở trang xác nhận). Mật khẩu tối thiểu 8 ký tự.
+
 | Vai trò | Email đăng nhập | Mật khẩu | Chức năng chính |
 |---|---|---|---|
 | 👑 **Quản trị viên (Admin)** | `admin@medibook.local` | `password` | Quản trị toàn hệ thống, báo cáo doanh thu, CRUD người dùng & danh mục |
