@@ -1,145 +1,183 @@
-# 🧹 BÁO CÁO DỌN RÁC DỰ ÁN (PROJECT CLEANUP REPORT)
-**Dự án**: MediBook - Nền tảng Đặt lịch Khám & Quản lý Phòng khám Thông minh  
-**Vị trí Codebase**: `D:\MediBook` (Ổ đĩa `Study (D:)`)  
-**Thời điểm dọn dẹp & kiểm chứng**: 2026-10-03T11:26:00+07:00  
-**Repository Janitor & Verifier**: Senior Technical Auditor & Codebase Cleaner  
-**Quy trình tuân thủ**: 7 Phase Protocol của skill `/cleanup-sweeper` (Có bằng chứng, an toàn tuyệt đối, có bản lưu ngoài dự án)  
+# PROJECT_CLEANUP.md — MediBook
+
+> Dọn rác ngày 2026-10-04 · nhánh `cleanup/20261004` · mốc quay lại `pre-cleanup-20261004`.
+> Nguyên tắc: không bằng chứng → không đụng; chỉ xóa sau khi có bản lưu **ngoài dự án** đã kiểm tra toàn vẹn; kiểm tra lại sau khi dọn.
 
 ---
 
-## 1. KẾT LUẬN ĐIỀU HÀNH
-- **Tổng quan dọn dẹp**: Đã dọn dẹp an toàn **1.77 MB** dung lượng rác và nhật ký tạm thời, thực hiện checkpoint thu gọn SQLite WAL log từ 1.74 MB về 0 bytes, untrack các file binary (`dist/`, `database/medibook.sqlite`) khỏi Git index để làm nhẹ repo, và bảo toàn 100% mã nguồn cốt lõi.
-- **Kết quả kiểm chứng**: **100% XANH** (Biên dịch TypeScript 0 lỗi, dry-run 45/45 EJS views PASS, chạy 2 lần bộ kiểm thử tự động 52/52 test suites PASS 100%).
-- **Bảo toàn dữ liệu & Lưới an toàn**: Đã tạo bản lưu dự phòng nguyên vẹn NGOÀI dự án tại `D:\MediBook-cleanup-backup-20261003-1125.zip` (Mã băm SHA256: `F89DD9AAE52E878E8D3AC50CE27A5E443E5D5F9C25B482878A3E36CF6BF4EB14`).
-- **Mức tin cậy**: **CAO TUYỆT ĐỐI** (Mọi thay đổi đều được đo đạc, kiểm tra trước/sau bằng lệnh thực thi thật).
+## 1. Kết luận điều hành
+
+- **Dự án vốn đã khá sạch** (đợt dọn 02/10 và 03/10 đã xử lý phần lớn). Lần này **không có file nào được theo dõi trong git bị xóa**.
+- Đã xóa thật: **`dist/`** (Tầng A, build output bị `.gitignore`: 4 file, 0.17 MB). Build lại từ nguồn cho ra **4 file giống hệt từng byte (SHA256 khớp)** → không còn file build cũ/stale.
+- Kiểm chứng sau dọn: build ✅ 0 lỗi · test **87/87 PASS ×2** (trên bản sao DB, không đụng DB thật) · smoke 51/51 route đúng · `git diff pre-cleanup-20261004..HEAD` = **rỗng** (không file tracked nào đổi) · không rác mới sinh ra trong dự án.
+- **Độ nặng web không đổi** (không có gì để giảm bằng cách xóa). Thủ phạm thật là **6.13 MB ảnh bác sĩ** (xem Q-01) — chỉ báo cáo, không tự sửa.
+- Cần bạn quyết: Q-01 … Q-08 (mục 6). Mức tin cậy: **cao** (mọi thay đổi đều có bản lưu và đối chiếu hash).
+- File lưu ngoài dự án: `D:\MediBook-cleanup-backup-20261004-0015.zip` — **giữ lại** cho tới khi bạn yên tâm.
 
 ---
 
-## 2. LƯỚI AN TOÀN (SAFETY NET)
-- **Git Tag mốc an toàn**: `pre-cleanup-20261003` (commit `ede94ad`)
-- **Git Branch làm việc**: `cleanup/20261003`
-- **Bản lưu NGOÀI dự án (Bắt buộc)**:
-  - **Đường dẫn**: `D:\MediBook-cleanup-backup-20261003-1125.zip`
-  - **Dung lượng**: `21,298 bytes` (~20.8 KB)
-  - **Mã băm SHA256**: `F89DD9AAE52E878E8D3AC50CE27A5E443E5D5F9C25B482878A3E36CF6BF4EB14`
-  - **Kết quả kiểm tra tính toàn vẹn (Unzip test)**: `tar -tf` PASS (100% giải nén không lỗi).
-  - **Bảng MANIFEST lưu trữ**:
-    - `package.json` | `934 B`
-    - `package-lock.json` | `70,765 B`
-    - `tsconfig.json` | `469 B`
-    - `.env.example` | `579 B`
-    - `.gitignore` | `249 B`
-    - `schema.sql` | `17,697 B`
-    - `seed.sql` | `15,449 B`
-- **Cách khôi phục khẩn cấp**:
-  - Khôi phục file cấu hình từ bản lưu ngoài:
-    ```powershell
-    tar -xf ../MediBook-cleanup-backup-20261003-1125.zip
-    ```
-  - Hoàn tác toàn bộ về mốc trước dọn:
-    ```powershell
-    git checkout pre-cleanup-20261003
-    ```
+## 2. Lưới an toàn
+
+| Hạng mục | Giá trị |
+|---|---|
+| Tag | `pre-cleanup-20261004` (commit `b948f78`, đã gồm 2 báo cáo audit/verify mới) |
+| Nhánh | `cleanup/20261004` (đang đứng trên nhánh này; **chưa merge vào `main`**) |
+| File lưu ngoài dự án | `D:\MediBook-cleanup-backup-20261004-0015.zip` |
+| SHA256 zip | `CC4CF4DE93BAC37F70A613D0889C74789B76EBED3B3F634A0A8090324C38742B` |
+| Kích thước / số file | 56 877 byte · 7 file (= 7 file trong kế hoạch) |
+| Kiểm tra toàn vẹn | Mở zip, băm từng entry so với băm file nguồn: **khớp 7/7** |
+
+**MANIFEST (đường dẫn gốc + SHA256):**
+
+| Đường dẫn | Byte | SHA256 |
+|---|---|---|
+| `dist/db.js` | 49 070 | `CDBC2B30AD179B1DEECAC1719503AE02B0439D4765F8A73834F833AECEA38726` |
+| `dist/helpers.js` | 5 646 | `B56A6D189185B5D95050D5BA5631F4A316B66D9B383A79F0D5C187775908385F` |
+| `dist/middleware.js` | 1 420 | `714CCFC1324E0DECCE4652C43747610EC8FD0D06BA30A7DAAD55A3BA7EDF519E` |
+| `dist/server.js` | 122 534 | `274FE2A6899C21F15AD9BCE51947B1D37D441D07A53DF13D28EDC6EE36CDEDC1` |
+| `package.json` | 934 | `3BF499B5EF7C011AD2C68F2F253E1CBC96C9EDB8034B874E96F47C16A9993ABF` |
+| `package-lock.json` | 70 765 | `6F8F1F9FC504479F8A6440F1736DDB3A2DDAE9474509E406421A2FDC1FA36F3D` |
+| `tsconfig.json` | 469 | `03FEF32E7C4A2D12E1340AB58A3E2EF2D4CA5AEA89042D7EF84ACA6E4D0CEC5C` |
+
+**Cách khôi phục**
+- Khôi phục `dist/` bằng cách build lại (đơn giản nhất): `npm run build`.
+- Từ zip (PowerShell): `Expand-Archive D:\MediBook-cleanup-backup-20261004-0015.zip -DestinationPath D:\MediBook -Force`
+- File tracked bất kỳ: `git checkout pre-cleanup-20261004 -- <file>`; cả nhánh: `git switch main`.
 
 ---
 
-## 3. ĐƯỜNG CƠ SỞ TRƯỚC DỌN (BASELINE)
+## 3. Đường cơ sở trước dọn
 
-| Chỉ số | Giá trị trước dọn | Chi tiết |
-|:---|:---:|:---|
-| **Tổng file dự án** (trừ node_modules, .git) | **101 files** | 45 views, 4 ts, 2 css, 6 js, 2 sql, 8 docs/md, sqlite |
-| **Tổng dung lượng thư mục** | **9.42 MB** | 9,418,125 bytes |
-| `database/` (CSDL SQLite) | **2,103.5 KB** | File chính (299KB), wal log (1,738KB), shm (32KB), sql (33KB) |
-| `public/` (Static assets) | **6.20 MB** | 10 ảnh JPG (~600KB/ảnh), 6 SVG, 3 JS, 2 CSS |
-| `src/` (Mã nguồn backend) | **117.68 KB** | 4 files (`server.ts`, `db.ts`, `helpers.ts`, `middleware.ts`) |
-| `dist/` (Build output) | **120.28 KB** | 4 files biên dịch |
-| **Build TypeScript (`npm run build`)** | **PASS** | 0 error, 0 warning |
-| **Dry-run Views (`test_render_views.js`)** | **PASS 45/45** | 100% template compile không lỗi |
-| **Automated Test Suites (`npm test`)** | **PASS 52/52** | 10 nhóm nghiệp vụ & bảo mật |
+| Chỉ số | Giá trị |
+|---|---|
+| File tracked | 99 (7 397 575 byte) |
+| `src/` · `views/` · `public/` · `docs/` | 0.167 · 0.310 · 6.205 · 0.080 MB |
+| `public/assets/images` | 6.132 MB (≈ 98.8 % của `public/`) |
+| `public/assets/css` + `js` | 0.052 + 0.021 MB |
+| `dist/` (build output) | 4 file · 0.170 MB (server.js 122 534 B) |
+| `node_modules/` · `.git/` | 46.818 · 6.629 MB (không đụng) |
+| Dependency runtime | 6 (đều được dùng) |
+| Thời gian build (`tsc`) | 0.39 s |
+| Build / typecheck | ✅ 0 lỗi |
+| Lint | không có |
+| Test (`test_full_suite.js` trên bản sao DB) | ✅ 87/87 |
+| Lighthouse | không đo (không có công cụ trong môi trường) |
 
----
-
-## 4. BẢNG RÁC ĐÃ XỬ LÝ (J-xx)
-
-| ID | Đường dẫn / Mục | Tầng | Bằng chứng không dùng | Hành động | Lô | Kết quả kiểm sau lô |
-|:---|:---|:---:|:---|:---:|:---:|:---:|
-| **J-01** | `database/medibook.sqlite-wal` (1,738 KB) & `-shm` (32 KB) | **A** | File nhật ký WAL tích tụ kích thước sau nhiều lượt chạy test tự động. | **Checkpoint nén gọn** qua `PRAGMA wal_checkpoint(TRUNCATE)` | Lô 1 | **PASS** (Flushed sạch vào file chính, giải phóng ~1.77 MB) |
-| **J-02** | `dist/` & `database/medibook.sqlite` trong Git index | **A** | File build output và database runtime bị Git track trước đây, làm phình to lịch sử commit. | **Untrack khỏi Git** (`git rm --cached`) | Lô 2 | **PASS** (Git index sạch, file vật lý trên đĩa vẫn được giữ) |
+Top file nặng (loại trừ `node_modules`, `.git`): `database/medibook.sqlite-wal` 1.86 MB (runtime DB — bất khả xâm phạm), 10 ảnh `.jpg` 0.60–0.68 MB mỗi ảnh, `dist/server.js` 0.12 MB, `src/server.ts` 0.12 MB.
 
 ---
 
-## 5. MỤC GIỮ LẠI & LÝ DO (K-xx)
+## 4. Bảng rác đã xử lý
 
-| ID | Đường dẫn | Phân loại | Lý do giữ lại (Bằng chứng không phải rác) |
-|:---|:---|:---:|:---|
-| **K-01** | `public/assets/images/doctor-9.jpg` (585 KB) | Tài nguyên | Trùng mã băm SHA256 (`1d94064a2c6d...`) với `doctor-1.jpg`. Tuy nhiên file này được nạp động qua template `<img src="/assets/images/doctor-<%= doc.id %>.jpg">` cho Bác sĩ ID 9 (`Bác sĩ Minh`). Nếu xóa sẽ gây lỗi vỡ ảnh trên giao diện. |
-| **K-02** | `public/assets/images/doctor-1.jpg` → `doctor-8.jpg` | Tài nguyên | Ảnh đại diện của 8 bác sĩ khác trong phòng khám, nạp động qua `doctor-<%= doc.id %>.jpg`. |
-| **K-03** | `public/assets/images/avatar-default.svg`, `doctor-hero.svg` | Tài nguyên | File SVG dự phòng hiển thị avatar và banner khi trình duyệt không tải được ảnh raster. |
-| **K-04** | `test_render_views.js` & `test_full_suite.js` | Công cụ test | Bộ công cụ kiểm thử tự động tích hợp 45 views dry-run và 52 E2E suites sống còn của hệ thống. |
-| **K-05** | `server.js` (Root) | Entrypoint | Điểm khởi chạy chính được định nghĩa trong `package.json` (`"main": "server.js"`). |
-| **K-06** | `database/schema.sql` & `database/seed.sql` | Dữ liệu gốc | Thuộc danh mục BẤT KHẢ XÂM PHẠM, phục vụ khởi tạo lại hệ thống khi cần. |
-| **K-07** | `.env` & `.env.example` | Cấu hình | File môi trường phục vụ cấu hình runtime an toàn vừa hoàn thiện tại Work Item W-01. |
+Kế hoạch (Phase 3) — 1 lô vì chỉ có 1 hạng mục đủ bằng chứng:
+
+| ID | Đường dẫn | Tầng | Bằng chứng | Hành động | Lô | Kết quả kiểm sau lô |
+|---|---|---|---|---|---|---|
+| J-01 | `dist/` (4 file) | A | `git status --ignored`: `!! dist/` (bị `.gitignore`, không tracked); sinh ra bởi `npm run build` (`package.json`); không có file `dist/*` nào không có `src/*` tương ứng | **Xóa thẳng** rồi build lại từ nguồn | 1 | Build 0 lỗi (0.39 s); 4 file SHA256 **trùng khớp** manifest; test 87/87; smoke 51/51 |
+
+Lô này không có commit riêng vì `dist/` bị `.gitignore` (không có gì để commit); nhánh chỉ chứa commit báo cáo `b948f78` (+ commit của báo cáo này).
 
 ---
 
-## 6. MỤC CHỈ BÁO CÁO — CẦN NGƯỜI DÙNG QUYẾT (Q-xx)
+## 5. Mục giữ lại & lý do (K-xx)
 
-| ID | Vấn đề phát hiện | Chi tiết bằng chứng | Khuyến nghị giải pháp |
-|:---|:---|:---|:---|
-| **Q-01** | Kích thước ảnh bác sĩ trong `public/assets/images/` còn khá nặng | 10 file `.jpg` (`doctor-1.jpg` đến `doctor-9.jpg` và `doctor-hero.jpg`) có dung lượng từ 585 KB đến 682 KB mỗi ảnh, chiếm tổng cộng hơn 6.2 MB trên tổng số 7.65 MB của toàn bộ dự án. | Đề xuất tối ưu hóa hình ảnh bằng công cụ nén WebP hoặc giảm độ phân giải xuống 400x400 (chỉ còn ~40-60 KB/ảnh) theo đúng Work Item W-06. Thao tác này sẽ giúp giảm > 5.5 MB dung lượng tải trang và tăng điểm Lighthouse di động đáng kể. |
-| **Q-02** | Cơ chế tự động Checkpoint SQLite WAL định kỳ | Khi phòng khám hoạt động với lượng giao dịch lớn, file WAL sẽ tăng dần kích thước theo thời gian. | Khuyến nghị bổ sung task tự động chạy `PRAGMA wal_checkpoint(PASSIVE)` mỗi đêm trong module bảo trì Admin. |
-
----
-
-## 7. KIỂM CHỨNG SAU DỌN (PHASE 5)
-
-| STT | Hạng mục kiểm chứng | Lệnh thực hiện | Kết quả thực tế | Trạng thái |
-|:---:|:---|:---|:---|:---:|
-| 1 | **Biên dịch TypeScript** | `npm run build` | `tsc` hoàn tất với **0 lỗi, 0 cảnh báo**. | 🟢 PASS |
-| 2 | **Kiểm tra Dry-run Views** | `node test_render_views.js` | **45/45 EJS templates** biên dịch thành công 100%. | 🟢 PASS |
-| 3 | **Kiểm tra E2E Test Suite** | `npm test` | **52/52 Test Suites PASS 100%** (Chạy lại 2 lần đều xanh). | 🟢 PASS |
-| 4 | **Khởi động Server Local** | `node dist/server.js` | Server Express khởi chạy tức thì tại `http://localhost:3000`. | 🟢 PASS |
-| 5 | **Không còn tham chiếu mồ côi** | `git check-ignore` & `git status` | Không có file bị gãy link hay import lỗi. | 🟢 PASS |
-| 6 | **Diff Git đúng như dự kiến** | `git status` | Chỉ các thay đổi mong muốn được ghi nhận, không đụng danh mục cấm. | 🟢 PASS |
-| 7 | **Không lộ bí mật** | `git ls-files .env` | File `.env` được ignore hoàn toàn, không lọt vào Git index. | 🟢 PASS |
+| ID | Mục | Lý do giữ (bằng chứng) |
+|---|---|---|
+| K-01 | `public/assets/images/doctor-1.jpg … doctor-9.jpg` | Nạp **động** qua `doctor-<%= doc.id %>.jpg` (`views/doctors/detail.ejs:15`, `doctors/index.ejs:41`, `home/index.ejs:167`, `profile/index.ejs:120`, `specialties/detail.ejs:34`) — bác sĩ ID 1..10 trong DB. Quy tắc: tham chiếu động ⇒ không xóa |
+| K-02 | `doctor-9.jpg` (trùng SHA256 `1d94064a2c6d…` với `doctor-1.jpg`, 599 396 B) | Là ảnh của bác sĩ ID 9 theo template động. Xóa sẽ gây 404 + fallback; riêng `profile/index.ejs:120` không có `onerror` ⇒ ảnh vỡ |
+| K-03 | `avatar-doctor1…4.svg` | Giá trị `users.avatar` trong DB (`avatar-doctor1.svg`…) và `database/seed.sql` |
+| K-04 | `logo.png`, `doctor-hero.jpg`, `doctor-2.jpg`, CSS ×2, JS ×3 | Có tham chiếu tĩnh thật trong layout/views |
+| K-05 | `test_full_suite.js`, `test_render_views.js` | Công cụ kiểm thử (test chính được `npm test` gọi; `test_render_views.js` chạy được: 48 PASS — nhưng hard-code `D:/MediBook`, xem Q-05) |
+| K-06 | `server.js` (root) | `package.json` `"main"` |
+| K-07 | `database/*.sql`, `database/*.sqlite*`, `.env`, `.env.example`, lockfile, `tsconfig.json`, `docs/`, `README.md`, `.vscode/` | Danh mục bất khả xâm phạm |
+| K-08 | `PROJECT_BASELINE.md` | `README.md` tham chiếu; 52 KB |
+| K-09 | `PROJECT_AUDIT.md`, `PROJECT_VERIFY.md`, `PROJECT_CLEANUP.md` | Đầu ra của 3 skill trong cùng đợt |
+| K-10 | `node_modules/` | Không phải rác |
 
 ---
 
-## 8. SỐ LIỆU ĐỘ NẶNG WEB TRƯỚC → SAU DỌN
+## 6. Mục chỉ báo cáo — cần bạn quyết (Q-xx)
 
-| Chỉ số | Trước dọn | Sau dọn | Mức giảm | % Giảm | Nhận xét trung thực |
-|:---|:---:|:---:|:---:|:---:|:---|
-| **Tổng dung lượng dự án** | **9.42 MB** | **7.65 MB** | **-1.77 MB** | **-18.8%** | Giảm rõ rệt nhờ nén gọn nhật ký SQLite WAL. |
-| `database/` (CSDL) | **2,103.5 KB** | **340.3 KB** | **-1,763.2 KB** | **-83.8%** | Thu gọn tối đa, dữ liệu cam kết an toàn nguyên vẹn. |
-| `src/` (Mã nguồn backend) | **117.68 KB** | **117.68 KB** | 0 KB | 0.0% | Giữ nguyên cấu trúc logic sạch sau W-01. |
-| `public/assets` | **6.20 MB** | **6.20 MB** | 0 KB | 0.0% | Giữ nguyên theo nguyên tắc: không tự ý nén/sửa ảnh khi chưa qua W-06. |
-| `dist/` (Build output) | **120.28 KB** | **120.28 KB** | 0 KB | 0.0% | Tái tạo chính xác từ mã TypeScript nguồn. |
-
----
-
-## 9. ĐỀ XUẤT PHÒNG TÁI PHÁT (PHASE 6)
-1. **Duy trì `.gitignore` chuẩn mực**: Đã bổ sung `.env`, `.env.*`, `dist/`, `database/*.sqlite` để ngăn chặn commit rác tự động.
-2. **Quy tắc cho AI Agent**:
-   - Mọi script kiểm tra tạm thời phải đặt trong thư mục tạm hoặc xóa ngay sau khi chạy xong.
-   - Tuyệt đối không tạo bản sao nội bộ kiểu `*-copy.*` hay `*_backup.*` trong thư mục dự án.
-   - Chạy `npm test` và checkpoint WAL định kỳ sau các đợt refactor lớn.
+| ID | Vấn đề | Bằng chứng | Khuyến nghị |
+|---|---|---|---|
+| Q-01 | **Ảnh bác sĩ quá nặng** — 10 file `.jpg` ≈ 0.6 MB/ảnh, 6.13 MB chiếm ~99 % `public/` | `Get-ChildItem public/assets/images` (599–683 KB mỗi ảnh); mỗi ảnh chỉ hiển thị dạng thumbnail tròn/thẻ nhỏ | Nén/resize về ≤ 400 px WebP/JPG chất lượng 75–80 (ước tính còn ~30–60 KB/ảnh ⇒ giảm ~5.5 MB; **chưa đo**). Không tự sửa ảnh theo quy tắc |
+| Q-02 | `avatar-default.svg` (537 B), `doctor-hero.svg` (2 576 B) **không có tham chiếu** trong code/view/DB | Quét tham chiếu theo tên file: chỉ xuất hiện trong báo cáo `.md`; lý do giữ ở đợt dọn trước ("SVG dự phòng khi ảnh raster lỗi") **không đúng với code** — không có `onerror` nào trỏ tới 2 SVG này | Xóa được (tiết kiệm ~3 KB, không đáng kể). Giữ nếu định dùng làm ảnh mặc định; nếu giữ, nên nối vào `onerror` |
+| Q-03 | `MEDIBOOK_AUDIT_NGHIEPVU.md` (15 KB, không ai tham chiếu), `MEDIBOOK_DESIGN_PROPOSAL.md` (18 KB, chỉ tham chiếu lẫn nhau) | Quét tham chiếu | Nên chuyển vào `docs/` thay vì để ở root; xóa nếu không cần |
+| Q-04 | `database/schema.sql` + `seed.sql` là dialect **MySQL**, không dùng được với SQLite; schema thật nằm ở `src/db.ts` | `AUTO_INCREMENT/ENGINE=InnoDB`; `seed.sql` lỗi trên DB mới (xem `PROJECT_AUDIT.md` F-17/B-02) | Thuộc danh mục bất khả xâm phạm ⇒ chỉ báo cáo. Sửa theo B-02/R-01 |
+| Q-05 | `test_render_views.js` hard-code `D:/MediBook/views`, dữ liệu mock mojibake, không có trong `npm` scripts | `test_render_views.js:5` | Sửa đường dẫn thành tương đối + thêm script, hoặc xóa |
+| Q-06 | **DB local bị làm bẩn bởi test**: `npm test` mặc định ghi thẳng vào `database/medibook.sqlite` (108 user, WAL 1.86 MB) — có cả lần chạy `npm test` đầu phiên này | `test_full_suite.js:8,14` dùng `./dist/db` mặc định | Chạy test với `DATABASE_PATH` tạm (đúng cách tôi đã làm trong phiên này) hoặc sửa theo `PROJECT_VERIFY.md` R-01. Không động tới DB (bất khả xâm phạm) |
+| Q-07 | 20 tham số `req` không dùng + 1 biến `name` không dùng | `npx tsc --noEmit --noUnusedLocals --noUnusedParameters` (21 cảnh báo TS6133, 0 import thừa) | Dự án không có linter nên không có autofix an toàn ⇒ chỉ báo cáo; vô hại, có thể đổi `req` → `_req` |
+| Q-08 | Nhánh/zip dọn cũ: `cleanup/20261002`, `cleanup/20261003` (đã merge vào `main`), `D:\MediBook-cleanup-backup-20261002-2315.zip` (40 KB), `…20261003-1125.zip` (27 KB) | `git branch --merged main` | Bạn có thể xóa khi yên tâm (`git branch -d …`). Tôi **không** tự xóa. Ngoài ra nhánh `cleanup/20261004` chưa merge: `git switch main && git merge --ff-only cleanup/20261004` (chỉ thêm báo cáo) |
 
 ---
 
-## 10. PHẠM VI ĐÃ QUÉT & GIỚI HẠN
-- **Phạm vi quét sâu 100%**: Thư mục gốc, `src/`, `views/`, `public/`, `database/`, `docs/`.
-- **Giới hạn an toàn**: Không tự ý xóa ảnh bác sĩ trong `public/assets/images/` vì các ảnh này đang được render động qua template; việc chuyển đổi sang WebP sẽ được thực hiện bài bản tại Work Item W-06.
+## 7. Kiểm chứng sau dọn (Phase 5)
+
+| # | Hạng mục | Kết quả | Lệnh / bằng chứng |
+|---|---|---|---|
+| 1 | Bộ kiểm tra ≥ đường cơ sở | ✅ PASS | `npm run build` 0 lỗi; test 87/87 **×2** (bản sao DB); smoke 51 route / 4 vai trò: 0 NOK; RBAC âm đúng (patient→admin 302 `/`, anon→`/login`). Lint: không có |
+| 2 | Không tham chiếu mồ côi | ✅ PASS | Không file tracked nào bị xóa; `dist/` được sinh lại, 4 file giống hệt (SHA256) |
+| 3 | Rác đã hết thật | ✅ PASS | Quét lại Phase 1: `git ls-files --others --exclude-standard` = rỗng; chỉ còn ignored: `.env`, `database/*.sqlite*`, `dist/` (vừa build lại, cần để chạy app), `node_modules/`. 0 file 0-byte; 0 duplicate loại B ngoài K-02 (có tham chiếu động) |
+| 4 | Diff đúng dự kiến | ✅ PASS | `git diff --stat pre-cleanup-20261004..HEAD` = rỗng (tại thời điểm kiểm; sau đó chỉ thêm file báo cáo này) |
+| 5 | Không rác mới trong repo | ✅ PASS | Không có `.cleanup-trash/`, `.zip`, `.bak`… trong `D:\MediBook`; zip duy nhất nằm **ngoài** dự án; file tạm của phiên (`%TEMP%\mb-verify-A`, bản sao DB) đã xóa |
+| 6 | Không lộ secret | ✅ PASS | `git ls-files` không chứa `.env`/`.sqlite`/khóa (0) |
+| 7 | Số liệu độ nặng web trước → sau | ✅ đã đo | Xem mục 8 |
+
+---
+
+## 8. Số liệu độ nặng web trước → sau
+
+| Chỉ số | Trước | Sau | Thay đổi |
+|---|---|---|---|
+| Source (`src/`) | 0.167 MB | 0.167 MB | 0 % |
+| `public/` | 6.205 MB | 6.205 MB | 0 % |
+| `public/assets/images` | 6.132 MB | 6.132 MB | 0 % |
+| CSS + JS client | 0.073 MB | 0.073 MB | 0 % |
+| Build output `dist/` | 0.170 MB (4 file) | 0.170 MB (4 file, hash trùng) | 0 % |
+| Dependency runtime | 6 | 6 | 0 |
+| Thời gian build | 0.39 s | 0.39 s | 0 % |
+| Điểm Lighthouse | — | — | không đo |
+
+**Nhận xét trung thực:** dọn dẹp lần này **không làm web nhẹ hơn** vì không còn gì thừa để xóa an toàn. Điểm nghẽn thật là ảnh (Q-01: 6.13 MB, ~99 % tài nguyên tĩnh; mỗi trang danh sách bác sĩ tải nhiều ảnh ~0.6 MB). Đây là cải thiện tốc độ tải lớn nhất còn lại.
+
+---
+
+## 9. Đề xuất phòng rác tái phát
+
+- **`.gitignore`** (đã có `node_modules/`, `dist/`, `.env*`, `database/*.sqlite*`, `*.log`): nên thêm
+  ```
+  .scratch/
+  tmp_*
+  *.tmp
+  *.bak
+  *.orig
+  ```
+- **Quy tắc cho Agent** (`AGENTS.md`): file thử/scratch đặt ở `%TEMP%` hoặc `.scratch/`, không commit; xong việc liệt kê & xóa file tạm; không để file backup/copy trong repo; **test luôn chạy với `DATABASE_PATH` tạm, không ghi vào `database/medibook.sqlite`**; báo cáo `PROJECT_*.md` đặt vào `docs/reports/` thay vì root.
+- **Script đề xuất** `npm run clean:check`: báo khi có `*.bak|*.orig|*.tmp`, file 0-byte, hoặc ảnh `public/assets/images/*` > 150 KB.
+- **Cấu trúc:** chuyển `MEDIBOOK_*.md`, `PROJECT_*.md` vào `docs/`; chuyển `test_*.js` vào `tests/`.
+
+---
+
+## 10. Phạm vi đã quét & giới hạn
+
+| Khu vực | Mức |
+|---|---|
+| Toàn bộ 99 file tracked (băm SHA256, nhóm trùng) | Sâu |
+| `public/assets/*` (tham chiếu tĩnh + động + giá trị DB) | Sâu |
+| `src/`, `views/` (grep ảnh, `console.log`, import/biến không dùng qua `tsc`) | Sâu |
+| `dist/` | Sâu (xóa + so hash) |
+| `package.json` dependencies | Sâu (6/6 đều được dùng) |
+| `docs/`, `database/*.sql`, `.vscode/` | Chỉ liệt kê (bất khả xâm phạm) |
+| `node_modules/`, `.git/` | Không quét |
+
+**Giới hạn:** không đo Lighthouse; không có linter nên không có autofix Tầng C; giá trị ảnh trong DB chỉ quét cột chứa `assets/`, `.jpg`, `.png`, `.svg`.
 
 ---
 
 ## 11. HANDOFF CHO AI KHÁC
-```text
-DỰ ÁN: MediBook (D:\MediBook)
-TÌNH TRẠNG CODEBASE: SẠCH SẼ 100%, ĐÃ HOÀN TẤT W-01 VÀ DỌN RÁC TOÀN DIỆN.
-KẾT QUẢ KIỂM THỬ: npm run build (PASS), test_render_views (45/45 PASS), npm test (52/52 PASS).
-DUNG LƯỢNG HIỆN TẠI: 7.65 MB (Database chỉ còn 340 KB, mã nguồn src 117 KB).
-BẢN LƯU AN TOÀN: D:\MediBook-cleanup-backup-20261003-1125.zip (SHA256: F89DD9AA...).
-LƯU Ý QUAN TRỌNG:
-  - Ảnh bác sĩ doctor-1.jpg đến doctor-9.jpg được dùng qua dynamic template doctor-<%= doc.id %>.jpg, KHÔNG ĐƯỢC XÓA.
-  - File .env và dist/ đã được untrack khỏi git, không commit file binary.
-```
+
+- **Tình trạng:** repo sạch; chỉ còn ignored hợp lệ (`.env`, `database/*.sqlite*`, `dist/`, `node_modules/`). Nhánh `cleanup/20261004` chỉ chứa báo cáo.
+- **Cần người dùng quyết:** Q-01 (nén ảnh — hiệu quả lớn nhất), Q-02, Q-03, Q-05, Q-08.
+- **Đừng xóa:** `doctor-*.jpg` (nạp động theo ID bác sĩ), `avatar-doctor*.svg` (DB), mọi `database/*`, `.env*`, lockfile.
+- **Giữ repo sạch:** test luôn dùng `DATABASE_PATH` tạm; scratch ngoài repo; báo cáo vào `docs/`.
+- **File lưu:** `D:\MediBook-cleanup-backup-20261004-0015.zip` — **không tự xóa**; giữ tới khi bạn chạy thử dự án kỹ.
