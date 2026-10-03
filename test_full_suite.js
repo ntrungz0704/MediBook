@@ -950,9 +950,24 @@ async function runTests() {
 
     // 11.6 Bảng điện tử công khai không lộ tên đầy đủ bệnh nhân
     assert(maskName('Nguyễn Văn An') === 'Nguyễn V. A***', 'B-05: maskName che tên bệnh nhân (Nguyễn V. A***)');
-    res = await guest.get('/api/queue/live');
-    const liveQueue = JSON.parse(res.body);
-    assert(liveQueue.success && liveQueue.items.every(i => !i.patient_name || i.patient_name.includes('***')), 'B-05: /api/queue/live công khai chỉ trả tên đã che');
+    const livePat = db.prepare("SELECT p.id, u.name FROM patients p JOIN users u ON u.id = p.user_id WHERE u.email = 'patient@medibook.local'").get();
+    const liveToday = new Date().toISOString().slice(0, 10);
+    const liveAppt = db.prepare(`
+      INSERT INTO appointments (booking_code, patient_id, doctor_id, appointment_date, start_time, end_time, status, source)
+      VALUES ('MBLIVE-0001', ?, ?, ?, '23:00:00', '23:30:00', 'checked_in', 'online')
+    `).run(livePat.id, doctorObj.id, liveToday);
+    db.prepare("INSERT INTO examination_queues (appointment_id, queue_number, room, status) VALUES (?, 'A99', 'P1', 'calling')").run(liveAppt.lastInsertRowid);
+    try {
+      res = await guest.get('/api/queue/live');
+      const liveQueue = JSON.parse(res.body);
+      const liveItem = liveQueue.items.find(i => i.queue_number === 'A99');
+      assert(liveItem && liveItem.patient_name !== livePat.name && liveItem.patient_name.includes('***'), 'B-05: /api/queue/live công khai chỉ trả tên đã che');
+      res = await guest.get('/receptionist/live-board');
+      assert(res.statusCode === 200 && !res.body.includes(livePat.name), 'B-05: Bảng điện tử /receptionist/live-board không lộ tên đầy đủ bệnh nhân');
+    } finally {
+      db.prepare('DELETE FROM examination_queues WHERE appointment_id = ?').run(liveAppt.lastInsertRowid);
+      db.prepare('DELETE FROM appointments WHERE id = ?').run(liveAppt.lastInsertRowid);
+    }
 
     // 11.7 Chính sách mật khẩu tối thiểu 8 ký tự
     const weakEmail = `weak11.${Date.now()}@example.com`;
