@@ -340,3 +340,24 @@ CREATE TABLE `activity_logs` (
   INDEX `idx_act_action` (`action`),
   CONSTRAINT `fk_act_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 21. Bảng Tin tức & Cẩm nang Y tế (Articles: Thuốc, Dược liệu, Bệnh, Cơ thể)
+CREATE TABLE IF NOT EXISTS `articles` (
+  `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `category` ENUM('thuoc', 'duoc-lieu', 'benh', 'co-the') NOT NULL DEFAULT 'thuoc',
+  `category_name` VARCHAR(100) NOT NULL,
+  `pill_label` VARCHAR(100) NOT NULL,
+  `icon` VARCHAR(50) DEFAULT '💊',
+  `slug` VARCHAR(190) NOT NULL UNIQUE,
+  `title` VARCHAR(255) NOT NULL,
+  `summary` TEXT NOT NULL,
+  `content` MEDIUMTEXT NOT NULL,
+  `author_name` VARCHAR(100) NOT NULL,
+  `author_role` VARCHAR(100) NOT NULL,
+  `views_count` INT UNSIGNED DEFAULT 120,
+  `status` ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX `idx_articles_category` (`category`),
+  INDEX `idx_articles_slug` (`slug`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

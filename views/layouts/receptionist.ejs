@@ -23,7 +23,9 @@
             <span style="font-size: 10px; font-weight: 600; color: #94a3b8; letter-spacing: 0.5px;">QUẦY TIẾP ĐÓN</span>
           </div>
         </a>
-        <span class="sidebar-role-badge role-receptionist" style="margin-left: auto;">Lễ tân</span>
+        <span class="sidebar-role-badge <%= currentUser && currentUser.role === 'admin' ? 'role-admin' : 'role-receptionist' %>" style="margin-left: auto;">
+          <%= currentUser && currentUser.role === 'admin' ? 'Admin' : 'Lễ tân' %>
+        </span>
       </div>
 
       <ul class="sidebar-nav">
@@ -47,6 +49,11 @@
           <h2><%= typeof pageTitle !== 'undefined' ? pageTitle : 'Bàn làm việc Lễ tân' %></h2>
         </div>
         <div class="topbar-user" style="display:flex; align-items:center; gap:16px;">
+          <% if (currentUser && currentUser.role === 'admin') { %>
+            <a href="/admin/dashboard" class="btn btn-secondary btn-sm" style="display:inline-flex; align-items:center; gap:6px; font-size:12.5px; padding:5px 12px; border-radius:6px; text-decoration:none; background:#f1f5f9; border:1px solid #cbd5e1; color:#0f172a; font-weight:600;">
+              <span>🛡️</span> Về Bảng Quản Trị
+            </a>
+          <% } %>
           <% if (currentUser && currentUser.roles && currentUser.roles.length > 1) { %>
             <div style="display:inline-flex; align-items:center; gap:6px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:20px; padding:4px 12px; font-size:12px; font-weight:600; color:#1d4ed8;">
               <span>🎭 Vai trò:</span>
@@ -59,7 +66,9 @@
               </select>
             </div>
           <% } %>
-          <div class="user-avatar-circle" style="background:#e0f2fe;color:#0369a1;">LT</div>
+          <div class="user-avatar-circle" style="background:<%= currentUser && currentUser.role === 'admin' ? '#fef3c7;color:#b45309;' : '#e0f2fe;color:#0369a1;' %>">
+            <%= currentUser && currentUser.role === 'admin' ? 'AD' : 'LT' %>
+          </div>
           <span style="font-weight:600;"><%= currentUser ? currentUser.name : 'Lễ tân' %></span>
         </div>
       </header>

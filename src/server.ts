@@ -160,12 +160,98 @@ app.get('/', (req, res) => {
     }
   }
 
+  const articles = db.prepare(`SELECT * FROM articles WHERE status = 'active' ORDER BY id ASC`).all();
+
   renderWithLayout(res, 'home/index', {
     pageTitle: 'MediBook - Đặt lịch khám và Quản lý phòng khám thông minh',
     specialties,
     doctors,
-    upcomingAppointment
+    upcomingAppointment,
+    articles
   });
+});
+
+// ==========================================
+// 1.1 MEDICAL ARTICLES (TIN Y TẾ & CẨM NANG)
+// ==========================================
+app.get(['/articles', '/tin-y-te'], (req, res) => {
+  const category = ((req.query.category as string) || '').trim();
+  const q = ((req.query.q as string) || '').trim();
+
+  let sql = `SELECT * FROM articles WHERE status = 'active'`;
+  const params: any[] = [];
+
+  if (category) {
+    sql += ` AND category = ?`;
+    params.push(category);
+  }
+
+  if (q) {
+    sql += ` AND (title LIKE ? OR summary LIKE ? OR content LIKE ?)`;
+    const searchPattern = `%${q}%`;
+    params.push(searchPattern, searchPattern, searchPattern);
+  }
+
+  sql += ` ORDER BY id ASC`;
+  const articles = db.prepare(sql).all(...params);
+
+  renderWithLayout(res, 'articles/index', {
+    pageTitle: 'Cẩm nang Y tế & Dược học - MediBook',
+    articles,
+    selectedCategory: category,
+    searchQuery: q
+  });
+});
+
+app.get(['/articles/:slug', '/tin-y-te/:slug'], (req, res) => {
+  const slug = req.params.slug;
+  const article = db.prepare(`SELECT * FROM articles WHERE slug = ? AND status = 'active'`).get(slug) as any;
+
+  if (!article) {
+    req.flash('error', 'Bài viết y khoa không tồn tại hoặc đã được cập nhật.');
+    return res.redirect('/articles');
+  }
+
+  // Increment view count
+  try {
+    db.prepare(`UPDATE articles SET views_count = views_count + 1 WHERE id = ?`).run(article.id);
+  } catch (e) {}
+
+  // Fetch related articles in same category
+  const relatedArticles = db.prepare(`
+    SELECT * FROM articles 
+    WHERE category = ? AND id != ? AND status = 'active'
+    ORDER BY id ASC LIMIT 3
+  `).all(article.category, article.id);
+
+  renderWithLayout(res, 'articles/detail', {
+    pageTitle: `${article.title} - MediBook Y tế`,
+    article,
+    relatedArticles
+  });
+});
+
+app.get('/api/articles', (req, res) => {
+  const category = ((req.query.category as string) || '').trim();
+  const q = ((req.query.q as string) || '').trim();
+
+  let sql = `SELECT id, category, category_name, pill_label, icon, slug, title, summary, author_name, author_role, views_count FROM articles WHERE status = 'active'`;
+  const params: any[] = [];
+
+  if (category) {
+    sql += ` AND category = ?`;
+    params.push(category);
+  }
+
+  if (q) {
+    sql += ` AND (title LIKE ? OR summary LIKE ?)`;
+    const searchPattern = `%${q}%`;
+    params.push(searchPattern, searchPattern);
+  }
+
+  sql += ` ORDER BY id ASC`;
+  const articles = db.prepare(sql).all(...params);
+  res.json({ success: true, articles });
 });
 
 // ==========================================
@@ -219,6 +305,18 @@ app.post('/login', (req, res) => {
   const intended = req.session.intendedUrl;
   if (intended) {
     delete req.session.intendedUrl;
+    // CRITICAL RBAC GUARD:
+    // If an Admin logs in, do NOT redirect them into receptionist or doctor portal!
+    // Admin always goes to /admin/dashboard unless intended is an admin URL.
+    if (user.role === 'admin' && (intended.startsWith('/receptionist') || intended.startsWith('/doctor'))) {
+      return res.redirect('/admin/dashboard');
+    }
+    if (user.role === 'doctor' && (intended.startsWith('/receptionist') || intended.startsWith('/admin'))) {
+      return res.redirect('/doctor/dashboard');
+    }
+    if (user.role === 'receptionist' && (intended.startsWith('/doctor') || intended.startsWith('/admin'))) {
+      return res.redirect('/receptionist/dashboard');
+    }
     return res.redirect(intended);
   }
 
@@ -488,16 +586,33 @@ app.get('/api/slots', (req, res) => {
     return res.status(400).json({ success: false, error: 'Thiếu thông tin bác sĩ hoặc ngày' });
   }
 
-  const dObj = new Date(date);
-  const dayOfWeek = dObj.getDay(); // 0 = Sunday .. 6 = Saturday
+  // Safe timezone-independent day-of-week parsing (YYYY-MM-DD)
+  const parts = String(date).split('-').map(Number);
+  const dayOfWeek = (parts.length === 3 && !isNaN(parts[0]))
+    ? new Date(parts[0], parts[1] - 1, parts[2]).getDay()
+    : new Date(date).getDay();
 
   const schedule = db.prepare(`
     SELECT * FROM doctor_schedules 
     WHERE doctor_id = ? AND day_of_week = ? AND status = 'active'
   `).get(doctorId, dayOfWeek);
 
+  const dayNames = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+
   if (!schedule) {
-    return res.json({ success: false, error: 'Bác sĩ không có lịch trực vào ngày này.', slots: [] });
+    const allDocSchedules = db.prepare(`
+      SELECT day_of_week, start_time, end_time FROM doctor_schedules
+      WHERE doctor_id = ? AND status = 'active'
+      ORDER BY day_of_week ASC
+    `).all(doctorId) as { day_of_week: number; start_time: string; end_time: string }[];
+    const workingDays = allDocSchedules.map(s => dayNames[s.day_of_week]);
+
+    return res.json({ 
+      success: false, 
+      error: `Bác sĩ không có ca trực vào ${dayNames[dayOfWeek]}.${workingDays.length > 0 ? ' Bác sĩ có lịch vào: ' + workingDays.join(', ') + '.' : ''}`,
+      working_days: workingDays,
+      slots: [] 
+    });
   }
 
   const booked = db.prepare(`

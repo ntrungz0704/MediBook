@@ -1,0 +1,90 @@
+<div class="container" style="padding-top: 40px; padding-bottom: 70px;">
+  <!-- BREADCRUMB & BACK BUTTON -->
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
+    <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-muted);">
+      <a href="/" style="color: var(--primary); text-decoration: none; font-weight: 600;">Trang chủ</a>
+      <span>&rsaquo;</span>
+      <span style="color: #0f172a; font-weight: 700;">Tin Y tế & Cẩm nang Sức khỏe</span>
+    </div>
+    <a href="javascript:history.back()" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; padding: 6px 14px; font-size: 13.5px; border-radius: 8px;">
+      <span>&larr;</span> Quay lại trang trước
+    </a>
+  </div>
+
+  <!-- HERO HEADER -->
+  <div style="text-align: center; max-width: 800px; margin: 0 auto 36px;">
+    <span class="badge" style="background: rgba(13, 148, 136, 0.12); color: var(--primary); font-size: 13px; font-weight: 700; padding: 6px 16px; border-radius: 20px; display: inline-block; margin-bottom: 12px;">
+      MEDIBOOK HEALTH HUB
+    </span>
+    <h1 style="font-size: 32px; font-weight: 800; color: #0f172a; margin-bottom: 10px; letter-spacing: -0.5px;">
+      Tin Y Tế & Cẩm Nang Sức Khỏe
+    </h1>
+    <p style="font-size: 16px; color: #64748b; line-height: 1.6; margin: 0;">
+      Kho tri thức y khoa chính thống, minh bạch và trung lập được biên soạn và kiểm duyệt bởi đội ngũ Bác sĩ, Dược sĩ chuyên khoa MediBook.
+    </p>
+  </div>
+
+  <!-- FILTER TABS & SEARCH BAR -->
+  <div class="card-box" style="padding: 16px 20px; margin-bottom: 30px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;" id="category-tabs-container">
+      <a href="/articles" class="article-tab <%= !selectedCategory ? 'active' : '' %>" style="text-decoration: none;">
+        ✨ Tất cả
+      </a>
+      <a href="/articles?category=thuoc" class="article-tab <%= selectedCategory === 'thuoc' ? 'active' : '' %>" style="text-decoration: none;">
+        💊 Thuốc
+      </a>
+      <a href="/articles?category=duoc-lieu" class="article-tab <%= selectedCategory === 'duoc-lieu' ? 'active' : '' %>" style="text-decoration: none;">
+        🌿 Dược liệu
+      </a>
+      <a href="/articles?category=benh" class="article-tab <%= selectedCategory === 'benh' ? 'active' : '' %>" style="text-decoration: none;">
+        🩺 Bệnh học
+      </a>
+      <a href="/articles?category=co-the" class="article-tab <%= selectedCategory === 'co-the' ? 'active' : '' %>" style="text-decoration: none;">
+        🫀 Cơ thể người
+      </a>
+    </div>
+
+    <form action="/articles" method="GET" style="display: flex; gap: 8px; min-width: 280px; flex: 1; max-width: 400px;">
+      <% if (selectedCategory) { %>
+        <input type="hidden" name="category" value="<%= selectedCategory %>">
+      <% } %>
+      <input type="text" name="q" value="<%= searchQuery || '' %>" placeholder="Tìm tên thuốc, bệnh lý..." class="form-control" style="font-size: 13.5px; border-radius: 8px;">
+      <button type="submit" class="btn btn-primary" style="padding: 0 16px; font-size: 13.5px; white-space: nowrap;">
+        Tìm kiếm
+      </button>
+    </form>
+  </div>
+
+  <!-- ARTICLE GRID -->
+  <% if (!articles || articles.length === 0) { %>
+    <div class="card-box" style="padding: 50px 20px; text-align: center;">
+      <div style="font-size: 40px; margin-bottom: 12px;">🔍</div>
+      <h3 style="font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 8px;">Không tìm thấy bài viết y khoa phù hợp</h3>
+      <p style="font-size: 14px; color: #64748b; margin-bottom: 20px;">Vui lòng thử tìm kiếm với từ khóa khác hoặc chọn xem tất cả bài viết.</p>
+      <a href="/articles" class="btn btn-primary btn-sm">Xem tất cả bài viết</a>
+    </div>
+  <% } else { %>
+    <div class="youmed-news-grid" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px;">
+      <% articles.forEach(article => { %>
+        <a href="/articles/<%= article.slug %>" class="news-card" style="text-decoration: none; color: inherit; display: flex; flex-direction: column;">
+          <div class="news-badge-brand">MediBook Y tế</div>
+          <div class="news-img-box" style="background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%);">
+            <div class="news-pill-label"><%= article.pill_label %></div>
+            <div style="font-size: 52px; text-align: center; padding: 24px 0;"><%= article.icon %></div>
+          </div>
+          <div class="news-content" style="flex: 1; display: flex; flex-direction: column;">
+            <h4 class="news-title" style="margin-bottom: 10px; font-size: 16px; line-height: 1.45;">
+              <%= article.title %>
+            </h4>
+            <p style="font-size: 13px; color: #64748b; line-height: 1.5; margin-bottom: 14px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+              <%= article.summary %>
+            </p>
+            <div class="news-meta" style="margin-top: auto; border-top: 1px solid var(--border-light); padding-top: 10px; font-size: 12px; color: #64748b;">
+              <span>👨‍⚕️ <%= article.author_name %></span> &bull; <span>👁️ <%= (article.views_count || 120).toLocaleString('vi-VN') %> xem</span>
+            </div>
+          </div>
+        </a>
+      <% }); %>
+    </div>
+  <% } %>
+</div>

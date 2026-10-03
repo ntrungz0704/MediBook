@@ -45,6 +45,11 @@
           <h2><%= typeof pageTitle !== 'undefined' ? pageTitle : 'Khu vực làm việc Bác sĩ' %></h2>
         </div>
         <div class="topbar-user" style="display:flex; align-items:center; gap:16px;">
+          <% if (currentUser && currentUser.role === 'admin') { %>
+            <a href="/admin/dashboard" class="btn btn-secondary btn-sm" style="display:inline-flex; align-items:center; gap:6px; font-size:12.5px; padding:5px 12px; border-radius:6px; text-decoration:none; background:#f1f5f9; border:1px solid #cbd5e1; color:#0f172a; font-weight:600;">
+              <span>🛡️</span> Về Bảng Quản Trị
+            </a>
+          <% } %>
           <% if (currentUser && currentUser.roles && currentUser.roles.length > 1) { %>
             <div style="display:inline-flex; align-items:center; gap:6px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:20px; padding:4px 12px; font-size:12px; font-weight:600; color:#166534;">
               <span>🎭 Vai trò:</span>
@@ -57,7 +62,9 @@
               </select>
             </div>
           <% } %>
-          <div class="user-avatar-circle" style="background:#ccfbf1;color:#0f766e;">BS</div>
+          <div class="user-avatar-circle" style="background:<%= currentUser && currentUser.role === 'admin' ? '#fef3c7;color:#b45309;' : '#ccfbf1;color:#0f766e;' %>">
+            <%= currentUser && currentUser.role === 'admin' ? 'AD' : 'BS' %>
+          </div>
           <span style="font-weight:600;"><%= currentUser ? currentUser.name : 'Bác sĩ' %></span>
         </div>
       </header>

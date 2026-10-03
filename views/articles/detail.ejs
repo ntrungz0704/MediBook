@@ -1,0 +1,161 @@
+<div class="container" style="padding-top: 40px; padding-bottom: 70px; max-width: 960px;">
+  <!-- TOP BREADCRUMB & BACK BUTTON -->
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
+    <div style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--text-muted); flex-wrap: wrap;">
+      <a href="/" style="color: var(--primary); text-decoration: none; font-weight: 600;">Trang chủ</a>
+      <span>&rsaquo;</span>
+      <a href="/articles" style="color: var(--primary); text-decoration: none; font-weight: 600;">Tin Y tế</a>
+      <span>&rsaquo;</span>
+      <a href="/articles?category=<%= article.category %>" style="color: var(--primary); text-decoration: none; font-weight: 600;">
+        <%= article.category_name %>
+      </a>
+      <span>&rsaquo;</span>
+      <span style="color: #64748b; font-weight: 500; max-width: 320px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+        <%= article.title %>
+      </span>
+    </div>
+
+    <!-- NÚT QUAY TRỞ LẠI (BACK BUTTON) -->
+    <a href="/articles?category=<%= article.category %>" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; padding: 7px 16px; font-size: 13.5px; font-weight: 600; border-radius: 8px; border: 1.5px solid var(--border); background: #ffffff; color: #334155;">
+      <span>&larr;</span> Quay lại danh mục <%= article.category_name %>
+    </a>
+  </div>
+
+  <!-- ARTICLE MAIN CARD -->
+  <div class="card-box" style="padding: 36px 40px; margin-bottom: 36px; border-radius: 16px;">
+    <!-- CATEGORY PILL & METADATA -->
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+      <span class="badge" style="background: rgba(13, 148, 136, 0.12); color: var(--primary); font-size: 13px; font-weight: 700; padding: 6px 14px; border-radius: 20px;">
+        <%= article.icon %> <%= article.pill_label %>
+      </span>
+      <div style="font-size: 13px; color: #94a3b8; display: flex; align-items: center; gap: 14px;">
+        <span>📅 Cập nhật: <%= new Date(article.updated_at || article.created_at).toLocaleDateString('vi-VN') %></span>
+        <span>👁️ <%= (article.views_count || 120).toLocaleString('vi-VN') %> lượt xem</span>
+      </div>
+    </div>
+
+    <!-- TITLE -->
+    <h1 style="font-size: 28px; font-weight: 800; color: #0f172a; line-height: 1.35; margin-bottom: 20px; letter-spacing: -0.4px;">
+      <%= article.title %>
+    </h1>
+
+    <!-- AUTHOR BOX -->
+    <div style="display: flex; align-items: center; gap: 14px; padding: 14px 18px; background: #f8fafc; border-radius: 12px; border: 1px solid var(--border-light); margin-bottom: 26px;">
+      <div style="width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #0284c7, #0d9488); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700;">
+        ⚕️
+      </div>
+      <div style="line-height: 1.3;">
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <strong style="color: #0f172a; font-size: 14.5px;"><%= article.author_name %></strong>
+          <span style="background: #e0f2fe; color: #0284c7; font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 4px;">Kiểm duyệt y khoa ✓</span>
+        </div>
+        <div style="font-size: 12.5px; color: #64748b; margin-top: 2px;"><%= article.author_role %></div>
+      </div>
+    </div>
+
+    <!-- SUMMARY HIGHLIGHT -->
+    <div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 16px 20px; border-radius: 0 10px 10px 0; margin-bottom: 28px;">
+      <div style="font-weight: 700; color: #1e40af; font-size: 14px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+        <span>💡</span> TÓM TẮT NHANH BÀI VIẾT:
+      </div>
+      <p style="margin: 0; font-size: 14.5px; color: #1e3a8a; line-height: 1.6;">
+        <%= article.summary %>
+      </p>
+    </div>
+
+    <!-- ARTICLE BODY CONTENT -->
+    <div class="article-rich-body" style="font-size: 15.5px; line-height: 1.8; color: #334155;">
+      <%- article.content %>
+    </div>
+
+    <!-- MEDICAL DISCLAIMER -->
+    <div style="margin-top: 36px; padding: 16px 20px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; font-size: 13px; color: #92400e; display: flex; align-items: flex-start; gap: 12px;">
+      <span style="font-size: 20px; line-height: 1;">⚠️</span>
+      <div style="line-height: 1.5;">
+        <strong>Khuyến cáo y khoa từ MediBook:</strong> Mọi thông tin trong bài viết chỉ mang tính chất tham khảo kiến thức chăm sóc sức khỏe. Bệnh nhân tuyệt đối không tự ý mua và dùng thuốc, ngưng thuốc hoặc áp dụng các biện pháp can thiệp y tế khi chưa có sự thăm khám và chỉ định trực tiếp từ Bác sĩ chuyên khoa.
+      </div>
+    </div>
+
+    <!-- BOTTOM ACTION BUTTONS -->
+    <div style="margin-top: 30px; padding-top: 24px; border-top: 1px solid var(--border-light); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+      <a href="/articles" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 8px 18px; font-weight: 600;">
+        <span>&larr;</span> Xem thêm các bài viết Y tế khác
+      </a>
+
+      <div style="display: flex; gap: 10px;">
+        <button type="button" class="btn btn-outline" onclick="window.print()" style="padding: 8px 16px; font-size: 13px;">
+          🖨️ In bài viết
+        </button>
+        <a href="/booking" class="btn btn-primary" style="padding: 8px 20px; font-size: 13.5px; text-decoration: none;">
+          📅 Đặt lịch khám Bác sĩ ngay &rarr;
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONSULTATION BANNER -->
+  <div class="card-box" style="padding: 26px 32px; background: linear-gradient(135deg, #0d9488 0%, #0369a1 100%); color: #ffffff; border-radius: 16px; margin-bottom: 40px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
+    <div>
+      <h3 style="font-size: 20px; font-weight: 800; color: #ffffff; margin-bottom: 6px;">Bạn cần tư vấn trực tiếp về bệnh lý hoặc đơn thuốc?</h3>
+      <p style="font-size: 14px; color: #e0f2fe; margin: 0;">Đội ngũ Bác sĩ chuyên khoa MediBook luôn sẵn sàng lắng nghe và đồng hành cùng sức khỏe của bạn.</p>
+    </div>
+    <a href="/booking" class="btn" style="background: #ffffff; color: #0d9488; font-weight: 700; padding: 12px 24px; border-radius: 8px; text-decoration: none; white-space: nowrap; box-shadow: 0 4px 14px rgba(0,0,0,0.15);">
+      Đặt lịch hẹn khám ngay &rarr;
+    </a>
+  </div>
+
+  <!-- RELATED ARTICLES -->
+  <% if (relatedArticles && relatedArticles.length > 0) { %>
+    <div>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+        <h3 style="font-size: 20px; font-weight: 800; color: #0f172a; margin: 0;">Bài viết cùng chuyên mục <%= article.category_name %></h3>
+        <a href="/articles?category=<%= article.category %>" style="color: var(--primary); font-size: 14px; font-weight: 600; text-decoration: none;">
+          Xem tất cả &rarr;
+        </a>
+      </div>
+
+      <div class="youmed-news-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
+        <% relatedArticles.forEach(rel => { %>
+          <a href="/articles/<%= rel.slug %>" class="news-card" style="text-decoration: none; color: inherit; display: flex; flex-direction: column;">
+            <div class="news-badge-brand">MediBook Y tế</div>
+            <div class="news-img-box" style="background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%);">
+              <div class="news-pill-label"><%= rel.pill_label %></div>
+              <div style="font-size: 44px; text-align: center; padding: 20px 0;"><%= rel.icon %></div>
+            </div>
+            <div class="news-content" style="flex: 1; display: flex; flex-direction: column;">
+              <h4 class="news-title" style="margin-bottom: 8px; font-size: 15px; line-height: 1.4;">
+                <%= rel.title %>
+              </h4>
+              <div class="news-meta" style="margin-top: auto; border-top: 1px solid var(--border-light); padding-top: 8px; font-size: 12px; color: #64748b;">
+                <span><%= rel.author_name %></span>
+              </div>
+            </div>
+          </a>
+        <% }); %>
+      </div>
+    </div>
+  <% } %>
+</div>
+
+<style>
+.article-rich-body h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-top: 24px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.article-rich-body p {
+  margin-bottom: 16px;
+}
+.article-rich-body ul {
+  padding-left: 20px;
+  margin-bottom: 18px;
+}
+.article-rich-body li {
+  margin-bottom: 8px;
+}
+</style>

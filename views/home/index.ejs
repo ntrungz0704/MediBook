@@ -318,66 +318,116 @@
 </section>
 
 <!-- 7. SECTION: TIN Y TẾ - CHÍNH THỐNG & MINH BẠCH (YOUMED ARTICLE TABS) -->
-<section class="container youmed-section" data-animate="fade-up">
+<section class="container youmed-section" data-animate="fade-up" id="tin-y-te-section">
   <div class="youmed-articles-header">
-    <h2 class="articles-big-title">Tin Y tế</h2>
-    <div class="articles-sub-title">Chính thống - Minh bạch - Trung lập</div>
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 8px;">
+      <h2 class="articles-big-title" style="margin: 0;">Tin Y tế</h2>
+      <a href="/articles" style="color: var(--primary); font-weight: 700; font-size: 14.5px; text-decoration: none;">
+        Xem tất cả bài viết &rarr;
+      </a>
+    </div>
+    <div class="articles-sub-title">Chính thống - Minh bạch - Trung lập (Tham vấn chuyên gia)</div>
 
     <div class="articles-tabs-bar">
-      <button type="button" class="article-tab active">Thuốc</button>
-      <button type="button" class="article-tab">Dược liệu</button>
-      <button type="button" class="article-tab">Bệnh</button>
-      <button type="button" class="article-tab">Cơ thể</button>
+      <button type="button" class="article-tab active" data-cat="all">Tất cả</button>
+      <button type="button" class="article-tab" data-cat="thuoc">Thuốc</button>
+      <button type="button" class="article-tab" data-cat="duoc-lieu">Dược liệu</button>
+      <button type="button" class="article-tab" data-cat="benh">Bệnh</button>
+      <button type="button" class="article-tab" data-cat="co-the">Cơ thể</button>
       <div class="article-search-mini">
-        <input type="text" placeholder="Nhập tên thuốc, bệnh lý...">
+        <input type="text" id="article_home_search" placeholder="Nhập tên thuốc, bệnh lý...">
       </div>
     </div>
   </div>
 
-  <div class="youmed-news-grid">
-    <article class="news-card">
-      <div class="news-badge-brand">MediBook Y tế</div>
-      <div class="news-img-box">
-        <div class="news-pill-label">Thuốc điều trị</div>
-        <div style="font-size:48px; text-align:center; padding: 20px 0;">💊</div>
-      </div>
-      <div class="news-content">
-        <h4 class="news-title">Thuốc Ozempic: Thành phần, công dụng và lưu ý an toàn khi sử dụng</h4>
-        <div class="news-meta">
-          <span>Dược sĩ Nguyễn Lê Thu Trúc</span> &bull; <span>Cập nhật mới nhất</span>
-        </div>
-      </div>
-    </article>
+  <div class="youmed-news-grid" id="home_articles_grid">
+    <% if (typeof articles !== 'undefined' && articles && articles.length > 0) { %>
+      <% articles.forEach(art => { %>
+        <a href="/articles/<%= art.slug %>" class="news-card" data-cat="<%= art.category %>" 
+           data-title="<%= art.title.toLowerCase() %>" data-summary="<%= art.summary.toLowerCase() %>"
+           style="text-decoration: none; color: inherit; display: flex; flex-direction: column;">
+          <div class="news-badge-brand">MediBook Y tế</div>
+          <div class="news-img-box">
+            <div class="news-pill-label"><%= art.pill_label %></div>
+            <div style="font-size:48px; text-align:center; padding: 20px 0;"><%= art.icon %></div>
+          </div>
+          <div class="news-content" style="flex: 1; display: flex; flex-direction: column;">
+            <h4 class="news-title" style="margin-bottom: 8px; font-size: 15.5px; line-height: 1.45;">
+              <%= art.title %>
+            </h4>
+            <div class="news-meta" style="margin-top: auto; border-top: 1px solid var(--border-light); padding-top: 10px; font-size: 12px; color: #64748b;">
+              <span><%= art.author_name %></span> &bull; <span>Cập nhật mới</span>
+            </div>
+          </div>
+        </a>
+      <% }); %>
+    <% } %>
+  </div>
 
-    <article class="news-card">
-      <div class="news-badge-brand">MediBook Y tế</div>
-      <div class="news-img-box">
-        <div class="news-pill-label">Kháng sinh & Kháng viêm</div>
-        <div style="font-size:48px; text-align:center; padding: 20px 0;">🧴</div>
-      </div>
-      <div class="news-content">
-        <h4 class="news-title">Viên ngậm kháng viêm Difflam: Công dụng, cách dùng và liều lượng</h4>
-        <div class="news-meta">
-          <span>Dược sĩ Phan Hữu Xuân Hạo</span> &bull; <span>Cập nhật mới nhất</span>
-        </div>
-      </div>
-    </article>
+  <div id="no_articles_match" style="display:none; text-align:center; padding: 40px 20px; background: #f8fafc; border-radius: 12px; border: 1.5px dashed var(--border); margin-top: 16px;">
+    <div style="font-size: 32px; margin-bottom: 8px;">🔍</div>
+    <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">Không tìm thấy bài viết y khoa phù hợp</div>
+    <p style="font-size: 13.5px; color: #64748b; margin: 0;">Vui lòng thử tìm kiếm với từ khóa khác hoặc chuyển sang danh mục khác.</p>
+  </div>
 
-    <article class="news-card">
-      <div class="news-badge-brand">MediBook Y tế</div>
-      <div class="news-img-box">
-        <div class="news-pill-label">Bệnh học lâm sàng</div>
-        <div style="font-size:48px; text-align:center; padding: 20px 0;">🩺</div>
-      </div>
-      <div class="news-content">
-        <h4 class="news-title">Thuốc Metronidazol là gì? Tác dụng phụ và những điều lưu ý đặc biệt</h4>
-        <div class="news-meta">
-          <span>Bác sĩ CKII Lê Thị Minh Hồng</span> &bull; <span>Cập nhật mới nhất</span>
-        </div>
-      </div>
-    </article>
+  <div style="text-align: center; margin-top: 30px;">
+    <a href="/articles" class="btn btn-secondary" style="padding: 10px 26px; font-weight: 700; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+      📖 Xem toàn bộ kho cẩm nang y tế MediBook &rarr;
+    </a>
   </div>
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const tabs = document.querySelectorAll('.articles-tabs-bar .article-tab');
+  const cards = document.querySelectorAll('#home_articles_grid .news-card');
+  const searchInput = document.getElementById('article_home_search');
+  const noMatchNotice = document.getElementById('no_articles_match');
+
+  let activeCat = 'all';
+  let searchQuery = '';
+
+  function filterArticles() {
+    let visibleCount = 0;
+    cards.forEach(card => {
+      const cardCat = card.getAttribute('data-cat');
+      const cardTitle = card.getAttribute('data-title') || '';
+      const cardSummary = card.getAttribute('data-summary') || '';
+
+      const matchCat = (activeCat === 'all' || cardCat === activeCat);
+      const matchSearch = (!searchQuery || cardTitle.includes(searchQuery) || cardSummary.includes(searchQuery));
+
+      if (matchCat && matchSearch) {
+        card.style.display = 'flex';
+        visibleCount++;
+      } else {
+        card.style.display = 'none';
+      }
+    });
+
+    if (noMatchNotice) {
+      noMatchNotice.style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+  }
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', function(e) {
+      e.preventDefault();
+      tabs.forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      activeCat = this.getAttribute('data-cat') || 'all';
+      filterArticles();
+    });
+  });
+
+  if (searchInput) {
+    searchInput.addEventListener('input', function() {
+      searchQuery = this.value.trim().toLowerCase();
+      filterArticles();
+    });
+  }
+});
+</script>
 
 <!-- 8. SECTION: ĐÁNH GIÁ TỪ BỆNH NHÂN THỰC TẾ -->
 <section class="container youmed-section" style="padding-bottom: 70px;" data-animate="fade-up">

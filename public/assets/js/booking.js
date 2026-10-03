@@ -27,7 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
             data.doctors.forEach(doc => {
               const opt = document.createElement('option');
               opt.value = doc.id;
-              opt.textContent = `${doc.title} ${doc.name} (${doc.room_number})`;
+              const docDisplayName = (doc.name && doc.name.startsWith(doc.title)) ? doc.name : `${doc.title} ${doc.name}`;
+              opt.textContent = `${docDisplayName} (${doc.room_number})`;
               doctorSelect.appendChild(opt);
             });
           }
@@ -76,14 +77,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!res.success) {
           if (slotError) {
-            slotError.textContent = res.error || 'Bác sĩ không có lịch vào ngày này.';
+            slotError.innerHTML = `<strong>⚠️ Lưu ý:</strong> ${res.error || 'Bác sĩ không có ca trực vào ngày này.'}`;
             slotError.style.display = 'block';
           }
+          slotsContainer.innerHTML = `
+            <div style="grid-column: 1/-1; background: #fffbeb; border: 1.5px dashed #f59e0b; border-radius: 8px; padding: 20px; text-align: center; color: #92400e;">
+              <div style="font-size: 26px; margin-bottom: 6px;">📅</div>
+              <div style="font-weight: 700; font-size: 15px; margin-bottom: 6px;">Bác sĩ chưa có ca trực vào ngày đã chọn</div>
+              <p style="font-size: 13.5px; margin: 0; line-height: 1.5; color: #b45309;">${res.error || 'Vui lòng chọn ngày khám khác hoặc chọn một Bác sĩ khác đang trực.'}</p>
+            </div>
+          `;
           return;
         }
 
         if (!res.slots || res.slots.length === 0) {
-          slotsContainer.innerHTML = '<p class="text-muted" style="grid-column: 1/-1; text-align: center; padding: 20px;">Không có khung giờ nào khả dụng.</p>';
+          slotsContainer.innerHTML = `
+            <div style="grid-column: 1/-1; background: #fef2f2; border: 1.5px dashed #ef4444; border-radius: 8px; padding: 20px; text-align: center; color: #991b1b;">
+              <div style="font-size: 26px; margin-bottom: 6px;">⏳</div>
+              <div style="font-weight: 700; font-size: 15px; margin-bottom: 4px;">Tất cả khung giờ trong ngày đã kín lịch</div>
+              <p style="font-size: 13.5px; margin: 0; color: #b91c1c;">Vui lòng chọn một ngày khám kế tiếp để đặt hẹn.</p>
+            </div>
+          `;
           return;
         }
 
@@ -102,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
           } else {
             btn.disabled = true;
-            btn.title = 'Khung giờ này đã kín hoặc đã qua';
+            btn.title = 'Khung giờ này đã có bệnh nhân đặt trước';
           }
 
           slotsContainer.appendChild(btn);
@@ -111,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
       .catch(() => {
         if (slotLoading) slotLoading.style.display = 'none';
         if (slotError) {
-          slotError.textContent = 'Lỗi kết nối khi tải khung giờ.';
+          slotError.innerHTML = '<strong>❌ Lỗi:</strong> Không thể kết nối tới máy chủ để tải khung giờ. Vui lòng thử lại.';
           slotError.style.display = 'block';
         }
       });
