@@ -24,6 +24,8 @@ process.on('exit', () => {
   }
 });
 
+process.env.RATE_LIMIT_SIGNUP_MAX = process.env.RATE_LIMIT_SIGNUP_MAX || '1000';
+process.env.RATE_LIMIT_LOGIN_MAX = process.env.RATE_LIMIT_LOGIN_MAX || '1000';
 const db = require('./dist/db');
 
 const PORT = 3001;
@@ -34,8 +36,10 @@ const app = require('./dist/server');
 
 // Helper to make HTTP requests with cookie jar
 class TestClient {
-  constructor(name) {
+  constructor(name, port = PORT) {
     this.name = name;
+    this.port = port;
+    this.headers = {};
     this.cookies = [];
   }
 
@@ -43,10 +47,10 @@ class TestClient {
     return new Promise((resolve, reject) => {
       const options = {
         hostname: '127.0.0.1',
-        port: PORT,
+        port: this.port,
         path: path,
         method: method,
-        headers: {}
+        headers: { ...this.headers }
       };
 
       if (this.cookies.length > 0) {
@@ -876,6 +880,159 @@ async function runTests() {
     });
     const updatedStatusAppt = db.prepare('SELECT status FROM appointments WHERE id = ?').get(createdAppt.id);
     assert(updatedStatusAppt && updatedStatusAppt.status === 'confirmed', 'Cập nhật trạng thái lịch hẹn hợp lệ thành công và ghi lịch sử trạng thái');
+
+    // -------------------------------------------------------------
+    // NHÓM 11: Vá lỗi bảo mật & nghiệp vụ (R-02 chiếm tài khoản, R-03 redirect/XSS, R-04 tồn kho, B-05 lộ tên, P1 hardening)
+    // -------------------------------------------------------------
+    console.log('\n📌 NHÓM 11: Vá lỗi bảo mật (chiếm tài khoản, redirect, XSS, CSRF, rate-limit, mật khẩu, fail-fast) & logic tồn kho');
+    const bcryptjs = require('bcryptjs');
+    const { spawn } = require('child_process');
+    const { maskName } = require('./dist/helpers');
+    const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+    // 11.1 Khách (guest) không thể chiếm tài khoản có sẵn chỉ bằng cách nhập email
+    for (const victim of ['admin@medibook.local', 'doctor@medibook.local', 'receptionist@medibook.local']) {
+      const attacker = new TestClient('Attacker-' + victim);
+      res = await attacker.post('/appointments/book', {
+        patient_name: 'Attacker', patient_phone: '0900000000', patient_email: victim,
+        specialty_id: 1, doctor_id: doctorObj.id, appointment_date: tomDateStr, start_time: '16:00:00', symptoms: 'x'
+      }, false);
+      assert(res.statusCode === 302 && res.headers['location'] === '/login', `R-02: Đặt lịch khách với email có sẵn (${victim}) bị chuyển sang /login, không tự đăng nhập`);
+      res = await attacker.get('/admin/dashboard', false);
+      assert(res.statusCode === 302 && res.headers['location'] === '/login', `R-02: Kẻ tấn công dùng email ${victim} không vào được khu vực quản trị`);
+    }
+    const leakedAppt = db.prepare("SELECT count(*) c FROM appointments WHERE doctor_id = ? AND appointment_date = ? AND start_time = '16:00:00'").get(doctorObj.id, tomDateStr);
+    assert(leakedAppt.c === 0, 'R-02: Không có lịch hẹn nào được tạo qua đường khách mạo danh (kể cả bác sĩ tự đặt lịch cho mình)');
+
+    // 11.2 Khách mới: mật khẩu ngẫu nhiên (không phải "password"), chỉ hiển thị một lần
+    const newGuestEmail = `guest11.${Date.now()}@example.com`;
+    const newGuest = new TestClient('NewGuest');
+    res = await newGuest.post('/appointments/book', {
+      patient_name: 'Khách Mới', patient_phone: '0900000002', patient_email: newGuestEmail,
+      specialty_id: 1, doctor_id: doctorObj.id, appointment_date: tomDateStr, start_time: '16:30:00', symptoms: 'x'
+    });
+    const tempPwMatch = /Mật khẩu tạm thời: <code[^>]*>([^<]+)<\/code>/.exec(res.body);
+    assert(res.statusCode === 200 && tempPwMatch, 'R-02: Trang xác nhận hiển thị mật khẩu tạm thời cho tài khoản khách mới');
+    const guestRow = db.prepare('SELECT id, password_hash FROM users WHERE email = ?').get(newGuestEmail);
+    assert(guestRow && !bcryptjs.compareSync('password', guestRow.password_hash), 'R-02: Tài khoản khách mới KHÔNG dùng mật khẩu mặc định "password"');
+    assert(bcryptjs.compareSync(tempPwMatch[1], guestRow.password_hash), 'R-02: Mật khẩu tạm thời hiển thị đúng với mật khẩu đã lưu');
+    const guestAppt = db.prepare('SELECT booking_code FROM appointments a JOIN patients p ON a.patient_id = p.id WHERE p.user_id = ?').get(guestRow.id);
+    res = await newGuest.get(`/appointments/success/${guestAppt.booking_code}`);
+    assert(!res.body.includes('Mật khẩu tạm thời'), 'R-02: Mật khẩu tạm thời chỉ hiển thị một lần');
+
+    // 11.3 redirectBack an toàn (không còn "Location: back", không open-redirect)
+    const pastBooking = { specialty_id: 1, doctor_id: doctorObj.id, appointment_date: '2000-01-01', start_time: '09:00:00', symptoms: 'x' };
+    patientClient.headers = { Referer: `http://127.0.0.1:${PORT}/book?doctor=1` };
+    res = await patientClient.post('/appointments/book', pastBooking, false);
+    assert(res.headers['location'] === '/book?doctor=1', 'R-03: Redirect quay lại trang trước dùng đường dẫn nội bộ hợp lệ (không phải "back")');
+    patientClient.headers = { Referer: 'http://evil.example/phish' };
+    res = await patientClient.post('/appointments/book', pastBooking, false);
+    assert(res.statusCode === 403, 'P1: POST có Referer từ site ngoài bị chặn 403 (chống CSRF)');
+    res = await patientClient.get('/switch-role/admin', false);
+    assert(res.headers['location'] === '/', 'R-03: Referer từ site ngoài bị bỏ qua khi quay lại trang trước, về trang chủ (chống open redirect)');
+    patientClient.headers = {};
+    res = await patientClient.post('/appointments/book', pastBooking, false);
+    assert(res.headers['location'] && res.headers['location'] !== 'back', 'R-03: Không còn trả về "Location: back" khi thiếu Referer');
+
+    // 11.4 Chống CSRF: request ghi dữ liệu từ origin lạ bị chặn
+    patientClient.headers = { Origin: 'http://evil.example' };
+    res = await patientClient.post('/profile', { name: 'Hacked', phone: '0900000000' }, false);
+    assert(res.statusCode === 403, 'P1: POST từ Origin lạ bị chặn 403 (chống CSRF)');
+    patientClient.headers = {};
+
+    // 11.5 XSS qua JSON nhúng trong layout
+    const patientUser = db.prepare('SELECT name, phone FROM users WHERE email = ?').get('patient@medibook.local');
+    const evilName = '</script><img src=x onerror=alert(1)>';
+    await patientClient.post('/profile', { name: evilName, phone: patientUser.phone || '0900000000' });
+    res = await patientClient.get('/my-appointments');
+    assert(!res.body.includes('</script><img src=x'), 'R-03: Tên người dùng chứa </script> không thể thoát khỏi thẻ script (chống XSS)');
+    await patientClient.post('/profile', { name: patientUser.name, phone: patientUser.phone || '0900000000' });
+
+    // 11.6 Bảng điện tử công khai không lộ tên đầy đủ bệnh nhân
+    assert(maskName('Nguyễn Văn An') === 'Nguyễn V. A***', 'B-05: maskName che tên bệnh nhân (Nguyễn V. A***)');
+    res = await guest.get('/api/queue/live');
+    const liveQueue = JSON.parse(res.body);
+    assert(liveQueue.success && liveQueue.items.every(i => !i.patient_name || i.patient_name.includes('***')), 'B-05: /api/queue/live công khai chỉ trả tên đã che');
+
+    // 11.7 Chính sách mật khẩu tối thiểu 8 ký tự
+    const weakEmail = `weak11.${Date.now()}@example.com`;
+    res = await new TestClient('Weak').post('/register', { name: 'Weak', phone: '0900000001', email: weakEmail, password: '1', password_confirmation: '1' }, false);
+    assert(res.headers['location'] === '/register' && !db.prepare('SELECT id FROM users WHERE email = ?').get(weakEmail), 'P1: Đăng ký với mật khẩu quá ngắn bị từ chối');
+
+    // 11.8 Tồn kho thuốc: trừ đúng số lượng, không trừ đôi khi lưu lại, chặn bán quá tồn, giá lấy từ danh mục
+    const catalogMed = db.prepare('SELECT unit_price FROM medicines WHERE id = 1').get();
+    const stockOf = () => db.prepare('SELECT stock_quantity s FROM medicines WHERE id = 1').get().s;
+    const examWith = (qty) => doctorClient.post(`/doctor/examine/${createdAppt.id}`, {
+      clinical_diagnosis: 'Kiểm thử tồn kho', med_name: ['Paracetamol 500mg'], med_id: ['1'], med_dosage: ['500mg'], med_unit: ['Viên'],
+      med_quantity: [String(qty)], med_morning: ['1'], med_noon: ['0'], med_afternoon: ['0'], med_night: ['0'], med_instructions: ['x'], med_price: ['1']
+    }, false);
+    const rxItemsOf = () => db.prepare('SELECT pi.* FROM prescription_items pi JOIN prescriptions p ON p.id = pi.prescription_id WHERE p.appointment_id = ?').all(createdAppt.id);
+    const stockBase = stockOf();
+    const oldQty = rxItemsOf().filter(i => i.medicine_id === 1).reduce((s, i) => s + i.quantity, 0);
+    await examWith(3);
+    assert(stockOf() === stockBase + oldQty - 3, `R-04: Sửa đơn hoàn kho đơn cũ (${oldQty}) rồi trừ đúng số lượng mới (3)`);
+    const stockAfterFirst = stockOf();
+    await examWith(3);
+    assert(stockOf() === stockAfterFirst, 'R-04: Lưu lại cùng một đơn thuốc không bị trừ kho lần hai');
+    assert(rxItemsOf().length === 1 && rxItemsOf()[0].unit_price === catalogMed.unit_price, 'R-04: Giá thuốc lấy từ danh mục (không tin giá client gửi lên)');
+    await examWith(stockOf() + 1000);
+    assert(stockOf() === stockAfterFirst && rxItemsOf()[0].quantity === 3, 'R-04: Kê vượt tồn kho bị từ chối, kho & đơn giữ nguyên');
+
+    // 11.9 Rate-limit đăng nhập & cấu hình production (chạy server riêng)
+    const spawnServer = (port, extraEnv) => {
+      const dbFile = path.join(os.tmpdir(), `medibook-g11-${process.pid}-${port}.sqlite`);
+      const env = { ...process.env, PORT: String(port), DATABASE_PATH: dbFile, NODE_ENV: 'test', ...extraEnv };
+      const child = spawn(process.execPath, [path.join(__dirname, 'dist', 'server.js')], { cwd: os.tmpdir(), env, stdio: 'ignore' });
+      return { child, dbFile };
+    };
+    const waitReady = async (port) => {
+      for (let i = 0; i < 60; i++) {
+        try { const r = await new TestClient('ready', port).get('/login', false); if (r.statusCode) return true; } catch (e) { /* chưa sẵn sàng */ }
+        await sleep(250);
+      }
+      return false;
+    };
+    const dropDb = (dbFile) => ['', '-wal', '-shm'].forEach(s => { try { fs.rmSync(dbFile + s, { force: true }); } catch (e) {} });
+
+    const rl = spawnServer(3002, { RATE_LIMIT_LOGIN_MAX: '3' });
+    try {
+      assert(await waitReady(3002), 'P1: Server kiểm thử rate-limit khởi động thành công');
+      const rc = new TestClient('RateLimit', 3002);
+      for (let i = 0; i < 3; i++) {
+        res = await rc.post('/login', { email: 'patient@medibook.local', password: 'sai-mat-khau-' + i }, false);
+        assert(res.headers['location'] === '/login', `P1: Đăng nhập sai lần ${i + 1} bị từ chối`);
+      }
+      res = await rc.post('/login', { email: 'patient@medibook.local', password: 'password' }, false);
+      assert(res.statusCode === 429, 'P1: Sau 3 lần sai, kể cả mật khẩu đúng cũng bị khóa tạm (429)');
+    } finally { rl.child.kill(); await sleep(300); dropDb(rl.dbFile); }
+
+    const prodNoPw = spawnServer(3003, { NODE_ENV: 'production', SESSION_SECRET: 'x'.repeat(40), ADMIN_INITIAL_PASSWORD: '' });
+    try {
+      assert(await waitReady(3003), 'R-05: Server production (không có ADMIN_INITIAL_PASSWORD) khởi động');
+      res = await new TestClient('ProdNoPw', 3003).post('/login', { email: 'admin@medibook.local', password: 'password' }, false);
+      assert(res.headers['location'] === '/login', 'R-05: Production KHÔNG seed tài khoản demo (admin@medibook.local/password bị từ chối)');
+      const Database = require('better-sqlite3');
+      const roDb = new Database(prodNoPw.dbFile, { readonly: true });
+      const userCount = roDb.prepare('SELECT count(*) c FROM users').get().c;
+      roDb.close();
+      assert(userCount === 0, 'R-05: CSDL production rỗng không bị nhồi dữ liệu demo');
+    } finally { prodNoPw.child.kill(); await sleep(300); dropDb(prodNoPw.dbFile); }
+
+    const prodAdmin = spawnServer(3004, { NODE_ENV: 'production', SESSION_SECRET: 'y'.repeat(40), ADMIN_INITIAL_PASSWORD: 'Init-Pass-2026!' });
+    try {
+      assert(await waitReady(3004), 'R-05: Server production (có ADMIN_INITIAL_PASSWORD) khởi động');
+      const pc = new TestClient('ProdAdmin', 3004);
+      res = await pc.post('/login', { email: 'admin@medibook.local', password: 'password' }, false);
+      assert(res.headers['location'] === '/login', 'R-05: Admin khởi tạo production không dùng được mật khẩu mặc định');
+      res = await pc.post('/login', { email: 'admin@medibook.local', password: 'Init-Pass-2026!' }, false);
+      assert(res.headers['location'] === '/admin/dashboard', 'R-05: Admin khởi tạo production đăng nhập được bằng ADMIN_INITIAL_PASSWORD');
+    } finally { prodAdmin.child.kill(); await sleep(300); dropDb(prodAdmin.dbFile); }
+
+    const failFast = spawnServer(3005, { NODE_ENV: 'production', SESSION_SECRET: '' });
+    const failFastCode = await new Promise(r => { failFast.child.on('exit', c => r(c)); setTimeout(() => r('timeout'), 10000); });
+    failFast.child.kill();
+    dropDb(failFast.dbFile);
+    assert(failFastCode === 1, 'R-05: Production thiếu SESSION_SECRET dừng ngay với exit code 1 (fail-fast)');
 
     // Clean up createdAppt
     db.prepare('DELETE FROM appointment_status_history WHERE appointment_id = ?').run(createdAppt.id);
