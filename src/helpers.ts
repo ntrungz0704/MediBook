@@ -1,3 +1,19 @@
+export function escapeHtml(value: unknown): string {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+export function maskName(name: string | null | undefined): string {
+  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '';
+  if (parts.length === 1) return parts[0].charAt(0) + '***';
+  return parts.slice(0, -1).map((p, i) => (i === 0 ? p : p.charAt(0) + '.')).join(' ') + ' ' + parts[parts.length - 1].charAt(0) + '***';
+}
+
 export function formatCurrency(amount: number | string | null | undefined): string {
   if (amount === null || amount === undefined) return '0 ₫';
   return new Intl.NumberFormat('vi-VN').format(Number(amount)) + ' ₫';
@@ -33,7 +49,7 @@ export function getStatusBadge(status: string): string {
     paid: '<span class="badge badge-success">Đã thanh toán</span>',
     unpaid: '<span class="badge badge-warning">Chưa thanh toán</span>'
   };
-  return map[status] || `<span class="badge badge-secondary">${status}</span>`;
+  return map[status] || `<span class="badge badge-secondary">${escapeHtml(status)}</span>`;
 }
 
 export function getRoleName(role: string): string {
@@ -53,7 +69,7 @@ export function getRoleBadge(role: string): string {
     receptionist: '<span class="badge badge-warning" style="font-weight:700;">Lễ tân / Thu ngân</span>',
     patient: '<span class="badge badge-secondary" style="font-weight:700;">Bệnh nhân</span>'
   };
-  return map[role] || `<span class="badge badge-secondary">${role}</span>`;
+  return map[role] || `<span class="badge badge-secondary">${escapeHtml(role)}</span>`;
 }
 
 export function getPriorityBadge(priorityLevel: string, reason?: string): string {
@@ -61,7 +77,7 @@ export function getPriorityBadge(priorityLevel: string, reason?: string): string
     case 'emergency':
       return `<span class="badge" style="background:#dc2626; color:#ffffff; font-weight:800; padding:4px 10px; border-radius:6px; display:inline-flex; align-items:center; gap:5px; box-shadow:0 0 8px rgba(220,38,38,0.4);"><span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#fff;"></span> 🚨 CẤP CỨU / KHẨN CẤP</span>`;
     case 'priority':
-      const reasonText = reason ? `: ${reason}` : ' (Người già / Trẻ em / Thai phụ)';
+      const reasonText = reason ? `: ${escapeHtml(reason)}` : ' (Người già / Trẻ em / Thai phụ)';
       return `<span class="badge" style="background:#d97706; color:#ffffff; font-weight:700; padding:4px 10px; border-radius:6px; display:inline-flex; align-items:center; gap:5px;"><span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#fef3c7;"></span> ⭐ ƯU TIÊN${reasonText}</span>`;
     case 'online':
       return `<span class="badge" style="background:#0284c7; color:#ffffff; font-weight:600; padding:4px 10px; border-radius:6px; display:inline-flex; align-items:center; gap:5px;">🌐 HẸN ONLINE</span>`;

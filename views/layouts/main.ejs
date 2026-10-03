@@ -240,7 +240,7 @@
   </div>
 
   <script id="medibook-user-data" type="application/json">
-    <%- currentUser ? JSON.stringify({ id: currentUser.id, name: currentUser.name, role: currentUser.role }) : 'null' %>
+    <%- currentUser ? JSON.stringify({ id: currentUser.id, name: currentUser.name, role: currentUser.role }).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029') : 'null' %>
   </script>
   <script>
     try {

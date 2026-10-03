@@ -51,6 +51,15 @@
       </div>
     </div>
 
+    <% if (typeof newAccount !== 'undefined' && newAccount) { %>
+    <div style="background:#fffbeb; border:1px solid #f59e0b; border-radius: var(--radius-md); padding:16px; margin-bottom:24px; text-align:left; font-size:14px;">
+      <strong>Tài khoản của bạn đã được tạo</strong><br>
+      Email đăng nhập: <code><%= newAccount.email %></code><br>
+      Mật khẩu tạm thời: <code style="font-size:16px; font-weight:700;"><%= newAccount.password %></code><br>
+      <span class="text-muted">Mật khẩu này chỉ hiển thị một lần. Vui lòng lưu lại và đổi mật khẩu trong Hồ sơ cá nhân.</span>
+    </div>
+    <% } %>
+
     <div style="display: flex; gap: 14px; justify-content: center;">
       <a href="/appointments/<%= app.booking_code %>" class="btn btn-primary">
         Xem phiếu khám & Chi tiết

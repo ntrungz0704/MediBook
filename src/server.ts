@@ -15,6 +15,7 @@ const express = require('express');
 const session = require('express-session');
 const flash = require('connect-flash');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const db = require('./db');
 const helpers = require('./helpers');
 const { requireAuth, requireRole } = require('./middleware');
@@ -391,8 +392,7 @@ app.get('/switch-role/:role', requireAuth, (req, res) => {
   }
 
   req.flash('error', 'Bạn không có quyền truy cập vai trò này.');
-  const referer = req.get('Referer') || '/';
-  res.redirect(referer);
+  redirectBack(req, res);
 });
 
 app.get('/logout', (req, res) => {
@@ -686,6 +686,20 @@ app.get('/api/slots', (req, res) => {
   res.json({ success: true, slots });
 });
 
+// Quay lại trang trước một cách an toàn (chỉ chấp nhận Referer cùng origin, tránh open redirect / "Location: back")
+function redirectBack(req: any, res: any, fallback: string = '/') {
+  const ref = req.get('Referer');
+  if (ref) {
+    try {
+      const u = new URL(ref);
+      if (u.host === req.get('host')) {
+        return res.redirect(u.pathname + u.search);
+      }
+    } catch (_) { /* Referer không hợp lệ -> dùng fallback */ }
+  }
+  return res.redirect(fallback);
+}
+
 // Book Appointment POST
 app.post('/appointments/book', (req, res) => {
   const { specialty_id, doctor_id, service_id, appointment_date, start_time, symptoms } = req.body;
@@ -697,7 +711,7 @@ app.post('/appointments/book', (req, res) => {
     const currentDoc = db.prepare('SELECT id FROM doctors WHERE user_id = ?').get(req.session.user.id) as any;
     if (currentDoc && currentDoc.id === Number(doctor_id)) {
       req.flash('error', 'Bác sĩ không thể tự đặt lịch khám cho chính mình. Vui lòng chọn đồng nghiệp hoặc bác sĩ chuyên khoa khác!');
-      return res.redirect('back');
+      return redirectBack(req, res);
     }
 
     let pat = db.prepare('SELECT id FROM patients WHERE user_id = ?').get(req.session.user.id) as any;
@@ -712,28 +726,37 @@ app.post('/appointments/book', (req, res) => {
     const { patient_name, patient_phone, patient_email } = req.body;
     if (!patient_name || !patient_phone || !patient_email) {
       req.flash('error', 'Vui lòng cung cấp đầy đủ thông tin người khám bệnh.');
-      return res.redirect('back');
+      return redirectBack(req, res);
     }
 
-    let user = db.prepare('SELECT id FROM users WHERE email = ?').get(patient_email.trim()) as any;
-    if (!user) {
-      const hash = bcrypt.hashSync('password', 10);
-      const uRes = db.prepare(`
-        INSERT INTO users (role, name, email, password_hash, phone, status)
-        VALUES ('patient', ?, ?, ?, ?, 'active')
-      `).run(patient_name.trim(), patient_email.trim(), hash, patient_phone.trim());
-      user = { id: uRes.lastInsertRowid };
-      db.prepare('INSERT INTO patients (user_id) VALUES (?)').run(user.id);
-      db.prepare("INSERT OR IGNORE INTO user_roles (user_id, role) VALUES (?, 'patient')").run(user.id);
+    // Không bao giờ tự đăng nhập vào tài khoản đã tồn tại chỉ vì biết email (chống chiếm tài khoản)
+    const guestEmail = String(patient_email).trim();
+    const existingUser = db.prepare('SELECT id FROM users WHERE LOWER(email) = LOWER(?)').get(guestEmail) as any;
+    if (existingUser) {
+      req.session.intendedUrl = '/appointments/book';
+      req.flash('error', 'Email này đã có tài khoản. Vui lòng đăng nhập để đặt lịch khám.');
+      return res.redirect('/login');
     }
+
+    // Tài khoản mới: mật khẩu ngẫu nhiên, chỉ hiển thị một lần trên trang xác nhận
+    const tempPassword = crypto.randomBytes(9).toString('base64url');
+    const hash = bcrypt.hashSync(tempPassword, 10);
+    const uRes = db.prepare(`
+      INSERT INTO users (role, name, email, password_hash, phone, status)
+      VALUES ('patient', ?, ?, ?, ?, 'active')
+    `).run(patient_name.trim(), guestEmail, hash, patient_phone.trim());
+    const user = { id: uRes.lastInsertRowid };
+    db.prepare('INSERT INTO patients (user_id) VALUES (?)').run(user.id);
+    db.prepare("INSERT OR IGNORE INTO user_roles (user_id, role) VALUES (?, 'patient')").run(user.id);
     const pat = db.prepare('SELECT id FROM patients WHERE user_id = ?').get(user.id) as any;
     patientId = pat.id;
+    req.session.newAccount = { email: guestEmail, password: tempPassword };
 
     // Log the user in
     req.session.user = {
       id: user.id,
       name: patient_name.trim(),
-      email: patient_email.trim(),
+      email: guestEmail,
       phone: patient_phone.trim(),
       role: 'patient',
       roles: ['patient'],
@@ -748,7 +771,7 @@ app.post('/appointments/book', (req, res) => {
 
   if (appointment_date < todayStr || (appointment_date === todayStr && start_time <= currentHourMin)) {
     req.flash('error', 'Không thể đặt lịch khám vào thời gian trong quá khứ.');
-    return res.redirect('back');
+    return redirectBack(req, res);
   }
 
   // Check doctor leave
@@ -759,7 +782,7 @@ app.post('/appointments/book', (req, res) => {
 
   if (leave) {
     req.flash('error', `Bác sĩ có lịch nghỉ phép vào ngày ${appointment_date}${leave.reason ? ` (${leave.reason})` : ''}. Vui lòng chọn ngày khác.`);
-    return res.redirect('back');
+    return redirectBack(req, res);
   }
 
   // Calculate end_time (30 mins after start_time)
@@ -841,11 +864,11 @@ app.post('/appointments/book', (req, res) => {
   } catch (err: any) {
     if (err.code === 'SLOT_COLLISION' || err.code === 'SQLITE_CONSTRAINT' || (err.message && err.message.includes('UNIQUE constraint failed'))) {
       req.flash('error', 'Khung giờ này vừa có người khác đặt trước. Vui lòng chọn khung giờ khác.');
-      return res.redirect('back');
+      return redirectBack(req, res);
     }
     console.error('Booking transaction error:', err);
     req.flash('error', 'Không thể hoàn tất đặt lịch. Vui lòng thử lại.');
-    return res.redirect('back');
+    return redirectBack(req, res);
   }
 
   try {
@@ -897,7 +920,12 @@ app.get('/appointments/success/:code', (req, res) => {
   `).get(req.params.code);
 
   if (!appt) return res.status(404).render('errors/error', { message: 'Lịch hẹn không tồn tại' });
-  renderWithLayout(res, 'appointments/success', { pageTitle: 'Đặt lịch thành công - MediBook', app: appt });
+  let newAccount = null;
+  if (req.session.newAccount && req.session.user && req.session.user.email === req.session.newAccount.email) {
+    newAccount = req.session.newAccount;
+  }
+  delete req.session.newAccount;
+  renderWithLayout(res, 'appointments/success', { pageTitle: 'Đặt lịch thành công - MediBook', app: appt, newAccount });
 });
 
 app.get('/appointments/:code', requireAuth, (req, res) => {
@@ -960,7 +988,7 @@ app.post('/appointments/:code/cancel', requireAuth, (req, res) => {
 
   if (!appt) {
     req.flash('error', 'Lịch khám không tồn tại.');
-    return res.redirect('back');
+    return redirectBack(req, res);
   }
 
   // Check authorization: Owner or staff/admin
@@ -995,7 +1023,7 @@ app.post('/appointments/:code/review', requireAuth, (req, res) => {
 
   if (!appt) {
     req.flash('error', 'Lịch khám không tồn tại.');
-    return res.redirect('back');
+    return redirectBack(req, res);
   }
 
   // Only the patient who booked this appointment can review, and only when completed
@@ -1677,7 +1705,7 @@ app.get('/receptionist/checkin', requireRole('receptionist', 'admin'), (req, res
 app.post('/receptionist/confirm/:id', requireRole('receptionist', 'admin'), (req, res) => {
   db.prepare(`UPDATE appointments SET status = 'confirmed' WHERE id = ?`).run(req.params.id);
   req.flash('success', 'Đã xác nhận cuộc hẹn.');
-  res.redirect('back');
+  redirectBack(req, res);
 });
 
 app.post('/receptionist/checkin/:id', requireRole('receptionist', 'admin'), (req, res) => {
@@ -1754,7 +1782,7 @@ app.post('/receptionist/checkin/:id', requireRole('receptionist', 'admin'), (req
     logActivity(req.session.user.id, 'CHECKIN_PATIENT', 'Appointment', appt.id, `Cấp số thứ tự ${queueNum} (${priorityLevel})`, req);
     req.flash('success', `Đã tiếp đón bệnh nhân và cấp số thứ tự: ${queueNum}`);
   }
-  res.redirect('back');
+  redirectBack(req, res);
 });
 
 app.get('/receptionist/live-board', (req, res) => {
@@ -1781,7 +1809,8 @@ app.get('/receptionist/live-board', (req, res) => {
       eq.id ASC
   `).all(today);
 
-  res.render('receptionist/live_board', { doctors, queueItems });
+  const maskedItems = (queueItems as any[]).map(i => ({ ...i, patient_name: helpers.maskName(i.patient_name) }));
+  res.render('receptionist/live_board', { doctors, queueItems: maskedItems });
 });
 
 app.get('/api/queue/live', (req, res) => {
@@ -1798,7 +1827,8 @@ app.get('/api/queue/live', (req, res) => {
       eq.priority_order ASC,
       eq.id ASC
   `).all(today);
-  res.json({ success: true, items: queueItems });
+  const maskedItems = (queueItems as any[]).map(i => ({ ...i, patient_name: helpers.maskName(i.patient_name) }));
+  res.json({ success: true, items: maskedItems });
 });
 
 app.get('/receptionist/booking', requireRole('receptionist', 'admin'), (req, res) => {
@@ -1821,7 +1851,7 @@ app.post('/receptionist/booking', requireRole('receptionist', 'admin'), (req, re
   let email = (patient_email && patient_email.trim()) || `walkin.${Date.now()}@medibook.local`;
   let user = db.prepare('SELECT id FROM users WHERE email = ?').get(email) as any;
   if (!user) {
-    const hash = bcrypt.hashSync('password', 10);
+    const hash = bcrypt.hashSync(crypto.randomBytes(18).toString('base64url'), 10);
     const uRes = db.prepare(`
       INSERT INTO users (role, name, email, password_hash, phone, status)
       VALUES ('patient', ?, ?, ?, ?, 'active')
@@ -1836,7 +1866,7 @@ app.post('/receptionist/booking', requireRole('receptionist', 'admin'), (req, re
   const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   if (appointment_date < todayStr) {
     req.flash('error', 'Không thể tạo lịch khám vào ngày trong quá khứ.');
-    return res.redirect('back');
+    return redirectBack(req, res);
   }
 
   // Check doctor leave
@@ -1847,7 +1877,7 @@ app.post('/receptionist/booking', requireRole('receptionist', 'admin'), (req, re
 
   if (leave) {
     req.flash('error', `Bác sĩ có lịch nghỉ phép vào ngày ${appointment_date}${leave.reason ? ` (${leave.reason})` : ''}. Vui lòng chọn ngày khác.`);
-    return res.redirect('back');
+    return redirectBack(req, res);
   }
 
   const [sH, sM] = start_time.split(':').map(Number);
@@ -1965,11 +1995,11 @@ app.post('/receptionist/booking', requireRole('receptionist', 'admin'), (req, re
   } catch (err: any) {
     if (err.code === 'SLOT_COLLISION' || err.code === 'SQLITE_CONSTRAINT' || (err.message && err.message.includes('UNIQUE constraint failed'))) {
       req.flash('error', 'Khung giờ này của bác sĩ đã có cuộc hẹn khác trùng. Vui lòng chọn khung giờ khác.');
-      return res.redirect('back');
+      return redirectBack(req, res);
     }
     console.error('Receptionist booking transaction error:', err);
     req.flash('error', 'Không thể hoàn tất đăng ký khám tại quầy. Vui lòng thử lại.');
-    return res.redirect('back');
+    return redirectBack(req, res);
   }
 
   if (auto_checkin && queueNum) {
