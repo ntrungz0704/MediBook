@@ -486,10 +486,23 @@ function initDb() {
       SELECT id, role FROM users WHERE role IS NOT NULL;
     `);
 
+    // Gán role Bệnh nhân (patient) cho toàn bộ tài khoản nhân sự (Bác sĩ, Lễ tân, Admin)
+    // Nghiệp vụ: 1 người có nhiều role -> Bác sĩ khi ốm đau vẫn có thể là Bệnh nhân
+    db.exec(`
+      INSERT OR IGNORE INTO user_roles (user_id, role)
+      SELECT id, 'patient' FROM users;
+    `);
+
+    // Khởi tạo hồ sơ Bệnh nhân (patients profile) cho toàn bộ users nếu chưa có
+    db.exec(`
+      INSERT OR IGNORE INTO patients (user_id)
+      SELECT id FROM users;
+    `);
+
     // Give admin user id=1 also doctor role for multi-role demonstration
     db.exec(`
       INSERT OR IGNORE INTO user_roles (user_id, role)
-      SELECT id, 'doctor' FROM users WHERE email = 'admin@medibook.local';
+      SELECT id, 'doctor' FROM users WHERE email = 'admin@medibook.local' OR email = 'admin@medibook.vn';
     `);
   } catch (e) {}
 

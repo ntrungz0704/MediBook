@@ -413,6 +413,60 @@ async function runTests() {
     res = await adminClient.get('/switch-role/receptionist');
     assert(res.statusCode === 200 && (res.body.includes('không có quyền truy cập') || res.body.includes('Bảng điều khiển')), 'Chặn an toàn khi cố chuyển sang vai trò chưa được phân quyền');
 
+    // 7.2: BÁC SĨ CŨNG CÓ THỂ LÀ BỆNH NHÂN (DOCTOR AS PATIENT)
+    const docUser = db.prepare("SELECT u.id, u.name, u.email FROM users u JOIN doctors d ON u.id = d.user_id WHERE u.email = 'doctor.minh@medibook.vn' OR u.email = 'doctor@medibook.local' LIMIT 1").get();
+    assert(docUser, 'Tìm thấy tài khoản Bác sĩ kiểm thử');
+
+    // Kiểm tra Bác sĩ có cả role 'doctor' và 'patient' trong user_roles
+    const docRoles = db.prepare("SELECT role FROM user_roles WHERE user_id = ?").all(docUser.id).map(r => r.role);
+    assert(docRoles.includes('doctor') && docRoles.includes('patient'), 'Bác sĩ được phân quyền song song: vừa là "Bác sĩ" vừa là "Bệnh nhân"');
+
+    // Bác sĩ chuyển vai trò sang 'patient' (Bệnh nhân)
+    res = await doctorClient.get('/switch-role/patient');
+    assert(res.statusCode === 200 && res.body.includes('Lịch khám của tôi'), 'Bác sĩ chuyển vai trò sang "Bệnh nhân" thành công, truy cập trang Lịch khám của tôi');
+
+    // Bác sĩ thử tự đặt lịch khám cho chính mình -> Hệ thống từ chối
+    const docSelfProfile = db.prepare("SELECT id FROM doctors WHERE user_id = ?").get(docUser.id);
+    const docOther = db.prepare("SELECT d.id, ds.specialty_id FROM doctors d LEFT JOIN doctor_specialties ds ON d.id = ds.doctor_id WHERE d.id != ? LIMIT 1").get(docSelfProfile.id);
+
+    res = await doctorClient.post('/appointments/book', {
+      specialty_id: 1,
+      doctor_id: docSelfProfile.id,
+      appointment_date: tomDateStr,
+      start_time: '15:00:00',
+      symptoms: 'Thử tự đặt cho chính mình'
+    });
+    const selfApptCheck = db.prepare("SELECT id FROM appointments WHERE doctor_id = ? AND start_time = '15:00:00' AND appointment_date = ?").get(docSelfProfile.id, tomDateStr);
+    assert(!selfApptCheck, 'Bảo vệ nghiệp vụ HIS: Chặn không cho Bác sĩ tự đặt lịch khám cho chính mình');
+
+    // Bác sĩ đặt lịch khám với một Bác sĩ đồng nghiệp khác
+    if (docOther) {
+      const docOtherSlot = '16:45:00';
+      db.prepare("DELETE FROM appointments WHERE doctor_id = ? AND appointment_date = ? AND start_time = ?").run(docOther.id, tomDateStr, docOtherSlot);
+
+      res = await doctorClient.post('/appointments/book', {
+        specialty_id: docOther.specialty_id || 1,
+        doctor_id: docOther.id,
+        appointment_date: tomDateStr,
+        start_time: docOtherSlot,
+        symptoms: 'Bác sĩ bị viêm xoang cần đồng nghiệp khám'
+      });
+
+      const docBookedAppt = db.prepare("SELECT * FROM appointments WHERE doctor_id = ? AND appointment_date = ? AND start_time = ?").get(docOther.id, tomDateStr, docOtherSlot);
+      assert(docBookedAppt && docBookedAppt.booking_code, `Bác sĩ đặt lịch khám thành công với đồng nghiệp chuyên khoa: ${docBookedAppt?.booking_code}`);
+
+      // Bác sĩ xem lại lịch hẹn trên trang cá nhân của mình
+      res = await doctorClient.get('/my-appointments');
+      assert(res.statusCode === 200 && res.body.includes(docBookedAppt.booking_code), 'Lịch hẹn của Bác sĩ hiển thị đầy đủ trong danh sách "Lịch khám của tôi"');
+
+      // Dọn dẹp ca hẹn test
+      db.prepare("DELETE FROM appointments WHERE id = ?").run(docBookedAppt.id);
+    }
+
+    // Bác sĩ chuyển lại vai trò sang Bác sĩ
+    res = await doctorClient.get('/switch-role/doctor');
+    assert(res.statusCode === 200 && res.body.includes('Tổng quan ca trực'), 'Bác sĩ chuyển đổi lại vai trò "Bác sĩ" thành công');
+
     // -------------------------------------------------------------
     // TEST 8: Phân Luồng Ưu Tiên Tiếp Đón (Khẩn cấp -> Người già/Trẻ em/Thai phụ -> Online -> Offline)
     // -------------------------------------------------------------

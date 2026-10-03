@@ -546,7 +546,7 @@ app.get(['/book', '/booking', '/appointments/book'], (req, res) => {
   const selectedDate = req.query.date || new Date().toISOString().slice(0, 10);
 
   let patient = null;
-  if (req.session.user && req.session.user.role === 'patient') {
+  if (req.session.user) {
     patient = db.prepare(`SELECT * FROM patients WHERE user_id = ?`).get(req.session.user.id);
   }
 
@@ -692,7 +692,14 @@ app.post('/appointments/book', (req, res) => {
 
   let patientId = null;
 
-  if (req.session.user && req.session.user.role === 'patient') {
+  if (req.session.user) {
+    // Chặn bác sĩ tự đặt lịch khám cho chính mình
+    const currentDoc = db.prepare('SELECT id FROM doctors WHERE user_id = ?').get(req.session.user.id) as any;
+    if (currentDoc && currentDoc.id === Number(doctor_id)) {
+      req.flash('error', 'Bác sĩ không thể tự đặt lịch khám cho chính mình. Vui lòng chọn đồng nghiệp hoặc bác sĩ chuyên khoa khác!');
+      return res.redirect('back');
+    }
+
     let pat = db.prepare('SELECT id FROM patients WHERE user_id = ?').get(req.session.user.id) as any;
     if (!pat) {
       const pRes = db.prepare('INSERT INTO patients (user_id) VALUES (?)').run(req.session.user.id);
@@ -717,6 +724,7 @@ app.post('/appointments/book', (req, res) => {
       `).run(patient_name.trim(), patient_email.trim(), hash, patient_phone.trim());
       user = { id: uRes.lastInsertRowid };
       db.prepare('INSERT INTO patients (user_id) VALUES (?)').run(user.id);
+      db.prepare("INSERT OR IGNORE INTO user_roles (user_id, role) VALUES (?, 'patient')").run(user.id);
     }
     const pat = db.prepare('SELECT id FROM patients WHERE user_id = ?').get(user.id) as any;
     patientId = pat.id;
@@ -727,7 +735,9 @@ app.post('/appointments/book', (req, res) => {
       name: patient_name.trim(),
       email: patient_email.trim(),
       phone: patient_phone.trim(),
-      role: 'patient'
+      role: 'patient',
+      roles: ['patient'],
+      active_role: 'patient'
     };
   }
 
@@ -1023,8 +1033,12 @@ app.post('/appointments/:code/review', requireAuth, (req, res) => {
 });
 
 app.get('/my-appointments', requireRole('patient'), (req, res) => {
-  const patient = db.prepare('SELECT id FROM patients WHERE user_id = ?').get(req.session.user.id);
-  const appointments = patient ? db.prepare(`
+  let patient = db.prepare('SELECT id FROM patients WHERE user_id = ?').get(req.session.user.id) as any;
+  if (!patient) {
+    const pRes = db.prepare('INSERT INTO patients (user_id) VALUES (?)').run(req.session.user.id);
+    patient = { id: pRes.lastInsertRowid };
+  }
+  const appointments = db.prepare(`
     SELECT a.*, s.name as specialty_name, srv.name as service_name,
            u.name as doctor_name, d.title as doctor_title, d.room_number
     FROM appointments a
@@ -1034,7 +1048,7 @@ app.get('/my-appointments', requireRole('patient'), (req, res) => {
     JOIN users u ON d.user_id = u.id
     WHERE a.patient_id = ?
     ORDER BY a.appointment_date DESC, a.start_time DESC
-  `).all(patient.id) : [];
+  `).all(patient.id);
 
   renderWithLayout(res, 'appointments/index', { pageTitle: 'Lịch khám của tôi - MediBook', appointments });
 });
