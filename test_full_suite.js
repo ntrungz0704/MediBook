@@ -19,6 +19,8 @@ if (!process.env.DATABASE_PATH) {
 process.env.NODE_ENV = 'test';
 process.on('exit', () => {
   if (!tempDbPath) return;
+  // Đóng kết nối trước để Windows cho phép xóa file (-wal/-shm đang được giữ mở)
+  try { require('./dist/db').close(); } catch (e) { /* ignore */ }
   for (const suffix of ['', '-wal', '-shm', '-journal']) {
     try { fs.unlinkSync(tempDbPath + suffix); } catch (e) { /* ignore */ }
   }
