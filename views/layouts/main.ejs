@@ -113,23 +113,18 @@
             <div class="brand-main" style="color:#fff; font-size:22px;">Medi<span style="color:#00b0ff;">Book</span></div>
           </div>
           <p style="color:#94a3b8; font-size:14px; line-height:1.6; margin-bottom:16px;">
-            Ứng dụng đặt khám thông minh kết nối hơn 1.000 bác sĩ, 25 bệnh viện và phòng khám uy tín trên toàn quốc. Đặt lịch chuẩn xác, nhận số thứ tự và khung giờ khám trước.
+            Đặt lịch khám với các bác sĩ đang nhận khám trên MediBook.
           </p>
           <div style="font-size:13.5px;color:#cbd5e1;line-height:1.8;">
-            <div>📍 123 Đường Nguyễn Tri Phương, Quận 5, TP. Hồ Chí Minh</div>
-            <div>📞 Tổng đài đặt khám: <strong style="color:#38bdf8;">1900 8888</strong> &bull; Hotline: <strong>0901 888 999</strong></div>
-            <div>✉️ Email hỗ trợ: contact@medibook.vn</div>
+            <% if (siteSettings.address) { %><div>📍 <%= siteSettings.address %></div><% } %>
+            <% if (siteSettings.hotline) { %><div>📞 Hotline: <strong><%= siteSettings.hotline %></strong></div><% } %>
+            <% if (siteSettings.email) { %><div>✉️ Email hỗ trợ: <%= siteSettings.email %></div><% } %>
           </div>
         </div>
 
         <div class="footer-col">
           <h5>Đặt khám theo Chuyên khoa</h5>
           <ul class="footer-links">
-            <li><a href="/specialties/noi-tong-quat">Nội tổng quát</a></li>
-            <li><a href="/specialties/nhi-khoa">Nhi khoa</a></li>
-            <li><a href="/specialties/san-phu-khoa">Sản phụ khoa</a></li>
-            <li><a href="/specialties/tim-mach">Tim mạch</a></li>
-            <li><a href="/specialties/da-lieu">Da liễu</a></li>
             <li><a href="/specialties">Tất cả chuyên khoa &rarr;</a></li>
           </ul>
         </div>
@@ -150,18 +145,18 @@
           <h5>Tiêu chuẩn Y tế</h5>
           <div class="footer-cert-card">
             <div style="font-weight:700;color:#fff;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
-              <span>🛡️</span> Chuẩn Bộ Y Tế & Bảo Mật
+              <span>🛡️</span> Bảo vệ thông tin cá nhân
             </div>
             <p style="font-size:12.5px;color:#94a3b8;line-height:1.5;margin-bottom:10px;">
-              Hệ thống mã hoá bảo mật dữ liệu sức khỏe, thanh toán trực tuyến nhanh gọn và hỗ trợ hoàn cước theo chính sách phòng khám.
+              Chỉ tài khoản có quyền mới xem được thông tin lịch khám và hồ sơ y tế.
             </p>
-            <div style="color:#00c853; font-weight:700; font-size:13px;">⏰ Hỗ trợ tiếp đón: 07:30 - 20:00</div>
+            <% if (siteSettings.supportHours) { %><div style="color:#00c853; font-weight:700; font-size:13px;">⏰ Hỗ trợ: <%= siteSettings.supportHours %></div><% } %>
           </div>
         </div>
       </div>
 
       <div class="footer-bottom">
-        <p>&copy; 2026 MediBook - Nền tảng đặt khám thông minh chuẩn YouMed. Bản quyền thuộc về MediBook Healthcare Platform.</p>
+        <p>&copy; <%= new Date().getFullYear() %> <%= siteSettings.clinicName %>.</p>
       </div>
     </div>
   </footer>

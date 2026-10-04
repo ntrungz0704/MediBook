@@ -2,13 +2,18 @@ const ejs = require('ejs');
 const fs = require('fs');
 const path = require('path');
 
-const viewsDir = 'D:/MediBook/views';
+const viewsDir = path.join(__dirname, 'views');
 
 // Mock helper functions
 const mockHelpers = {
   formatDate: (d) => '28/09/2026',
   formatCurrency: (n) => (n || 0).toLocaleString('vi-VN') + ' ₫',
   getStatusBadge: (s) => `<span class="badge">${s}</span>`,
+  getPriorityBadge: (s) => `<span class="badge">${s}</span>`,
+  getRoleBadge: (s) => `<span class="badge">${s}</span>`,
+  getVisitTypeBadge: (s) => `<span class="badge">${s}</span>`,
+  getTreatmentTypeBadge: (s) => `<span class="badge">${s}</span>`,
+  formatDateTime: (d) => '28/09/2026 08:00',
   currentUser: { id: 1, name: 'Bác sĩ Minh', email: 'doctor@medibook.local', role: 'doctor', phone: '0901234567' },
   currentPath: '/',
   flashSuccess: null,
@@ -16,7 +21,8 @@ const mockHelpers = {
   flashInfo: null,
   pageTitle: 'Test Page',
   body: '<div>Content Mock</div>',
-  today: '2026-09-28'
+  today: '2026-09-28',
+  siteSettings: { clinicName: 'MediBook', address: '', hotline: '', email: '', supportHours: '', bankCode: '', bankAccount: '', bankAccountName: '' }
 };
 
 const mockData = {
@@ -61,9 +67,38 @@ const mockData = {
   totalPatients: 120,
   totalDoctors: 8,
   totalToday: 10,
+  totalBeds: 0,
+  occupiedBeds: 0,
+  availableBeds: 0,
+  cleaningBeds: 0,
+  allSpecialties: [{ id: 1, name: 'Nội tổng quát' }],
+  requests: [],
+  selectedSpecialtyIds: [1],
+  monthlyRevenue: [],
+  upcomingAppointment: null,
+  article: { category: 'benh', category_name: 'Bệnh', slug: 'benh', title: 'Bài viết', summary: 'Tóm tắt', content: 'Nội dung', author_name: 'Bác sĩ', author_role: 'Bác sĩ', created_at: '2026-09-28' },
+  selectedCategory: '',
+  message: 'Lỗi thử nghiệm',
+  history: [],
+  bySpecialty: [],
+  relatedArticles: [],
+  searchQuery: '',
+  prevCompletedVisit: null,
+  availableCount: 0,
+  occupiedCount: 0,
+  occupancyRate: 0,
+  cleaningCount: 0,
+  maintenanceCount: 0,
+  selectedRoomId: '',
+  selectedStatus: '',
+  roomsWithBeds: [],
+  articles: [],
+  pastRecords: [],
   waitingCount: 3,
   completedToday: 5,
   completedCount: 5,
+  articleCategories: [{ category: 'benh', category_name: 'Bệnh' }],
+  ratingSummary: { count: 0, average: null },
   checkedInCount: 2,
   todayRevenue: 2000000,
   statusCounts: { pending: 2, confirmed: 5, checked_in: 3, in_consultation: 1, completed: 10, cancelled: 1 },
@@ -92,16 +127,18 @@ const allEjs = getAllFiles(viewsDir);
 console.log(`Found ${allEjs.length} EJS files. Starting dry-run rendering...`);
 
 let failed = 0;
-allEjs.forEach(file => {
+(async () => {
+for (const file of allEjs) {
   try {
     const combinedData = { ...mockHelpers, ...mockData };
-    ejs.renderFile(file, combinedData, { root: viewsDir });
+    await ejs.renderFile(file, combinedData, { root: viewsDir });
     console.log(`[PASS] ${path.relative(viewsDir, file)}`);
   } catch (err) {
     console.error(`[FAIL] ${path.relative(viewsDir, file)}: ${err.message}`);
     failed++;
   }
-});
+}
 
 console.log(`\nRender dry-run completed: ${allEjs.length - failed} PASS, ${failed} FAIL`);
 process.exit(failed > 0 ? 1 : 0);
+})();

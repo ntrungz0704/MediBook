@@ -491,6 +491,12 @@
       "doctor_id": 10,
       "specialty_id": 6,
       "is_primary": 0
+    },
+    {
+      "id": 11,
+      "doctor_id": 9,
+      "specialty_id": 1,
+      "is_primary": 1
     }
   ],
   "receptionists": [

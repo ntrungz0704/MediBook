@@ -4,13 +4,13 @@
     <div class="youmed-hero-content">
       <div class="youmed-hero-tag">
         <span class="live-dot"></span>
-        HỆ THỐNG Y TẾ SỐ ĐẠT CHUẨN
+        NỀN TẢNG ĐẶT LỊCH KHÁM
       </div>
       <h1 class="youmed-hero-title">
         Ứng dụng đặt khám thông minh
       </h1>
       <p class="youmed-hero-sub">
-        Đặt khám với hơn <strong>1.000 bác sĩ</strong>, <strong>25 bệnh viện</strong>, <strong>100 phòng khám</strong> trên MediBook để có số thứ tự và khung giờ khám trước.
+        Đặt lịch với <strong><%= doctors.length %> bác sĩ</strong> đang nhận khám trên MediBook.
       </p>
 
       <!-- Large Center Search Bar (YouMed Signature) -->
@@ -30,10 +30,9 @@
       <!-- Quick Fast Search Tags -->
       <div class="youmed-quick-tags">
         <span>Gợi ý:</span>
-        <a href="/doctors?search=nhi">Bác sĩ Nhi khoa</a>
-        <a href="/doctors?search=tim">Khám Tim mạch</a>
-        <a href="/doctors?search=da%20li%E1%BB%85u">Trị mụn Da liễu</a>
-        <a href="/specialties/san-phu-khoa">Khám thai định kỳ</a>
+        <% specialties.slice(0, 4).forEach(sp => { %>
+          <a href="/specialties/<%= sp.slug %>"><%= sp.name %></a>
+        <% }); %>
       </div>
     </div>
 
@@ -65,7 +64,7 @@
         </div>
       </div>
       <div class="filter-head-badge">
-        Ưu tiên không chờ đợi
+        Đặt lịch theo giờ
       </div>
     </div>
 
@@ -187,92 +186,15 @@
   </div>
 </section>
 
-<!-- 5. SECTION: ĐẶT KHÁM BỆNH VIỆN & CƠ SỞ Y TẾ (YOUMED CARD STYLE) -->
+<!-- 5. Cơ sở khám -->
 <section class="container youmed-section" data-animate="fade-up">
   <div class="section-header-youmed">
     <div>
-      <h2 class="title-main">Đặt khám bệnh viện</h2>
-      <p class="title-sub">Đặt khám và thanh toán để có phiếu khám (thời gian, số thứ tự) trước khi đi khám các bệnh viện kết nối chính thức.</p>
-    </div>
-    <a href="/doctors" class="youmed-btn-pill">
-      <span>Xem thêm</span>
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-    </a>
-  </div>
-
-  <div class="youmed-hospital-grid">
-    <div class="hospital-card">
-      <div class="hosp-banner">
-        <img src="/assets/images/doctor-hero.jpg" alt="Bệnh viện Nhi Đồng" class="hosp-cover-img">
-        <div class="hosp-logo-badge">
-          <span style="font-size:24px;">👶</span>
-        </div>
-      </div>
-      <div class="hosp-body">
-        <h4 class="hosp-title">Bệnh viện Nhi Đồng Thành Phố</h4>
-        <div class="hosp-address">14 Lý Tự Trọng, Bến Nghé, Quận 1, TP. Hồ Chí Minh</div>
-        <div class="hosp-schedule">
-          <div class="sched-row">
-            <span>Thứ 2 đến Thứ 6 (Sáng):</span>
-            <strong>07h00 - 11h30</strong>
-          </div>
-          <div class="sched-row">
-            <span>Thứ 2 đến Thứ 6 (Chiều):</span>
-            <strong>13h00 - 16h30</strong>
-          </div>
-        </div>
-        <a href="/appointments/book" class="hosp-book-btn">Đặt khám ngay &rarr;</a>
-      </div>
-    </div>
-
-    <div class="hospital-card">
-      <div class="hosp-banner">
-        <img src="/assets/images/doctor-1.jpg" alt="Bệnh viện Quân Y" class="hosp-cover-img">
-        <div class="hosp-logo-badge">
-          <span style="font-size:24px;">🏥</span>
-        </div>
-      </div>
-      <div class="hosp-body">
-        <h4 class="hosp-title">Bệnh viện Đa Khoa MediBook Sài Gòn</h4>
-        <div class="hosp-address">123 Đường Nguyễn Tri Phương, Phường 7, Quận 5, TP.HCM</div>
-        <div class="hosp-schedule">
-          <div class="sched-row">
-            <span>Thứ 2 đến Thứ 7 (Cả ngày):</span>
-            <strong>07h30 - 20h00</strong>
-          </div>
-          <div class="sched-row">
-            <span>Chủ Nhật (Buổi sáng):</span>
-            <strong>08h00 - 12h00</strong>
-          </div>
-        </div>
-        <a href="/appointments/book" class="hosp-book-btn">Đặt khám ngay &rarr;</a>
-      </div>
-    </div>
-
-    <div class="hospital-card">
-      <div class="hosp-banner">
-        <img src="/assets/images/doctor-2.jpg" alt="Bệnh viện Chợ Rẫy đối tác" class="hosp-cover-img">
-        <div class="hosp-logo-badge">
-          <span style="font-size:24px;">⚕️</span>
-        </div>
-      </div>
-      <div class="hosp-body">
-        <h4 class="hosp-title">Viện Tim & Chuyên khoa Lâm sàng</h4>
-        <div class="hosp-address">520 Nguyễn Chí Thanh, Phường 7, Quận 11, TP. Hồ Chí Minh</div>
-        <div class="hosp-schedule">
-          <div class="sched-row">
-            <span>Khám Giáo sư, Chuyên gia:</span>
-            <strong>07h00 - 16h00</strong>
-          </div>
-          <div class="sched-row">
-            <span>Cấp cứu & Lưu bệnh:</span>
-            <strong style="color:#00c853;">Phục vụ 24/7</strong>
-          </div>
-        </div>
-        <a href="/appointments/book" class="hosp-book-btn">Đặt khám ngay &rarr;</a>
-      </div>
+      <h2 class="title-main">Cơ sở khám</h2>
+      <p class="title-sub">Thông tin cơ sở và dịch vụ sẽ hiển thị khi được cấu hình và xác minh.</p>
     </div>
   </div>
+  <p>Hiện chưa có cơ sở y tế nào được công bố. Bạn có thể <a href="/doctors">đặt lịch với bác sĩ đang nhận khám</a>.</p>
 </section>
 
 <!-- 6. SECTION: ĐẶT LỊCH THEO CHUYÊN KHOA (CIRCULAR COLOR ICONS) -->
@@ -280,7 +202,7 @@
   <div class="section-header-youmed">
     <div>
       <h2 class="title-main">Đặt lịch theo Chuyên khoa</h2>
-      <p class="title-sub">Danh sách bác sĩ, bệnh viện, phòng khám phân chia theo chuyên khoa chuẩn xác</p>
+      <p class="title-sub">Danh sách bác sĩ theo chuyên khoa</p>
     </div>
     <a href="/specialties" class="youmed-btn-pill">
       <span>Tất cả</span>
@@ -311,7 +233,7 @@
           <% } %>
         </div>
         <div class="spec-circle-name"><%= sp.name %></div>
-        <div class="spec-circle-count"><%= sp.doctor_count || 1 %> BS</div>
+        <div class="spec-circle-count"><%= sp.doctor_count %> BS</div>
       </a>
     <% }); %>
   </div>
@@ -330,10 +252,9 @@
 
     <div class="articles-tabs-bar">
       <button type="button" class="article-tab active" data-cat="all">Tất cả</button>
-      <button type="button" class="article-tab" data-cat="thuoc">Thuốc</button>
-      <button type="button" class="article-tab" data-cat="duoc-lieu">Dược liệu</button>
-      <button type="button" class="article-tab" data-cat="benh">Bệnh</button>
-      <button type="button" class="article-tab" data-cat="co-the">Cơ thể</button>
+      <% articleCategories.forEach(cat => { %>
+        <button type="button" class="article-tab" data-cat="<%= cat.category %>"><%= cat.category_name %></button>
+      <% }); %>
       <div class="article-search-mini">
         <input type="text" id="article_home_search" placeholder="Nhập tên thuốc, bệnh lý...">
       </div>
@@ -429,60 +350,29 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<!-- 8. SECTION: ĐÁNH GIÁ TỪ BỆNH NHÂN THỰC TẾ -->
+<!-- 8. Đánh giá từ bệnh nhân -->
 <section class="container youmed-section" style="padding-bottom: 70px;" data-animate="fade-up">
   <div class="section-header-youmed">
     <div>
-      <h2 class="title-main">Bệnh nhân nói gì về MediBook?</h2>
-      <p class="title-sub">Hơn 50.000+ lượt khám chữa bệnh và nhận phản hồi tích cực từ cộng đồng người dùng</p>
+      <h2 class="title-main">Đánh giá từ bệnh nhân</h2>
+      <p class="title-sub"><%= completedCount %> lượt khám đã hoàn tất.</p>
     </div>
-    <div class="youmed-rating-stars">
-      <span style="color:#ff9800; font-size:18px;">★ 4.9 / 5.0</span>
-      <span style="color:#64748b; font-size:13px; font-weight:600;">(hơn 3.500+ đánh giá xác thực)</span>
-    </div>
+    <% if (ratingSummary.count) { %>
+      <div class="youmed-rating-stars">
+        <span>★ <%= ratingSummary.average %> / 5</span>
+        <span>(<%= ratingSummary.count %> đánh giá)</span>
+      </div>
+    <% } %>
   </div>
-
   <div class="youmed-testimonials-grid">
-    <div class="testi-card">
-      <div class="testi-stars">★★★★★</div>
-      <p class="testi-text">
-        "Tôi đặt lịch trước trên web nên đến quầy chỉ cần đọc mã là được số khám ngay, không phải chen chúc 4-5 tiếng như ở bệnh viện lớn. Bác sĩ Đức khám rất kỹ và dặn dò chu đáo!"
-      </p>
-      <div class="testi-user">
-        <div class="user-avatar-tag" style="background:#e0f2fe; color:#0088ff;">TN</div>
-        <div>
-          <div class="user-name">Trần Văn Nam</div>
-          <div class="user-desc">Khám Nội tổng quát định kỳ</div>
-        </div>
+    <% if (reviews.length) { reviews.forEach(review => { %>
+      <div class="testi-card">
+        <div class="testi-stars"><%= '★'.repeat(review.rating) %></div>
+        <p class="testi-text"><%= review.comment %></p>
+        <div class="testi-user"><div class="user-name"><%= review.patient_name %></div></div>
       </div>
-    </div>
-
-    <div class="testi-card">
-      <div class="testi-stars">★★★★★</div>
-      <p class="testi-text">
-        "Bác sĩ Mai khoa Nhi rất khéo, con trai mình bình thường sợ bác sĩ mà vào phòng cười suốt. Thuốc kê uống 2 ngày là đỡ sốt hẳn. Rất cảm ơn đội ngũ bác sĩ MediBook!"
-      </p>
-      <div class="testi-user">
-        <div class="user-avatar-tag" style="background:#e8f5e9; color:#00c853;">LH</div>
-        <div>
-          <div class="user-name">Lê Hoàng Yến</div>
-          <div class="user-desc">Phụ huynh bé Bo (3 tuổi)</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="testi-card">
-      <div class="testi-stars">★★★★★</div>
-      <p class="testi-text">
-        "Giao diện chuẩn như YouMed cực kỳ trực quan, rõ ràng minh bạch từng bảng giá dịch vụ. Toa thuốc sau khám được lưu ngay trên tài khoản, rất tiện để theo dõi liều lượng mỗi ngày."
-      </p>
-      <div class="testi-user">
-        <div class="user-avatar-tag" style="background:#fff8e1; color:#f57f17;">HQ</div>
-        <div>
-          <div class="user-name">Hoàng Quốc Bảo</div>
-          <div class="user-desc">Khám Tim mạch & Đo điện tim</div>
-        </div>
-      </div>
-    </div>
+    <% }); } else { %>
+      <p>Chưa có đánh giá nào.</p>
+    <% } %>
   </div>
 </section>
