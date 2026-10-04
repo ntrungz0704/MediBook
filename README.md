@@ -1,9 +1,11 @@
 # MediBook - Nền tảng Đặt Lịch Khám & Quản Lý Phòng Khám Thông Minh (Node.js & Express)
 
-Hệ thống **MediBook** đã được chuyển đổi và nâng cấp toàn diện sang **Node.js (Express + SQLite/JSON + EJS)** theo đúng yêu cầu môn học của thầy Long:
+Hệ thống **MediBook** chạy trên **Node.js, TypeScript, Express, SQLite và EJS (HTML/CSS/JavaScript)**:
 - ✅ **KHÔNG dùng PHP / PHP Built-in Server**.
 - ✅ **KHÔNG phụ thuộc phpMyAdmin hay MySQL Server**, database SQLite tự động tạo và seed đầy đủ dữ liệu demo độc lập ngay trong project.
-- ✅ Giữ trọn vẹn 100% giao diện sang trọng, responsive chuẩn Desktop (16:9) và Mobile (9:16) cùng toàn bộ tính năng của cả 4 vai trò (Admin, Doctor, Receptionist, Patient).
+- ✅ Có luồng chính cho 4 vai trò: Admin, Doctor, Receptionist, Patient. Xem [báo cáo xác minh hiện tại](docs/VERIFICATION_2026-10-04.md) để biết phạm vi đã kiểm tra và giới hạn còn lại.
+
+Schema ứng dụng hiện có **27 bảng SQLite, 41 khóa ngoại**. Con số 26 bảng thuộc bản ERD trước khi thêm `contact_requests`. [ERD hiện tại](docs/ERD.md), [sơ đồ draw.io](docs/MediBook_ERD.drawio) và `database/schema.sql` được sinh từ cùng DB mới bằng `npm run erd:sync`; `npm run erd:check` phát hiện tài liệu lệch schema.
 
 ---
 

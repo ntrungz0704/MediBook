@@ -79,6 +79,7 @@ export function validateBooking(db: any, input: BookingInput): ValidatedBooking 
 
   const doctor = db.prepare(`
     SELECT d.id FROM doctors d JOIN users u ON u.id = d.user_id
+    JOIN user_roles ur ON ur.user_id = u.id AND ur.role = 'doctor'
     WHERE d.id = ? AND u.status = 'active'
   `).get(doctorId);
   if (!doctor) throw new BookingRuleError('Bác sĩ không còn nhận lịch khám.');

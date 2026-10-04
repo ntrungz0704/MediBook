@@ -50,7 +50,7 @@
             <a href="/doctors/<%= doc.id %>"><%= doc.name %></a>
           </h3>
           <div class="doc-card-specialty"><%= doc.specialty_names || 'Nội tổng quát' %></div>
-          <div class="doc-card-facility">Phòng khám <%= doc.room_number %></div>
+          <div class="doc-card-facility">Phòng khám <%= doc.room_number || 'chưa cập nhật' %></div>
 
           <p class="doc-card-bio">
             <%= doc.bio || 'Bác sĩ chuyên khoa giàu kinh nghiệm, tận tâm, cam kết đồng hành cùng sức khỏe bệnh nhân.' %>
@@ -58,11 +58,11 @@
 
           <div class="doc-card-metrics">
             <div class="doc-star-rating">
-              <span style="color:#f59e0b;">★</span> <%= Number(doc.rating).toFixed(1) %>
-              <span class="rating-count">(<%= doc.rating_count %> đánh giá)</span>
+              <% if (doc.rating_count) { %><span style="color:#f59e0b;">★</span> <%= Number(doc.rating).toFixed(1) %>
+              <span class="rating-count">(<%= doc.rating_count %> đánh giá)</span><% } else { %>Chưa có đánh giá<% } %>
             </div>
             <div class="doc-price">
-              <%= doc.consultation_fee ? new Intl.NumberFormat('vi-VN').format(doc.consultation_fee) + ' ₫' : '200.000 ₫' %>
+              <%= Number.isFinite(Number(doc.consultation_fee)) ? new Intl.NumberFormat('vi-VN').format(Number(doc.consultation_fee)) + ' ₫' : 'Chưa cập nhật' %>
             </div>
           </div>
 

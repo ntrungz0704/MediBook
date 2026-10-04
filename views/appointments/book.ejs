@@ -43,7 +43,7 @@
               <select name="doctor_id" id="booking_doctor" class="form-control" style="margin-top:6px;" required>
                 <option value="">-- Vui lòng chọn bác sĩ --</option>
                 <% doctors.forEach(doc => { %>
-                  <option value="<%= doc.id %>" <%= selectedDoctorId == doc.id ? 'selected' : '' %>>
+                  <option value="<%= doc.id %>" data-fee="<%= doc.consultation_fee %>" data-room="<%= doc.room_number %>" <%= selectedDoctorId == doc.id ? 'selected' : '' %>>
                     <%= doc.name %> (<%= doc.room_number %>)
                   </option>
                 <% }); %>
@@ -102,7 +102,7 @@
 
           <% if (!currentUser) { %>
             <div style="background:#eff6ff;padding:12px 16px;border-radius:8px;font-size:13.5px;color:#1e40af;margin-bottom:16px;">
-              💡 <em>Tài khoản sẽ được tự động tạo với mật khẩu mặc định là <code>password</code> sau khi đặt lịch thành công.</em>
+              💡 <em>Tài khoản sẽ được tạo sau khi đặt lịch thành công. Mật khẩu ngẫu nhiên sẽ chỉ hiển thị một lần ở trang xác nhận.</em>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
@@ -165,12 +165,12 @@
 
           <div style="display:flex;flex-direction:column;gap:14px;font-size:14px;margin-bottom:24px;">
             <div style="display:flex;justify-content:space-between;">
-              <span class="text-muted">Cơ sở khám:</span>
-              <span style="font-weight:600;text-align:right;">Phòng khám MediBook (Q.1, TP.HCM)</span>
+              <span class="text-muted">Bác sĩ:</span>
+              <span id="summary_doctor" style="font-weight:600;text-align:right;">Chưa chọn</span>
             </div>
             <div style="display:flex;justify-content:space-between;">
-              <span class="text-muted">Thời lượng khám:</span>
-              <span style="font-weight:600;">30 phút</span>
+              <span class="text-muted">Phòng khám:</span>
+              <span id="summary_room" style="font-weight:600;">Chưa chọn</span>
             </div>
             <div style="display:flex;justify-content:space-between;">
               <span class="text-muted">Hình thức:</span>
@@ -178,7 +178,7 @@
             </div>
             <div style="border-top:1px dashed var(--border);padding-top:14px;display:flex;justify-content:space-between;align-items:center;">
               <span style="font-weight:700;font-size:15px;">Phí khám ban đầu:</span>
-              <span style="font-size:18px;font-weight:800;color:var(--primary);">200.000 ₫</span>
+              <span id="summary_fee" style="font-size:18px;font-weight:800;color:var(--primary);">Chọn bác sĩ</span>
             </div>
             <div style="font-size:12px;color:var(--text-muted);">
               * Chi phí thuốc và dịch vụ cận lâm sàng (nếu có) sẽ được bác sĩ chỉ định và thanh toán sau khi khám.
@@ -190,7 +190,7 @@
           </button>
 
           <div style="margin-top: 14px; text-align: center; font-size: 12px; color: var(--text-muted);">
-            🔒 Thông tin bệnh nhân được bảo mật tuyệt đối theo tiêu chuẩn y tế.
+            🔒 Thông tin lịch khám chỉ hiển thị cho tài khoản có quyền truy cập.
           </div>
         </div>
       </div>

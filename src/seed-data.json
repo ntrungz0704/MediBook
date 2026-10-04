@@ -195,6 +195,10 @@
       "role": "doctor"
     },
     {
+      "user_id": 14,
+      "role": "patient"
+    },
+    {
       "user_id": 15,
       "role": "receptionist"
     },
@@ -235,6 +239,18 @@
     {
       "id": 3,
       "user_id": 16,
+      "dob": null,
+      "gender": "other",
+      "blood_group": null,
+      "address": null,
+      "emergency_contact": null,
+      "health_insurance_no": null,
+      "medical_history": null,
+      "priority_category": "normal"
+    },
+    {
+      "id": 4,
+      "user_id": 14,
       "dob": null,
       "gender": "other",
       "blood_group": null,

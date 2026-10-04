@@ -70,10 +70,10 @@
           <% if (isWithin14Days) { %>
             Bệnh nhân đã khám vào ngày <strong><%= formatDate(prevCompletedVisit.appointment_date) %></strong> (cách <strong><%= daysDiff %> ngày</strong> &le; 14 ngày).
             <div style="margin-top: 6px; font-weight: 700; color: #059669;">
-              Tiền công khám được áp dụng: <span style="text-decoration: line-through; color: #94a3b8;">200.000 ₫</span> &rarr; <strong>100.000 ₫</strong> (-50%)
+              Nếu chọn tái khám, phí khám dự kiến: <span style="text-decoration: line-through; color: #94a3b8;"><%= formatCurrency(baseServiceFee) %></span> &rarr; <strong><%= formatCurrency(baseServiceFee / 2) %></strong> (-50%)
             </div>
           <% } else { %>
-            Lần khám trước vào ngày <strong><%= formatDate(prevCompletedVisit.appointment_date) %></strong> (cách <strong><%= daysDiff %> ngày</strong> &gt; 14 ngày). Áp dụng phí tiêu chuẩn: <strong>200.000 ₫</strong>.
+            Lần khám trước vào ngày <strong><%= formatDate(prevCompletedVisit.appointment_date) %></strong> (cách <strong><%= daysDiff %> ngày</strong> &gt; 14 ngày). Phí khám dự kiến: <strong><%= formatCurrency(baseServiceFee) %></strong>.
           <% } %>
         </div>
       </div>

@@ -114,6 +114,13 @@ function passwordError(pw: any): string | null {
   return null;
 }
 
+function appointmentBaseFee(appt: { service_id?: number | null; doctor_id: number }): number {
+  const row = appt.service_id
+    ? db.prepare('SELECT price AS fee FROM services WHERE id = ?').get(appt.service_id) as any
+    : db.prepare('SELECT consultation_fee AS fee FROM doctors WHERE id = ?').get(appt.doctor_id) as any;
+  return Math.max(0, Number(row?.fee) || 0);
+}
+
 // Session & Flash
 app.use(session({
   secret: activeSessionSecret,
@@ -122,6 +129,30 @@ app.use(session({
   cookie: { maxAge: 1000 * 60 * 60 * 24, httpOnly: true, sameSite: 'lax', secure: isProduction ? 'auto' : false } // 1 day
 }));
 app.use(flash());
+
+// Re-read authorization on each request so admin changes take effect for
+// existing sessions immediately, including inactive accounts and revoked roles.
+app.use((req, res, next) => {
+  const sessionUser = req.session.user;
+  if (!sessionUser) return next();
+  const user = db.prepare('SELECT id, name, email, phone, role, status FROM users WHERE id = ?').get(sessionUser.id) as any;
+  const roles = user
+    ? (db.prepare('SELECT role FROM user_roles WHERE user_id = ?').all(user.id) as any[]).map(row => row.role)
+    : [];
+  if (!user || user.status !== 'active' || roles.length === 0) {
+    delete req.session.user;
+    return next();
+  }
+  const activeRole = roles.includes(sessionUser.active_role)
+    ? sessionUser.active_role
+    : roles.includes(user.role) ? user.role : roles[0];
+  req.session.user = {
+    ...sessionUser,
+    name: user.name, email: user.email, phone: user.phone,
+    role: activeRole, active_role: activeRole, roles
+  };
+  next();
+});
 
 // Helper layout renderer for Express
 function renderWithLayout(res, view, data = {}, layout = 'layouts/main') {
@@ -207,11 +238,12 @@ function logActivity(userId, action, entityType, entityId, details, req) {
 // ==========================================
 app.get('/', (req, res) => {
   const specialties = db.prepare(`
-    SELECT s.*, count(DISTINCT CASE WHEN u.status = 'active' THEN d.id END) AS doctor_count
+    SELECT s.*, count(DISTINCT CASE WHEN u.status = 'active' AND dr.user_id IS NOT NULL THEN d.id END) AS doctor_count
     FROM specialties s
     LEFT JOIN doctor_specialties ds ON ds.specialty_id = s.id
     LEFT JOIN doctors d ON d.id = ds.doctor_id
     LEFT JOIN users u ON u.id = d.user_id
+    LEFT JOIN user_roles dr ON dr.user_id = u.id AND dr.role = 'doctor'
     WHERE s.status = 'active' GROUP BY s.id
   `).all();
   const doctors = db.prepare(`
@@ -219,6 +251,7 @@ app.get('/', (req, res) => {
            GROUP_CONCAT(s.name, ', ') as specialty_names
     FROM doctors d
     JOIN users u ON d.user_id = u.id AND u.status = 'active'
+    JOIN user_roles dr ON dr.user_id = u.id AND dr.role = 'doctor'
     LEFT JOIN doctor_specialties ds ON d.id = ds.doctor_id
     LEFT JOIN specialties s ON ds.specialty_id = s.id
     GROUP BY d.id
@@ -393,19 +426,21 @@ app.post('/login', (req, res) => {
 
   // Query all roles assigned to this user (1 user can have multiple roles)
   const userRolesRows = db.prepare('SELECT role FROM user_roles WHERE user_id = ?').all(user.id);
-  let userRoles = userRolesRows.map(r => r.role);
-  if (!userRoles.includes(user.role)) {
-    userRoles.push(user.role);
+  const userRoles = userRolesRows.map(r => r.role);
+  if (!userRoles.length) {
+    req.flash('error', 'Tài khoản chưa được phân quyền. Vui lòng liên hệ quản trị viên.');
+    return res.redirect('/login');
   }
+  const loginRole = userRoles.includes(user.role) ? user.role : userRoles[0];
 
   req.session.user = {
     id: user.id,
     name: user.name,
     email: user.email,
     phone: user.phone,
-    role: user.role,
+    role: loginRole,
     roles: userRoles,
-    active_role: user.role
+    active_role: loginRole
   };
 
   logActivity(user.id, 'USER_LOGIN', 'User', user.id, 'Đăng nhập thành công', req);
@@ -415,19 +450,19 @@ app.post('/login', (req, res) => {
     // CRITICAL RBAC GUARD:
     // If an Admin logs in, do NOT redirect them into receptionist or doctor portal!
     // Admin always goes to /admin/dashboard unless intended is an admin URL.
-    if (user.role === 'admin' && (intended.startsWith('/receptionist') || intended.startsWith('/doctor'))) {
+    if (loginRole === 'admin' && (intended.startsWith('/receptionist') || intended.startsWith('/doctor'))) {
       return res.redirect('/admin/dashboard');
     }
-    if (user.role === 'doctor' && (intended.startsWith('/receptionist') || intended.startsWith('/admin'))) {
+    if (loginRole === 'doctor' && (intended.startsWith('/receptionist') || intended.startsWith('/admin'))) {
       return res.redirect('/doctor/dashboard');
     }
-    if (user.role === 'receptionist' && (intended.startsWith('/doctor') || intended.startsWith('/admin'))) {
+    if (loginRole === 'receptionist' && (intended.startsWith('/doctor') || intended.startsWith('/admin'))) {
       return res.redirect('/receptionist/dashboard');
     }
     return res.redirect(intended);
   }
 
-  redirectByRole(res, user.role);
+  redirectByRole(res, loginRole);
   });
 });
 
@@ -585,11 +620,12 @@ app.get('/admin/contact-requests', requireRole('admin'), (req, res) => {
 
 app.get('/specialties', (req, res) => {
   const specialties = db.prepare(`
-    SELECT s.*, count(DISTINCT CASE WHEN u.status = 'active' THEN d.id END) as doctor_count
+    SELECT s.*, count(DISTINCT CASE WHEN u.status = 'active' AND dr.user_id IS NOT NULL THEN d.id END) as doctor_count
     FROM specialties s
     LEFT JOIN doctor_specialties ds ON s.id = ds.specialty_id
     LEFT JOIN doctors d ON d.id = ds.doctor_id
     LEFT JOIN users u ON u.id = d.user_id
+    LEFT JOIN user_roles dr ON dr.user_id = u.id AND dr.role = 'doctor'
     WHERE s.status = 'active'
     GROUP BY s.id
   `).all();
@@ -605,6 +641,7 @@ app.get('/specialties/:slug', (req, res) => {
     SELECT d.*, u.name, u.email, u.avatar
     FROM doctors d
     JOIN users u ON d.user_id = u.id AND u.status = 'active'
+    JOIN user_roles dr ON dr.user_id = u.id AND dr.role = 'doctor'
     JOIN doctor_specialties ds ON d.id = ds.doctor_id
     WHERE ds.specialty_id = ?
   `).all(specialty.id);
@@ -625,7 +662,8 @@ app.get('/doctors', (req, res) => {
     SELECT d.*, u.name, u.email, u.avatar,
            GROUP_CONCAT(s.name, ', ') as specialty_names
     FROM doctors d
-    JOIN users u ON d.user_id = u.id
+    JOIN users u ON d.user_id = u.id AND u.status = 'active'
+    JOIN user_roles dr ON dr.user_id = u.id AND dr.role = 'doctor'
     LEFT JOIN doctor_specialties ds ON d.id = ds.doctor_id
     LEFT JOIN specialties s ON ds.specialty_id = s.id
   `;
@@ -652,7 +690,8 @@ app.get('/doctors/:id', (req, res) => {
     SELECT d.*, u.name, u.email, u.avatar,
            GROUP_CONCAT(s.name, ', ') as specialty_names
     FROM doctors d
-    JOIN users u ON d.user_id = u.id
+    JOIN users u ON d.user_id = u.id AND u.status = 'active'
+    JOIN user_roles dr ON dr.user_id = u.id AND dr.role = 'doctor'
     LEFT JOIN doctor_specialties ds ON d.id = ds.doctor_id
     LEFT JOIN specialties s ON ds.specialty_id = s.id
     WHERE d.id = ?
@@ -687,7 +726,8 @@ app.get(['/book', '/booking', '/appointments/book'], (req, res) => {
   const doctors = db.prepare(`
     SELECT d.*, u.name, u.email, u.avatar
     FROM doctors d
-    JOIN users u ON d.user_id = u.id
+    JOIN users u ON d.user_id = u.id AND u.status = 'active'
+    JOIN user_roles dr ON dr.user_id = u.id AND dr.role = 'doctor'
   `).all();
 
   const selectedSpecialtyId = req.query.specialty_id || '';
@@ -715,8 +755,10 @@ app.get('/api/doctors/by-specialty/:specialtyId', (req, res) => {
   const doctors = db.prepare(`
     SELECT d.*, u.name
     FROM doctors d
-    JOIN users u ON d.user_id = u.id
+    JOIN users u ON d.user_id = u.id AND u.status = 'active'
+    JOIN user_roles dr ON dr.user_id = u.id AND dr.role = 'doctor'
     JOIN doctor_specialties ds ON d.id = ds.doctor_id
+    JOIN specialties s ON s.id = ds.specialty_id AND s.status = 'active'
     WHERE ds.specialty_id = ?
   `).all(req.params.specialtyId);
   res.json({ success: true, doctors });
@@ -1325,14 +1367,9 @@ function getOrCreateDoctorProfile(userId: number) {
   let doc = db.prepare('SELECT * FROM doctors WHERE user_id = ?').get(userId) as any;
   if (!doc) {
     db.prepare(`
-      INSERT INTO doctors (user_id, title, room_number, bio, consultation_fee)
-      VALUES (?, 'Bác sĩ', 'P.101', 'Bác sĩ phòng khám MediBook', 200000)
+      INSERT INTO doctors (user_id, consultation_fee, rating, room_number) VALUES (?, 0, 0, '')
     `).run(userId);
     doc = db.prepare('SELECT * FROM doctors WHERE user_id = ?').get(userId);
-    const spec = db.prepare('SELECT id FROM specialties LIMIT 1').get() as any;
-    if (spec && doc) {
-      db.prepare(`INSERT OR IGNORE INTO doctor_specialties (doctor_id, specialty_id) VALUES (?, ?)`).run(doc.id, spec.id);
-    }
   }
   return doc;
 }
@@ -1568,6 +1605,7 @@ app.get('/doctor/examine/:appointmentId', requireRole('doctor'), (req, res) => {
     prevCompletedVisit,
     isWithin14Days,
     daysDiff,
+    baseServiceFee: appointmentBaseFee(appt),
     medicines,
     currentRecord,
     currentPrescription,
@@ -1664,10 +1702,7 @@ app.post('/doctor/examine/:appointmentId', requireRole('doctor'), (req, res) => 
   `).get(appt.patient_id, appt.id) as { medical_record_id: number; appointment_id: number; appointment_date: string } | undefined;
 
   let parentVisitId: number | null = null;
-  const catalogFee = appt.service_id
-    ? (db.prepare('SELECT price FROM services WHERE id = ?').get(appt.service_id) as any)?.price
-    : (db.prepare('SELECT consultation_fee FROM doctors WHERE id = ?').get(appt.doctor_id) as any)?.consultation_fee;
-  const baseServiceFee = Math.max(0, Number(catalogFee) || 0);
+  const baseServiceFee = appointmentBaseFee(appt);
   let serviceFee = baseServiceFee;
   let discount = 0;
 
@@ -2481,6 +2516,37 @@ app.get('/admin/dashboard', requireRole('admin'), (req, res) => {
 });
 
 // User Management
+const allowedAccountRoles = new Set(['admin', 'doctor', 'receptionist', 'patient']);
+function accountForm(body: any): { name: string; email: string; phone: string; status: string; roles: string[] } | null {
+  const rawRoles = body['roles[]'] || body.roles || body.role;
+  if (!rawRoles) return null;
+  const roles = [...new Set(Array.isArray(rawRoles) ? rawRoles : [rawRoles])];
+  const name = typeof body.name === 'string' ? body.name.trim() : '';
+  const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
+  const phone = typeof body.phone === 'string' ? body.phone.trim() : '';
+  const status = body.status || 'active';
+  if (!name || name.length > 120 || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
+      (phone && !/^(?:0|\+84)[35789]\d{8}$/.test(phone)) ||
+      !['active', 'inactive'].includes(status) || !roles.length ||
+      roles.some(role => typeof role !== 'string' || !allowedAccountRoles.has(role))) return null;
+  return { name, email, phone, status, roles };
+}
+
+function syncAccountRoles(userId: number | bigint, roles: string[]): void {
+  db.prepare('DELETE FROM user_roles WHERE user_id = ?').run(userId);
+  const insertRole = db.prepare('INSERT INTO user_roles (user_id, role) VALUES (?, ?)');
+  for (const role of roles) {
+    insertRole.run(userId, role);
+    if (role === 'doctor') {
+      db.prepare("INSERT OR IGNORE INTO doctors (user_id, consultation_fee, rating, room_number) VALUES (?, 0, 0, '')").run(userId);
+    } else if (role === 'patient') {
+      db.prepare('INSERT OR IGNORE INTO patients (user_id) VALUES (?)').run(userId);
+    } else if (role === 'receptionist') {
+      db.prepare('INSERT OR IGNORE INTO receptionists (user_id, staff_code) VALUES (?, ?)').run(userId, `LT-${userId}`);
+    }
+  }
+}
+
 app.get('/admin/users', requireRole('admin'), (req, res) => {
   const { keyword, role } = req.query;
   let query = `
@@ -2499,8 +2565,8 @@ app.get('/admin/users', requireRole('admin'), (req, res) => {
     params.push(`%${keyword}%`, `%${keyword}%`, `%${keyword}%`);
   }
   if (role) {
-    query += ` AND (u.role = ? OR u.id IN (SELECT user_id FROM user_roles WHERE role = ?))`;
-    params.push(role, role);
+    query += ` AND u.id IN (SELECT user_id FROM user_roles WHERE role = ?)`;
+    params.push(role);
   }
   query += ` GROUP BY u.id ORDER BY u.id DESC`;
 
@@ -2513,23 +2579,12 @@ app.get('/admin/users/create', requireRole('admin'), (req, res) => {
 });
 
 app.post('/admin/users/store', requireRole('admin'), (req, res) => {
-  const { name, email, phone, status, password } = req.body;
-  const rawRoles = req.body['roles[]'] || req.body.roles || req.body.role;
-  let rolesList = Array.isArray(rawRoles) ? rawRoles : (rawRoles ? [rawRoles] : ['patient']);
-  if (rolesList.length === 0) rolesList = ['patient'];
-
-  // Policy: Tuyệt đối chỉ có 1 tài khoản Admin duy nhất trong hệ thống
-  if (rolesList.includes('admin')) {
-    const existingAdmin = db.prepare(`SELECT id FROM users WHERE role = 'admin' LIMIT 1`).get();
-    if (existingAdmin) {
-      req.flash('error', 'Hệ thống tuân thủ chính sách: Chỉ có 1 Quản trị viên tối cao duy nhất. Không thể tạo thêm Admin!');
-      rolesList = rolesList.filter(r => r !== 'admin');
-      if (rolesList.length === 0) rolesList = ['patient'];
-    }
+  const account = accountForm(req.body);
+  if (!account) {
+    req.flash('error', 'Thông tin tài khoản hoặc vai trò không hợp lệ.');
+    return res.redirect('/admin/users/create');
   }
-
-  const primaryRole = rolesList[0];
-  let adminPassword = typeof password === 'string' ? password.trim() : '';
+  let adminPassword = typeof req.body.password === 'string' ? req.body.password.trim() : '';
   let generatedPassword: string | null = null;
   if (adminPassword) {
     const adminPwErr = passwordError(adminPassword);
@@ -2542,30 +2597,22 @@ app.post('/admin/users/store', requireRole('admin'), (req, res) => {
     adminPassword = generatedPassword;
   }
   const hash = bcrypt.hashSync(adminPassword, 10);
-
-  const uRes = db.prepare(`
-    INSERT INTO users (role, name, email, password_hash, phone, status)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `).run(primaryRole, name.trim(), email.trim(), hash, phone ? phone.trim() : '', status || 'active');
-  const userId = uRes.lastInsertRowid;
-
-  // Insert roles into user_roles
-  const insertRoleStmt = db.prepare(`INSERT OR IGNORE INTO user_roles (user_id, role) VALUES (?, ?)`);
-  for (const r of rolesList) {
-    insertRoleStmt.run(userId, r);
-    if (r === 'doctor') {
-      const hasDoc = db.prepare('SELECT id FROM doctors WHERE user_id = ?').get(userId);
-      if (!hasDoc) db.prepare('INSERT INTO doctors (user_id) VALUES (?)').run(userId);
-    } else if (r === 'patient') {
-      const hasPat = db.prepare('SELECT id FROM patients WHERE user_id = ?').get(userId);
-      if (!hasPat) db.prepare('INSERT INTO patients (user_id) VALUES (?)').run(userId);
-    } else if (r === 'receptionist') {
-      const hasRec = db.prepare('SELECT id FROM receptionists WHERE user_id = ?').get(userId);
-      if (!hasRec) db.prepare('INSERT INTO receptionists (user_id, staff_code) VALUES (?, ?)').run(userId, 'LT-' + userId);
-    }
+  let userId: number | bigint;
+  try {
+    userId = db.transaction(() => {
+      const result = db.prepare(`
+        INSERT INTO users (role, name, email, password_hash, phone, status)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `).run(account.roles[0], account.name, account.email, hash, account.phone, account.status);
+      syncAccountRoles(result.lastInsertRowid, account.roles);
+      return result.lastInsertRowid;
+    })();
+  } catch (error) {
+    req.flash('error', 'Không thể tạo tài khoản. Email có thể đã được sử dụng.');
+    return res.redirect('/admin/users/create');
   }
 
-  logActivity(req.session.user.id, 'CREATE_USER', 'User', userId, `Tạo người dùng roles [${rolesList.join(', ')}]: ${email}`, req);
+  logActivity(req.session.user.id, 'CREATE_USER', 'User', userId, `Tạo người dùng roles [${account.roles.join(', ')}]: ${account.email}`, req);
   req.flash('success', generatedPassword ? `Đã tạo tài khoản thành công! Mật khẩu tạm thời (chỉ hiển thị một lần): ${generatedPassword}` : 'Đã tạo tài khoản thành công!');
   res.redirect('/admin/users');
 });
@@ -2575,69 +2622,72 @@ app.get('/admin/users/edit/:id', requireRole('admin'), (req, res) => {
   if (!user) return res.status(404).render('errors/error', { message: 'Tài khoản không tồn tại' });
 
   const userRolesRows = db.prepare('SELECT role FROM user_roles WHERE user_id = ?').all(user.id);
-  let userRoles = userRolesRows.map(r => r.role);
-  if (!userRoles.includes(user.role)) userRoles.push(user.role);
+  const userRoles = userRolesRows.map(r => r.role);
 
   renderWithLayout(res, 'admin/users/form', { pageTitle: `Sửa tài khoản: ${user.name}`, user, userRoles }, 'layouts/admin');
 });
 
 app.post('/admin/users/update/:id', requireRole('admin'), (req, res) => {
-  const { name, email, phone, status, password } = req.body;
-  const existingUser = db.prepare('SELECT role FROM users WHERE id = ?').get(req.params.id);
-
-  const rawRoles = req.body['roles[]'] || req.body.roles || req.body.role;
-  let rolesList = Array.isArray(rawRoles) ? rawRoles : (rawRoles ? [rawRoles] : ['patient']);
-  if (rolesList.length === 0) rolesList = ['patient'];
-
-  // Preserve admin role on master admin
-  if (existingUser && existingUser.role === 'admin' && !rolesList.includes('admin')) {
-    rolesList.unshift('admin');
-  }
-
-  const primaryRole = rolesList[0];
-
-  if (password && password.trim() && passwordError(password.trim())) {
-    req.flash('error', passwordError(password.trim()));
+  const existingUser = db.prepare('SELECT id FROM users WHERE id = ?').get(req.params.id) as any;
+  if (!existingUser) return res.status(404).render('errors/error', { message: 'Tài khoản không tồn tại.' });
+  const account = accountForm(req.body);
+  if (!account) {
+    req.flash('error', 'Thông tin tài khoản hoặc vai trò không hợp lệ.');
     return res.redirect('/admin/users/edit/' + req.params.id);
   }
-  if (password && password.trim().length >= MIN_PASSWORD_LENGTH) {
-    const hash = bcrypt.hashSync(password.trim(), 10);
-    db.prepare(`UPDATE users SET name = ?, email = ?, phone = ?, role = ?, status = ?, password_hash = ? WHERE id = ?`)
-      .run(name.trim(), email.trim(), phone ? phone.trim() : '', primaryRole, status, hash, req.params.id);
-  } else {
-    db.prepare(`UPDATE users SET name = ?, email = ?, phone = ?, role = ?, status = ? WHERE id = ?`)
-      .run(name.trim(), email.trim(), phone ? phone.trim() : '', primaryRole, status, req.params.id);
+  const password = req.body.password;
+  if (password && (typeof password !== 'string' || passwordError(password.trim()))) {
+    req.flash('error', passwordError(password) || 'Mật khẩu không hợp lệ.');
+    return res.redirect('/admin/users/edit/' + req.params.id);
+  }
+  const wasAdmin = !!db.prepare("SELECT 1 FROM user_roles WHERE user_id = ? AND role = 'admin'").get(req.params.id);
+  const activeAdmins = (db.prepare(`
+    SELECT count(*) AS n FROM user_roles ur JOIN users u ON u.id = ur.user_id
+    WHERE ur.role = 'admin' AND u.status = 'active'
+  `).get() as any).n;
+  if (wasAdmin && activeAdmins <= 1 && (account.status !== 'active' || !account.roles.includes('admin'))) {
+    req.flash('error', 'Hệ thống phải giữ ít nhất một quản trị viên đang hoạt động.');
+    return res.redirect('/admin/users/edit/' + req.params.id);
   }
 
-  // Sync user_roles
-  db.prepare('DELETE FROM user_roles WHERE user_id = ?').run(req.params.id);
-  const insertRoleStmt = db.prepare(`INSERT OR IGNORE INTO user_roles (user_id, role) VALUES (?, ?)`);
-  for (const r of rolesList) {
-    insertRoleStmt.run(req.params.id, r);
-    if (r === 'doctor') {
-      const hasDoc = db.prepare('SELECT id FROM doctors WHERE user_id = ?').get(req.params.id);
-      if (!hasDoc) db.prepare('INSERT INTO doctors (user_id) VALUES (?)').run(req.params.id);
-    } else if (r === 'patient') {
-      const hasPat = db.prepare('SELECT id FROM patients WHERE user_id = ?').get(req.params.id);
-      if (!hasPat) db.prepare('INSERT INTO patients (user_id) VALUES (?)').run(req.params.id);
-    } else if (r === 'receptionist') {
-      const hasRec = db.prepare('SELECT id FROM receptionists WHERE user_id = ?').get(req.params.id);
-      if (!hasRec) db.prepare('INSERT INTO receptionists (user_id, staff_code) VALUES (?, ?)').run(req.params.id, 'LT-' + req.params.id);
-    }
+  try {
+    db.transaction(() => {
+      if (password && password.trim()) {
+        db.prepare(`UPDATE users SET name = ?, email = ?, phone = ?, role = ?, status = ?, password_hash = ? WHERE id = ?`)
+          .run(account.name, account.email, account.phone, account.roles[0], account.status, bcrypt.hashSync(password.trim(), 10), req.params.id);
+      } else {
+        db.prepare(`UPDATE users SET name = ?, email = ?, phone = ?, role = ?, status = ? WHERE id = ?`)
+          .run(account.name, account.email, account.phone, account.roles[0], account.status, req.params.id);
+      }
+      syncAccountRoles(existingUser.id, account.roles);
+    })();
+  } catch (error) {
+    req.flash('error', 'Không thể cập nhật tài khoản. Email có thể đã được sử dụng.');
+    return res.redirect('/admin/users/edit/' + req.params.id);
   }
 
+  logActivity(req.session.user.id, 'UPDATE_USER', 'User', existingUser.id, `Vai trò: ${account.roles.join(', ')}, trạng thái: ${account.status}`, req);
   req.flash('success', 'Cập nhật tài khoản và phân quyền vai trò thành công!');
   res.redirect('/admin/users');
 });
 
 app.post('/admin/users/toggle/:id', requireRole('admin'), (req, res) => {
-  const user = db.prepare('SELECT role, status FROM users WHERE id = ?').get(req.params.id);
-  if (user && user.role === 'admin') {
-    req.flash('error', 'Không thể khóa tài khoản Quản trị viên tối cao duy nhất!');
-    return res.redirect('/admin/users');
+  const user = db.prepare('SELECT id, status FROM users WHERE id = ?').get(req.params.id) as any;
+  if (!user) return res.status(404).render('errors/error', { message: 'Tài khoản không tồn tại.' });
+  const adminRole = !!db.prepare("SELECT 1 FROM user_roles WHERE user_id = ? AND role = 'admin'").get(user.id);
+  if (adminRole && user.status === 'active') {
+    const activeAdmins = (db.prepare(`
+      SELECT count(*) AS n FROM user_roles ur JOIN users u ON u.id = ur.user_id
+      WHERE ur.role = 'admin' AND u.status = 'active'
+    `).get() as any).n;
+    if (activeAdmins <= 1) {
+      req.flash('error', 'Không thể khóa quản trị viên đang hoạt động cuối cùng.');
+      return res.redirect('/admin/users');
+    }
   }
   const nextStatus = user.status === 'active' ? 'inactive' : 'active';
   db.prepare('UPDATE users SET status = ? WHERE id = ?').run(nextStatus, req.params.id);
+  logActivity(req.session.user.id, 'TOGGLE_USER', 'User', user.id, `Trạng thái: ${nextStatus}`, req);
   req.flash('success', `Đã chuyển trạng thái người dùng thành: ${nextStatus}`);
   res.redirect('/admin/users');
 });
@@ -2662,6 +2712,7 @@ app.get('/admin/doctors/edit/:id', requireRole('admin'), (req, res) => {
     JOIN users u ON d.user_id = u.id
     WHERE d.id = ?
   `).get(req.params.id);
+  if (!doctor) return res.status(404).render('errors/error', { message: 'Bác sĩ không tồn tại.' });
 
   const allSpecialties = db.prepare(`SELECT * FROM specialties WHERE status = 'active'`).all();
   const docSpecs = db.prepare('SELECT specialty_id FROM doctor_specialties WHERE doctor_id = ?').all(doctor.id);
@@ -2677,24 +2728,38 @@ app.get('/admin/doctors/edit/:id', requireRole('admin'), (req, res) => {
 
 app.post('/admin/doctors/update/:id', requireRole('admin'), (req, res) => {
   const { title, room_number, experience_years, consultation_fee, bio, specialty_ids } = req.body;
-  db.prepare(`
-    UPDATE doctors 
-    SET title = ?, room_number = ?, experience_years = ?, consultation_fee = ?, bio = ?
-    WHERE id = ?
-  `).run(title.trim(), room_number.trim(), parseInt(experience_years) || 1, parseFloat(consultation_fee) || 200000, bio || '', req.params.id);
-
-  db.prepare('DELETE FROM doctor_specialties WHERE doctor_id = ?').run(req.params.id);
-  if (specialty_ids) {
-    const sIds = Array.isArray(specialty_ids) ? specialty_ids : [specialty_ids];
-    const insertDs = db.prepare('INSERT INTO doctor_specialties (doctor_id, specialty_id, is_primary) VALUES (?, ?, 0)');
-    sIds.forEach(sid => insertDs.run(req.params.id, sid));
+  const doctor = db.prepare('SELECT id FROM doctors WHERE id = ?').get(req.params.id);
+  if (!doctor) return res.status(404).render('errors/error', { message: 'Bác sĩ không tồn tại.' });
+  const years = Number(experience_years);
+  const fee = Number(consultation_fee);
+  const ids = [...new Set((Array.isArray(specialty_ids) ? specialty_ids : specialty_ids ? [specialty_ids] : []).map(String))];
+  const validIds = ids.length === 0 || (ids.every(id => /^\d+$/.test(id)) &&
+    (db.prepare(`SELECT count(*) AS n FROM specialties WHERE status = 'active' AND id IN (${ids.map(() => '?').join(',')})`).get(...ids) as any).n === ids.length);
+  if (typeof title !== 'string' || !title.trim() || typeof room_number !== 'string' || !room_number.trim() ||
+      !Number.isInteger(years) || years < 0 || !Number.isFinite(fee) || fee < 0 ||
+      typeof bio !== 'string' || !validIds) {
+    req.flash('error', 'Thông tin bác sĩ hoặc chuyên khoa không hợp lệ.');
+    return res.redirect(`/admin/doctors/edit/${req.params.id}`);
   }
+  db.transaction(() => {
+    db.prepare(`UPDATE doctors SET title = ?, room_number = ?, experience_years = ?, consultation_fee = ?, bio = ? WHERE id = ?`)
+      .run(title.trim(), room_number.trim(), years, fee, bio.trim(), req.params.id);
+    db.prepare('DELETE FROM doctor_specialties WHERE doctor_id = ?').run(req.params.id);
+    const insertDs = db.prepare('INSERT INTO doctor_specialties (doctor_id, specialty_id, is_primary) VALUES (?, ?, ?)');
+    ids.forEach((id, index) => insertDs.run(req.params.id, id, index === 0 ? 1 : 0));
+  })();
 
   req.flash('success', 'Đã lưu thiết lập bác sĩ thành công!');
   res.redirect('/admin/doctors');
 });
 
 // Specialty Management
+function validSpecialtyInput(name: any, slug: any, description: any, status: any): boolean {
+  return typeof name === 'string' && !!name.trim() && name.length <= 120 &&
+    typeof slug === 'string' && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) &&
+    typeof description === 'string' && description.length <= 5000 &&
+    ['active', 'inactive'].includes(status);
+}
 app.get('/admin/specialties', requireRole('admin'), (req, res) => {
   const specialties = db.prepare(`
     SELECT s.*, count(ds.doctor_id) as doctor_count
@@ -2711,29 +2776,59 @@ app.get('/admin/specialties/create', requireRole('admin'), (req, res) => {
 
 app.post('/admin/specialties/store', requireRole('admin'), (req, res) => {
   const { name, slug, description, status } = req.body;
-  db.prepare(`
-    INSERT INTO specialties (name, slug, description, status)
-    VALUES (?, ?, ?, ?)
-  `).run(name.trim(), slug.trim(), description || '', status || 'active');
+  if (!validSpecialtyInput(name, slug, description, status)) {
+    req.flash('error', 'Thông tin chuyên khoa không hợp lệ.');
+    return res.redirect('/admin/specialties/create');
+  }
+  try {
+    db.prepare(`INSERT INTO specialties (name, slug, description, status) VALUES (?, ?, ?, ?)`)
+      .run(name.trim(), slug.trim(), description.trim(), status);
+  } catch (error) {
+    req.flash('error', 'Tên hoặc đường dẫn chuyên khoa đã tồn tại.');
+    return res.redirect('/admin/specialties/create');
+  }
   req.flash('success', 'Đã tạo chuyên khoa mới thành công!');
   res.redirect('/admin/specialties');
 });
 
 app.get('/admin/specialties/edit/:id', requireRole('admin'), (req, res) => {
   const specialty = db.prepare('SELECT * FROM specialties WHERE id = ?').get(req.params.id);
+  if (!specialty) return res.status(404).render('errors/error', { message: 'Chuyên khoa không tồn tại.' });
   renderWithLayout(res, 'admin/specialties/form', { pageTitle: `Sửa chuyên khoa: ${specialty.name}`, specialty }, 'layouts/admin');
 });
 
 app.post('/admin/specialties/update/:id', requireRole('admin'), (req, res) => {
   const { name, slug, description, status } = req.body;
-  db.prepare(`
-    UPDATE specialties SET name = ?, slug = ?, description = ?, status = ? WHERE id = ?
-  `).run(name.trim(), slug.trim(), description || '', status || 'active', req.params.id);
+  if (!db.prepare('SELECT id FROM specialties WHERE id = ?').get(req.params.id))
+    return res.status(404).render('errors/error', { message: 'Chuyên khoa không tồn tại.' });
+  if (!validSpecialtyInput(name, slug, description, status)) {
+    req.flash('error', 'Thông tin chuyên khoa không hợp lệ.');
+    return res.redirect(`/admin/specialties/edit/${req.params.id}`);
+  }
+  try {
+    db.prepare(`UPDATE specialties SET name = ?, slug = ?, description = ?, status = ? WHERE id = ?`)
+      .run(name.trim(), slug.trim(), description.trim(), status, req.params.id);
+  } catch (error) {
+    req.flash('error', 'Tên hoặc đường dẫn chuyên khoa đã tồn tại.');
+    return res.redirect(`/admin/specialties/edit/${req.params.id}`);
+  }
   req.flash('success', 'Cập nhật chuyên khoa thành công!');
   res.redirect('/admin/specialties');
 });
 
 // Service Management
+function serviceInput(body: any): { specialtyId: number; name: string; price: number; duration: number; description: string; status: string } | null {
+  const specialtyId = Number(body.specialty_id);
+  const price = Number(body.price);
+  const duration = Number(body.duration_minutes);
+  const name = typeof body.name === 'string' ? body.name.trim() : '';
+  if (!Number.isInteger(specialtyId) || specialtyId <= 0 || !db.prepare('SELECT 1 FROM specialties WHERE id = ?').get(specialtyId) ||
+      !name || name.length > 160 || !Number.isFinite(price) || price < 0 ||
+      !Number.isInteger(duration) || duration <= 0 || duration > 1440 ||
+      typeof body.description !== 'string' || body.description.length > 5000 ||
+      !['active', 'inactive'].includes(body.status)) return null;
+  return { specialtyId, name, price, duration, description: body.description.trim(), status: body.status };
+}
 app.get('/admin/services', requireRole('admin'), (req, res) => {
   const services = db.prepare(`
     SELECT s.*, sp.name as specialty_name
@@ -2750,33 +2845,58 @@ app.get('/admin/services/create', requireRole('admin'), (req, res) => {
 });
 
 app.post('/admin/services/store', requireRole('admin'), (req, res) => {
-  const { specialty_id, name, price, duration_minutes, description, status } = req.body;
+  const input = serviceInput(req.body);
+  if (!input) {
+    req.flash('error', 'Thông tin dịch vụ không hợp lệ.');
+    return res.redirect('/admin/services/create');
+  }
   db.prepare(`
     INSERT INTO services (specialty_id, name, price, duration_minutes, description, status)
     VALUES (?, ?, ?, ?, ?, ?)
-  `).run(specialty_id, name.trim(), parseFloat(price) || 0, parseInt(duration_minutes) || 30, description || '', status || 'active');
+  `).run(input.specialtyId, input.name, input.price, input.duration, input.description, input.status);
   req.flash('success', 'Đã tạo dịch vụ mới thành công!');
   res.redirect('/admin/services');
 });
 
 app.get('/admin/services/edit/:id', requireRole('admin'), (req, res) => {
   const service = db.prepare('SELECT * FROM services WHERE id = ?').get(req.params.id);
+  if (!service) return res.status(404).render('errors/error', { message: 'Dịch vụ không tồn tại.' });
   const specialties = db.prepare(`SELECT * FROM specialties WHERE status = 'active'`).all();
   renderWithLayout(res, 'admin/services/form', { pageTitle: `Sửa dịch vụ: ${service.name}`, service, specialties }, 'layouts/admin');
 });
 
 app.post('/admin/services/update/:id', requireRole('admin'), (req, res) => {
-  const { specialty_id, name, price, duration_minutes, description, status } = req.body;
+  if (!db.prepare('SELECT id FROM services WHERE id = ?').get(req.params.id))
+    return res.status(404).render('errors/error', { message: 'Dịch vụ không tồn tại.' });
+  const input = serviceInput(req.body);
+  if (!input) {
+    req.flash('error', 'Thông tin dịch vụ không hợp lệ.');
+    return res.redirect(`/admin/services/edit/${req.params.id}`);
+  }
   db.prepare(`
     UPDATE services 
     SET specialty_id = ?, name = ?, price = ?, duration_minutes = ?, description = ?, status = ?
     WHERE id = ?
-  `).run(specialty_id, name.trim(), parseFloat(price) || 0, parseInt(duration_minutes) || 30, description || '', status || 'active', req.params.id);
+  `).run(input.specialtyId, input.name, input.price, input.duration, input.description, input.status, req.params.id);
   req.flash('success', 'Cập nhật dịch vụ thành công!');
   res.redirect('/admin/services');
 });
 
 // Medicine Management
+function medicineInput(body: any): { code: string; name: string; category: string; unit: string; price: number; stock: number; usage: string; status: string } | null {
+  const code = typeof body.code === 'string' ? body.code.trim() : '';
+  const name = typeof body.name === 'string' ? body.name.trim() : '';
+  const unit = typeof body.unit === 'string' ? body.unit.trim() : '';
+  const price = Number(body.unit_price);
+  const stock = Number(body.stock_quantity);
+  if (!code || code.length > 60 || !name || name.length > 160 || !unit || unit.length > 40 ||
+      !Number.isFinite(price) || price < 0 || !Number.isSafeInteger(stock) || stock < 0 ||
+      typeof body.category !== 'string' || body.category.length > 120 ||
+      typeof body.usage_instruction !== 'string' || body.usage_instruction.length > 1000 ||
+      !['active', 'inactive'].includes(body.status)) return null;
+  return { code, name, category: body.category.trim(), unit, price, stock,
+    usage: body.usage_instruction.trim(), status: body.status };
+}
 app.get('/admin/medicines', requireRole('admin'), (req, res) => {
   const medicines = db.prepare('SELECT * FROM medicines ORDER BY id ASC').all();
   renderWithLayout(res, 'admin/medicines/index', { pageTitle: 'Kho dược phẩm - Admin', medicines }, 'layouts/admin');
@@ -2787,27 +2907,44 @@ app.get('/admin/medicines/create', requireRole('admin'), (req, res) => {
 });
 
 app.post('/admin/medicines/store', requireRole('admin'), (req, res) => {
-  const { code, name, category, unit, unit_price, stock_quantity, usage_instruction, status } = req.body;
-  db.prepare(`
-    INSERT INTO medicines (code, name, category, unit, unit_price, stock_quantity, usage_instruction, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(code.trim(), name.trim(), category || '', unit.trim(), parseFloat(unit_price) || 0, parseInt(stock_quantity) || 0, usage_instruction || '', status || 'active');
+  const input = medicineInput(req.body);
+  if (!input) {
+    req.flash('error', 'Thông tin thuốc hoặc tồn kho không hợp lệ.');
+    return res.redirect('/admin/medicines/create');
+  }
+  try {
+    db.prepare(`INSERT INTO medicines (code, name, category, unit, unit_price, stock_quantity, usage_instruction, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+      .run(input.code, input.name, input.category, input.unit, input.price, input.stock, input.usage, input.status);
+  } catch (error) {
+    req.flash('error', 'Mã thuốc đã tồn tại.');
+    return res.redirect('/admin/medicines/create');
+  }
   req.flash('success', 'Đã thêm thuốc vào kho thành công!');
   res.redirect('/admin/medicines');
 });
 
 app.get('/admin/medicines/edit/:id', requireRole('admin'), (req, res) => {
   const medicine = db.prepare('SELECT * FROM medicines WHERE id = ?').get(req.params.id);
+  if (!medicine) return res.status(404).render('errors/error', { message: 'Thuốc không tồn tại.' });
   renderWithLayout(res, 'admin/medicines/form', { pageTitle: `Sửa thông tin thuốc: ${medicine.name}`, medicine }, 'layouts/admin');
 });
 
 app.post('/admin/medicines/update/:id', requireRole('admin'), (req, res) => {
-  const { code, name, category, unit, unit_price, stock_quantity, usage_instruction, status } = req.body;
-  db.prepare(`
-    UPDATE medicines 
-    SET code = ?, name = ?, category = ?, unit = ?, unit_price = ?, stock_quantity = ?, usage_instruction = ?, status = ?
-    WHERE id = ?
-  `).run(code.trim(), name.trim(), category || '', unit.trim(), parseFloat(unit_price) || 0, parseInt(stock_quantity) || 0, usage_instruction || '', status || 'active', req.params.id);
+  if (!db.prepare('SELECT id FROM medicines WHERE id = ?').get(req.params.id))
+    return res.status(404).render('errors/error', { message: 'Thuốc không tồn tại.' });
+  const input = medicineInput(req.body);
+  if (!input) {
+    req.flash('error', 'Thông tin thuốc hoặc tồn kho không hợp lệ.');
+    return res.redirect(`/admin/medicines/edit/${req.params.id}`);
+  }
+  try {
+    db.prepare(`UPDATE medicines SET code = ?, name = ?, category = ?, unit = ?, unit_price = ?, stock_quantity = ?, usage_instruction = ?, status = ? WHERE id = ?`)
+      .run(input.code, input.name, input.category, input.unit, input.price, input.stock, input.usage, input.status, req.params.id);
+  } catch (error) {
+    req.flash('error', 'Mã thuốc đã tồn tại.');
+    return res.redirect(`/admin/medicines/edit/${req.params.id}`);
+  }
   req.flash('success', 'Cập nhật thuốc thành công!');
   res.redirect('/admin/medicines');
 });
@@ -2841,10 +2978,28 @@ app.get('/admin/schedules', requireRole('admin'), (req, res) => {
 
 app.post('/admin/schedules/store', requireRole('admin'), (req, res) => {
   const { doctor_id, day_of_week, start_time, end_time, slot_duration, max_patients } = req.body;
+  const doctorId = Number(doctor_id);
+  const day = Number(day_of_week);
+  const duration = Number(slot_duration);
+  const capacity = Number(max_patients);
+  const timePattern = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
+  const activeDoctor = Number.isSafeInteger(doctorId) && db.prepare(`
+    SELECT 1 FROM doctors d JOIN users u ON u.id = d.user_id
+    JOIN user_roles ur ON ur.user_id = u.id AND ur.role = 'doctor'
+    WHERE d.id = ? AND u.status = 'active'
+  `).get(doctorId);
+  if (!activeDoctor || !Number.isInteger(day) || day < 0 || day > 6 ||
+      typeof start_time !== 'string' || !timePattern.test(start_time) ||
+      typeof end_time !== 'string' || !timePattern.test(end_time) || start_time >= end_time ||
+      !Number.isInteger(duration) || duration < 5 || duration > 480 ||
+      !Number.isInteger(capacity) || capacity < 1 || capacity > 1000) {
+    req.flash('error', 'Thông tin ca trực không hợp lệ.');
+    return res.redirect('/admin/schedules');
+  }
   db.prepare(`
     INSERT INTO doctor_schedules (doctor_id, day_of_week, start_time, end_time, slot_duration, max_patients, status)
     VALUES (?, ?, ?, ?, ?, ?, 'active')
-  `).run(doctor_id, day_of_week, start_time, end_time, parseInt(slot_duration) || 30, parseInt(max_patients) || 16);
+  `).run(doctorId, day, `${start_time}:00`, `${end_time}:00`, duration, capacity);
   req.flash('success', 'Đã thêm ca trực thành công!');
   res.redirect('/admin/schedules');
 });
@@ -2857,6 +3012,11 @@ app.post('/admin/schedules/delete/:id', requireRole('admin'), (req, res) => {
 
 app.post('/admin/leaves/update/:id', requireRole('admin'), (req, res) => {
   const { status } = req.body;
+  if (!['pending', 'approved', 'rejected'].includes(status) ||
+      !db.prepare('SELECT id FROM doctor_leaves WHERE id = ?').get(req.params.id)) {
+    req.flash('error', 'Đơn nghỉ phép hoặc trạng thái không hợp lệ.');
+    return res.redirect('/admin/schedules');
+  }
   db.prepare('UPDATE doctor_leaves SET status = ? WHERE id = ?').run(status, req.params.id);
   req.flash('success', `Đã cập nhật trạng thái đơn nghỉ phép: ${status}`);
   res.redirect('/admin/schedules');

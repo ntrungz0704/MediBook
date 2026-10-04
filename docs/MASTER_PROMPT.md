@@ -1,5 +1,7 @@
 # MediBook - Master Prompt Hướng Dẫn Phát Triển Toàn Bộ Hệ Thống
 
+> Tài liệu yêu cầu lịch sử, không phải mô tả code đang chạy. Xem [ERD hiện tại](ERD.md) và [báo cáo xác minh](VERIFICATION_2026-10-04.md) cho kiến trúc Node.js/TypeScript/SQLite và 27 bảng.
+
 Tài liệu này là **Master Prompt** quy chuẩn chứa toàn bộ ngữ cảnh, kiến trúc, triết lý thiết kế và quy tắc nghiệp vụ để các AI Agent hoặc Lập trình viên tiếp tục bảo trì, mở rộng hệ thống MediBook mà không làm sai lệch quy chuẩn ban đầu.
 
 ---

@@ -30,7 +30,7 @@
       </span>
       <div style="font-size: 13px; color: #94a3b8; display: flex; align-items: center; gap: 14px;">
         <span>📅 Cập nhật: <%= new Date(article.updated_at || article.created_at).toLocaleDateString('vi-VN') %></span>
-        <span>👁️ <%= (article.views_count || 120).toLocaleString('vi-VN') %> lượt xem</span>
+        <span>👁️ <%= Number(article.views_count || 0).toLocaleString('vi-VN') %> lượt xem</span>
       </div>
     </div>
 

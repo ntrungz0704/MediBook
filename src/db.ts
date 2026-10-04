@@ -86,10 +86,10 @@ function initDb() {
       title TEXT NOT NULL DEFAULT 'Bác sĩ',
       bio TEXT,
       experience_years INTEGER DEFAULT 1,
-      consultation_fee REAL NOT NULL DEFAULT 200000.00,
-      rating REAL NOT NULL DEFAULT 5.00,
+      consultation_fee REAL NOT NULL DEFAULT 0.00,
+      rating REAL NOT NULL DEFAULT 0.00,
       rating_count INTEGER NOT NULL DEFAULT 0,
-      room_number TEXT NOT NULL DEFAULT 'P.101',
+      room_number TEXT NOT NULL DEFAULT '',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
@@ -244,7 +244,8 @@ function initDb() {
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (appointment_id) REFERENCES appointments (id) ON DELETE CASCADE,
       FOREIGN KEY (patient_id) REFERENCES patients (id) ON DELETE CASCADE,
-      FOREIGN KEY (doctor_id) REFERENCES doctors (id) ON DELETE CASCADE
+      FOREIGN KEY (doctor_id) REFERENCES doctors (id) ON DELETE CASCADE,
+      FOREIGN KEY (parent_visit_id) REFERENCES medical_records (id)
     );
 
     CREATE TABLE IF NOT EXISTS medicines (
@@ -270,7 +271,9 @@ function initDb() {
       usage_instructions TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (medical_record_id) REFERENCES medical_records (id) ON DELETE CASCADE,
-      FOREIGN KEY (appointment_id) REFERENCES appointments (id) ON DELETE CASCADE
+      FOREIGN KEY (appointment_id) REFERENCES appointments (id) ON DELETE CASCADE,
+      FOREIGN KEY (doctor_id) REFERENCES doctors (id) ON DELETE CASCADE,
+      FOREIGN KEY (patient_id) REFERENCES patients (id) ON DELETE CASCADE
     );
 
     CREATE TABLE IF NOT EXISTS prescription_items (
@@ -374,7 +377,7 @@ function initDb() {
       content TEXT NOT NULL,
       author_name TEXT NOT NULL,
       author_role TEXT NOT NULL,
-      views_count INTEGER DEFAULT 120,
+      views_count INTEGER NOT NULL DEFAULT 0,
       status TEXT NOT NULL DEFAULT 'active',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -532,6 +535,7 @@ function initDb() {
   }
 
   // Bootstrap dữ liệu cho DB trống (clone mới). Không seed mật khẩu yếu ở production.
+  let seededDemo = false;
   try {
     const userCount = (db.prepare('SELECT count(*) as c FROM users').get() as any).c;
     if (userCount === 0) {
@@ -545,6 +549,7 @@ function initDb() {
         }
       } else {
         seedDemoData(db);
+        seededDemo = true;
         console.warn('ℹ️ CSDL trống: đã nạp dữ liệu DEMO (tài khoản demo dùng mật khẩu "password" — chỉ cho môi trường phát triển).');
       }
     }
@@ -566,55 +571,25 @@ function initDb() {
     }
   } catch (e) {}
 
-  // Sync users to user_roles
-  try {
-    db.exec(`
-      INSERT OR IGNORE INTO user_roles (user_id, role)
-      SELECT id, role FROM users WHERE role IS NOT NULL;
-    `);
+  // One-time compatibility repair for old databases. Never recreate a role on
+  // every restart: administrators must be able to revoke it permanently.
+  if (Number(db.pragma('user_version', { simple: true })) < 2) {
+    db.transaction(() => {
+      db.exec(`
+        INSERT OR IGNORE INTO user_roles (user_id, role)
+        SELECT u.id, u.role FROM users u
+        WHERE u.role IS NOT NULL AND NOT EXISTS
+          (SELECT 1 FROM user_roles ur WHERE ur.user_id = u.id);
+        INSERT OR IGNORE INTO patients (user_id)
+        SELECT ur.user_id FROM user_roles ur WHERE ur.role = 'patient';
+      `);
+      db.pragma('user_version = 2');
+    })();
+  }
 
-    // Gán role Bệnh nhân (patient) cho toàn bộ tài khoản nhân sự (Bác sĩ, Lễ tân, Admin)
-    // Nghiệp vụ: 1 người có nhiều role -> Bác sĩ khi ốm đau vẫn có thể là Bệnh nhân
-    db.exec(`
-      INSERT OR IGNORE INTO user_roles (user_id, role)
-      SELECT id, 'patient' FROM users;
-    `);
-
-    // Khởi tạo hồ sơ Bệnh nhân (patients profile) cho toàn bộ users nếu chưa có
-    db.exec(`
-      INSERT OR IGNORE INTO patients (user_id)
-      SELECT id FROM users;
-    `);
-
-    // Give admin user id=1 also doctor role for multi-role demonstration
-    db.exec(`
-      INSERT OR IGNORE INTO user_roles (user_id, role)
-      SELECT id, 'doctor' FROM users WHERE email = 'admin@medibook.local' OR email = 'admin@medibook.vn';
-    `);
-  } catch (e) {}
-
-  // 13. Ensure all doctors have schedules for all days of week (0=Sunday to 6=Saturday)
-  try {
-    const doctors = db.prepare('SELECT id FROM doctors').all() as { id: number }[];
-    const checkSchedule = db.prepare('SELECT id FROM doctor_schedules WHERE doctor_id = ? AND day_of_week = ?');
-    const insertSchedule = db.prepare(`
-      INSERT INTO doctor_schedules (doctor_id, day_of_week, start_time, end_time, slot_duration, max_patients, status)
-      VALUES (?, ?, ?, ?, 30, 16, 'active')
-    `);
-
-    for (const doc of doctors) {
-      for (let day = 0; day <= 6; day++) {
-        const existing = checkSchedule.get(doc.id, day);
-        if (!existing) {
-          // Weekend morning shift for Sundays (0), full shift for others
-          const startTime = '08:00:00';
-          const endTime = day === 0 ? '12:00:00' : '17:00:00';
-          insertSchedule.run(doc.id, day, startTime, endTime);
-        }
-      }
-    }
-  } catch (e) {}
-
+  // Demo content belongs only to the first demo bootstrap. Never repopulate
+  // emptied catalogs on restart or publish fabricated content in production.
+  if (seededDemo) {
   // 14. Seed Medical Articles (Thuốc, Dược liệu, Bệnh, Cơ thể)
   try {
     const articleCount = (db.prepare('SELECT count(*) as c FROM articles').get() as any).c;
@@ -890,6 +865,7 @@ function initDb() {
       insertBed.run(r3.lastInsertRowid, 'G-02', 'available', null, null, null, null);
     }
   } catch (e) {}
+  }
 }
 
 // Auto init tables

@@ -1,5 +1,7 @@
 # MediBook - Đặc tả yêu cầu kỹ thuật & Nghiệp vụ hệ thống (PROJECT_SPEC)
 
+> Tài liệu yêu cầu lịch sử, mô tả phương án PHP/MySQL ban đầu. Kiến trúc đang chạy là Node.js/TypeScript/SQLite; xem [ERD hiện tại](ERD.md) và [báo cáo xác minh](VERIFICATION_2026-10-04.md). Không dùng mô tả MySQL dưới đây làm schema triển khai.
+
 ## 1. Giới thiệu tổng quan
 **MediBook** là nền tảng trực tuyến quản lý đặt lịch khám bệnh và điều phối quy trình phòng khám thông minh, hỗ trợ toàn diện 4 nhóm đối tượng: Bệnh nhân, Bác sĩ, Nhân viên Lễ tân và Quản trị viên (Admin).
 
