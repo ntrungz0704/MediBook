@@ -18,7 +18,7 @@
         Gửi tin nhắn hoặc yêu cầu hỗ trợ
       </h2>
       <p style="color: var(--text-muted); font-size: 13.5px; margin-bottom: 24px;">
-        Vui lòng điền thông tin bên dưới, nhân viên chăm sóc khách hàng MediBook sẽ phản hồi trong vòng 15-30 phút.
+        Vui lòng điền thông tin bên dưới. Yêu cầu của bạn sẽ được lưu để nhân viên phụ trách xử lý.
       </p>
 
       <form action="/contact" method="POST">
@@ -80,7 +80,7 @@
             </div>
             <div>
               <div style="font-weight: 700; color: #0f172a;">Địa chỉ phòng khám</div>
-              <div style="color: #64748b;">123 Đường Nguyễn Tri Phương, Phường 7, Quận 5, TP. Hồ Chí Minh</div>
+              <div style="color: #64748b;"><%= siteSettings.address || 'Chưa cập nhật' %></div>
             </div>
           </div>
 
@@ -90,8 +90,7 @@
             </div>
             <div>
               <div style="font-weight: 700; color: #0f172a;">Tổng đài đặt lịch & Khẩn cấp</div>
-              <div style="font-size: 16px; font-weight: 800; color: var(--primary);">1900 8888 <span style="font-size: 13px; font-weight: normal; color: #64748b;">(Miễn phí cước)</span></div>
-              <div style="color: #64748b; font-size: 13px;">Hotline hỗ trợ: <strong>0901 888 999</strong></div>
+              <div style="font-size: 16px; font-weight: 800; color: var(--primary);"><%= siteSettings.hotline || 'Chưa cập nhật' %></div>
             </div>
           </div>
 
@@ -101,7 +100,7 @@
             </div>
             <div>
               <div style="font-weight: 700; color: #0f172a;">Thư điện tử (Email)</div>
-              <div style="color: #64748b;">contact@medibook.vn &bull; support@medibook.vn</div>
+              <div style="color: #64748b;"><%= siteSettings.email || 'Chưa cập nhật' %></div>
             </div>
           </div>
         </div>
@@ -112,20 +111,7 @@
         <h4 style="font-size: 16px; font-weight: 800; color: var(--primary-dark); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
           ⏰ Giờ làm việc tiếp đón
         </h4>
-        <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 13.5px; color: #334155;">
-          <li style="display: flex; justify-content: space-between;">
-            <span>Thứ Hai - Thứ Bảy:</span>
-            <strong>07:30 - 20:00</strong>
-          </li>
-          <li style="display: flex; justify-content: space-between;">
-            <span>Chủ Nhật:</span>
-            <strong>08:00 - 12:00</strong>
-          </li>
-          <li style="display: flex; justify-content: space-between;">
-            <span>Cấp cứu ban đầu:</span>
-            <span class="badge badge-success">Phục vụ 24/7</span>
-          </li>
-        </ul>
+        <p style="font-size: 13.5px; color: #334155;"><%= siteSettings.supportHours || 'Giờ hỗ trợ chưa được cập nhật.' %></p>
       </div>
 
     </div>

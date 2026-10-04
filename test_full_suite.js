@@ -47,12 +47,16 @@ class TestClient {
 
   request(method, path, body = null, followRedirect = true) {
     return new Promise((resolve, reject) => {
+      const requestHeaders = { ...this.headers };
+      if (!('Origin' in requestHeaders) && !('Referer' in requestHeaders)) {
+        requestHeaders.Origin = `http://127.0.0.1:${this.port}`;
+      }
       const options = {
         hostname: '127.0.0.1',
         port: this.port,
         path: path,
         method: method,
-        headers: { ...this.headers }
+        headers: requestHeaders
       };
 
       if (this.cookies.length > 0) {
@@ -170,6 +174,13 @@ async function runTests() {
 
     res = await guest.get('/contact');
     assert(res.statusCode === 200 && res.body.includes('Liên hệ với MediBook'), 'Trang liên hệ hiển thị tốt');
+    const contactEmail = `audit.contact.${Date.now()}@example.test`;
+    await guest.post('/contact', {
+      name: 'Khach lien he', phone: '0912345678', email: contactEmail,
+      subject: 'Hoi lich kham', message: 'Can tu van lich kham'
+    }, false);
+    assert(db.prepare('SELECT message FROM contact_requests WHERE email = ?').get(contactEmail)?.message === 'Can tu van lich kham',
+      'Form liên hệ lưu đầy đủ yêu cầu để quản trị viên xử lý');
 
     res = await guest.get('/login');
     assert(res.statusCode === 200 && res.body.includes('Đăng nhập MediBook'), 'Trang đăng nhập hiển thị tốt');
@@ -207,6 +218,8 @@ async function runTests() {
     const adminClient = new TestClient('Admin');
     res = await adminClient.post('/login', { email: 'admin@medibook.local', password: 'password' });
     assert(res.statusCode === 200 && res.body.includes('Bảng điều khiển'), 'Quản trị viên (Admin) đăng nhập thành công vào Dashboard');
+    res = await adminClient.get('/admin/contact-requests');
+    assert(res.statusCode === 200 && res.body.includes(contactEmail), 'Admin xem được yêu cầu liên hệ mới');
 
     // Patient trying to access /admin should be 403 / redirect
     res = await patientClient.get('/admin/dashboard', false);
@@ -263,6 +276,19 @@ async function runTests() {
     tomorrow.setDate(tomorrow.getDate() + 1);
     const tomDateStr = tomorrow.toISOString().slice(0, 10);
 
+    // Server validation must match the slots API; a rejected guest booking must not create an account.
+    const auditGuestEmail = `audit.invalid.${Date.now()}@example.test`;
+    res = await guest.post('/appointments/book', {
+      specialty_id: 1, doctor_id: doctorObj.id, appointment_date: tomDateStr,
+      start_time: '03:00:00', patient_name: 'Khach kiem thu',
+      patient_phone: '0912345678', patient_email: auditGuestEmail
+    }, false);
+    assert(!db.prepare('SELECT id FROM users WHERE email = ?').get(auditGuestEmail)
+      && !db.prepare("SELECT id FROM appointments WHERE doctor_id = ? AND appointment_date = ? AND start_time = '03:00:00'").get(doctorObj.id, tomDateStr),
+      'POST giờ ngoài ca bị từ chối và không tạo tài khoản khách mồ côi');
+    res = await guest.get(`/api/slots?doctor_id=${doctorObj.id}&date=2026-02-30`, false);
+    assert(res.statusCode === 400, 'API slot từ chối ngày không tồn tại');
+
     res = await patientClient.post('/appointments/book', {
       specialty_id: 1,
       doctor_id: doctorObj.id,
@@ -277,6 +303,15 @@ async function runTests() {
       WHERE doctor_id = ? AND appointment_date = ? AND start_time = '09:00:00'
     `).get(doctorObj.id, tomDateStr);
     assert(createdAppt && createdAppt.booking_code, `Đặt lịch khám thành công, mã hẹn: ${createdAppt?.booking_code}`);
+    res = await guest.get(`/appointments/success/${createdAppt.booking_code}`, false);
+    assert(res.statusCode === 302 && res.headers.location === '/login', 'Khách chưa đăng nhập không xem được trang thành công của bệnh nhân');
+    const unrelatedPatient = new TestClient('Unrelated patient');
+    await unrelatedPatient.post('/register', {
+      name: 'Benh nhan khac', phone: '0912345679', email: `unrelated.${Date.now()}@example.test`,
+      password: 'StrongPass123!', password_confirmation: 'StrongPass123!'
+    }, false);
+    res = await unrelatedPatient.get(`/appointments/success/${createdAppt.booking_code}`, false);
+    assert(res.statusCode !== 200, 'Bệnh nhân khác không xem được trang thành công chứa thông tin cá nhân');
 
     // 4.5 Attempt Double Booking for same doctor and same slot
     const anotherPatient = new TestClient('Patient 2');
@@ -341,11 +376,17 @@ async function runTests() {
 
     const apptAfterCheckin = db.prepare('SELECT status FROM appointments WHERE id = ?').get(createdAppt.id);
     assert(apptAfterCheckin.status === 'checked_in', 'Trạng thái lịch hẹn tự động chuyển sang "checked_in"');
+    res = await recepClient.post(`/receptionist/checkin/${createdAppt.id}`, {}, false);
+    assert(db.prepare('SELECT count(*) c FROM examination_queues WHERE appointment_id = ?').get(createdAppt.id).c === 1,
+      'Check-in lặp không tạo lượt chờ hoặc số thứ tự thứ hai');
 
     // Step 5.2: Bác sĩ gọi số và bắt đầu khám
     res = await doctorClient.post(`/doctor/queue/call/${queueRecord.id}`, {});
     let qStatus = db.prepare('SELECT status FROM examination_queues WHERE id = ?').get(queueRecord.id);
     assert(qStatus.status === 'calling', 'Bác sĩ gọi số thành công, hàng đợi chuyển trạng thái "calling"');
+    res = await doctorClient.post(`/doctor/queue/call/${queueRecord.id}`, {}, false);
+    assert(res.statusCode === 409 && db.prepare('SELECT status FROM examination_queues WHERE id = ?').get(queueRecord.id).status === 'calling',
+      'Không gọi lại lượt đang được gọi');
 
     res = await doctorClient.post(`/doctor/queue/start/${queueRecord.id}`, {});
     qStatus = db.prepare('SELECT status FROM examination_queues WHERE id = ?').get(queueRecord.id);
@@ -385,10 +426,14 @@ async function runTests() {
     res = await recepClient.post(`/receptionist/payments/pay/${bill.id}`, { payment_method: 'cash' });
     const paidBill = db.prepare('SELECT * FROM payments WHERE id = ?').get(bill.id);
     assert(paidBill.payment_status === 'paid', 'Tiếp tân ghi nhận thanh toán thành công, hóa đơn chuyển sang "paid"');
+    res = await recepClient.post(`/receptionist/payments/pay/${bill.id}`, { payment_method: 'cash' }, false);
+    assert(res.statusCode === 409 && db.prepare('SELECT payment_status FROM payments WHERE id = ?').get(bill.id).payment_status === 'paid',
+      'Hóa đơn đã thanh toán không thể thu tiền lần hai');
 
-    // Check receipt print view with VietQR
+    // A paid receipt must not ask the patient to transfer again.
     res = await recepClient.get(`/receptionist/payments/receipt/${bill.id}`);
-    assert(res.statusCode === 200 && res.body.includes('HÓA ĐƠN THU TIỀN VIỆN PHÍ') && res.body.includes('VietQR Thanh Toán'), 'Xem và in biên lai thu tiền tích hợp mã VietQR động NAPAS hoạt động chuẩn xác');
+    assert(res.statusCode === 200 && res.body.includes('HÓA ĐƠN THU TIỀN VIỆN PHÍ') && !res.body.includes('img.vietqr.io'),
+      'Biên lai đã thanh toán không hiển thị QR đòi chuyển tiền lần nữa');
 
     // Step 5.5: Bệnh nhân xem kết quả và gửi đánh giá (Review)
     res = await patientClient.get(`/appointments/${createdAppt.booking_code}`);
@@ -466,7 +511,7 @@ async function runTests() {
 
     // Bác sĩ đặt lịch khám với một Bác sĩ đồng nghiệp khác
     if (docOther) {
-      const docOtherSlot = '16:45:00';
+      const docOtherSlot = '16:30:00';
       db.prepare("DELETE FROM appointments WHERE doctor_id = ? AND appointment_date = ? AND start_time = ?").run(docOther.id, tomDateStr, docOtherSlot);
 
       res = await doctorClient.post('/appointments/book', {
@@ -875,13 +920,26 @@ async function runTests() {
     });
     assert(res.statusCode === 400, 'Xác thực trạng thái: Admin bị từ chối 400 Bad Request khi truyền trạng thái lịch hẹn không hợp lệ');
 
-    // Valid status update
+    // A completed clinical visit cannot be rewound without undoing its records/payment.
     res = await adminClient.post(`/admin/appointments/status/${createdAppt.id}`, {
       status: 'confirmed',
-      note: 'Admin xác nhận hợp lệ'
+      note: 'Thử quay lui ca đã hoàn tất'
+    }, false);
+    assert(res.statusCode === 409 && db.prepare('SELECT status FROM appointments WHERE id = ?').get(createdAppt.id).status === 'completed',
+      'Không cho Admin chuyển lịch completed ngược về confirmed');
+
+    const pendingId = db.prepare(`
+      INSERT INTO appointments (booking_code, patient_id, doctor_id, appointment_date, start_time, end_time, status)
+      VALUES (?, 1, ?, '2099-01-01', '07:00:00', '07:30:00', 'pending')
+    `).run(`MB-STATE-${Date.now()}`, doctorObj.id).lastInsertRowid;
+    res = await adminClient.post(`/admin/appointments/status/${pendingId}`, { status: 'completed' }, false);
+    assert(res.statusCode === 409 && db.prepare('SELECT status FROM appointments WHERE id = ?').get(pendingId).status === 'pending',
+      'Admin không thể nhảy pending sang completed khi chưa khám');
+    res = await adminClient.post(`/admin/appointments/status/${pendingId}`, {
+      status: 'confirmed', note: 'Xác nhận lịch đang chờ'
     });
-    const updatedStatusAppt = db.prepare('SELECT status FROM appointments WHERE id = ?').get(createdAppt.id);
-    assert(updatedStatusAppt && updatedStatusAppt.status === 'confirmed', 'Cập nhật trạng thái lịch hẹn hợp lệ thành công và ghi lịch sử trạng thái');
+    assert(db.prepare('SELECT status FROM appointments WHERE id = ?').get(pendingId).status === 'confirmed',
+      'Admin chuyển pending sang confirmed và ghi lịch sử hợp lệ');
 
     // -------------------------------------------------------------
     // NHÓM 11: Vá lỗi bảo mật & nghiệp vụ (R-02 chiếm tài khoản, R-03 redirect/XSS, R-04 tồn kho, B-05 lộ tên, P1 hardening)
@@ -940,6 +998,9 @@ async function runTests() {
     patientClient.headers = { Origin: 'http://evil.example' };
     res = await patientClient.post('/profile', { name: 'Hacked', phone: '0900000000' }, false);
     assert(res.statusCode === 403, 'P1: POST từ Origin lạ bị chặn 403 (chống CSRF)');
+    patientClient.headers = { Origin: '' };
+    res = await patientClient.post('/profile', { name: 'Hacked', phone: '0900000000' }, false);
+    assert(res.statusCode === 403, 'POST không có Origin/Referer bị chặn 403');
     patientClient.headers = {};
 
     // 11.5 XSS qua JSON nhúng trong layout
@@ -986,6 +1047,11 @@ async function runTests() {
     const rxItemsOf = () => db.prepare('SELECT pi.* FROM prescription_items pi JOIN prescriptions p ON p.id = pi.prescription_id WHERE p.appointment_id = ?').all(createdAppt.id);
     const stockBase = stockOf();
     const oldQty = rxItemsOf().filter(i => i.medicine_id === 1).reduce((s, i) => s + i.quantity, 0);
+    res = await examWith(3);
+    assert(res.statusCode === 409 && stockOf() === stockBase && rxItemsOf()[0].quantity === oldQty,
+      'Bệnh án và hóa đơn đã thanh toán không thể sửa bằng POST khám lại');
+    // Các ca sửa đơn bên dưới mô phỏng hóa đơn còn chưa thu.
+    db.prepare("UPDATE payments SET payment_status = 'unpaid' WHERE appointment_id = ?").run(createdAppt.id);
     await examWith(3);
     assert(stockOf() === stockBase + oldQty - 3, `R-04: Sửa đơn hoàn kho đơn cũ (${oldQty}) rồi trừ đúng số lượng mới (3)`);
     const stockAfterFirst = stockOf();
@@ -994,6 +1060,7 @@ async function runTests() {
     assert(rxItemsOf().length === 1 && rxItemsOf()[0].unit_price === catalogMed.unit_price, 'R-04: Giá thuốc lấy từ danh mục (không tin giá client gửi lên)');
     await examWith(stockOf() + 1000);
     assert(stockOf() === stockAfterFirst && rxItemsOf()[0].quantity === 3, 'R-04: Kê vượt tồn kho bị từ chối, kho & đơn giữ nguyên');
+    db.prepare("UPDATE payments SET payment_status = 'paid' WHERE appointment_id = ?").run(createdAppt.id);
 
     // 11.9 Rate-limit đăng nhập & cấu hình production (chạy server riêng)
     const spawnServer = (port, extraEnv) => {

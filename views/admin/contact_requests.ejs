@@ -1,0 +1,23 @@
+<div class="card-box" style="padding:24px;">
+  <h1 style="font-size:22px; margin-bottom:18px;">Yêu cầu liên hệ</h1>
+  <% if (!requests.length) { %>
+    <p>Chưa có yêu cầu nào.</p>
+  <% } else { %>
+    <div style="overflow-x:auto;">
+      <table class="data-table" style="width:100%;">
+        <thead><tr><th>Ngày gửi</th><th>Người gửi</th><th>Liên hệ</th><th>Chủ đề</th><th>Nội dung</th></tr></thead>
+        <tbody>
+          <% requests.forEach(item => { %>
+            <tr>
+              <td><%= formatDateTime(item.created_at) %></td>
+              <td><%= item.name %></td>
+              <td><%= item.phone %><br><%= item.email %></td>
+              <td><%= item.subject || '—' %></td>
+              <td style="white-space:pre-wrap; overflow-wrap:anywhere; max-width:420px;"><%= item.message %></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</div>

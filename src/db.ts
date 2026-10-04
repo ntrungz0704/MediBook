@@ -206,6 +206,7 @@ function initDb() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       appointment_id INTEGER NOT NULL UNIQUE,
       queue_number TEXT NOT NULL,
+      queue_date TEXT,
       room TEXT NOT NULL,
       status TEXT NOT NULL DEFAULT 'waiting',
       priority_level TEXT NOT NULL DEFAULT 'online',
@@ -410,6 +411,20 @@ function initDb() {
     );
   `);
 
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS contact_requests (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      name TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      email TEXT NOT NULL,
+      subject TEXT,
+      message TEXT NOT NULL,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE INDEX IF NOT EXISTS idx_contact_requests_created ON contact_requests(created_at);
+  `);
+
   // Migrate existing tables gracefully (safe idempotent migrations)
   const migrations = [
     "ALTER TABLE medical_records ADD COLUMN parent_visit_id INTEGER REFERENCES medical_records (id)",
@@ -450,6 +465,46 @@ function initDb() {
     } catch (e) {
       // Column already exists or table not ready, safely ignore
     }
+  }
+
+  // Versioned repair for databases created by older releases. Do not hide
+  // errors here: a failed migration must never leave the app half upgraded.
+  if (Number(db.pragma('user_version', { simple: true })) < 1) {
+    db.transaction(() => {
+      const missing: Array<[string, string, string]> = [
+        ['appointments', 'notes', 'TEXT'],
+        ['appointments', 'cancellation_reason', 'TEXT'],
+        ['doctor_schedules', 'is_active', 'INTEGER DEFAULT 1'],
+        ['doctor_schedules', 'created_at', 'DATETIME'],
+        ['doctor_schedules', 'updated_at', 'DATETIME'],
+        ['doctor_specialties', 'created_at', 'DATETIME'],
+        ['examination_queues', 'created_at', 'DATETIME'],
+        ['examination_queues', 'updated_at', 'DATETIME'],
+        ['examination_queues', 'queue_date', 'TEXT'],
+        ['medical_records', 'treatment_plan', 'TEXT'],
+        ['payments', 'notes', 'TEXT'],
+        ['payments', 'updated_at', 'DATETIME'],
+        ['prescription_items', 'created_at', 'DATETIME']
+      ];
+      for (const [table, column, type] of missing) {
+        const columns = db.pragma(`table_info(${table})`) as { name: string }[];
+        if (!columns.some(existing => existing.name === column)) {
+          db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`);
+        }
+      }
+      db.exec(`
+        UPDATE examination_queues SET queue_date = date(checkin_time) WHERE queue_date IS NULL;
+        UPDATE payments SET notes = note WHERE notes IS NULL AND note IS NOT NULL;
+        UPDATE payments SET payment_status = 'unpaid' WHERE payment_status = 'pending';
+        CREATE UNIQUE INDEX IF NOT EXISTS uq_doctor_specialties_pair ON doctor_specialties(doctor_id, specialty_id);
+        CREATE UNIQUE INDEX IF NOT EXISTS uq_prescriptions_medical_record ON prescriptions(medical_record_id);
+        CREATE UNIQUE INDEX IF NOT EXISTS uq_medicines_code ON medicines(code);
+        CREATE UNIQUE INDEX IF NOT EXISTS uq_specialties_name ON specialties(name);
+        CREATE UNIQUE INDEX IF NOT EXISTS uq_queue_date_room_number ON examination_queues(queue_date, room, queue_number)
+          WHERE queue_date IS NOT NULL;
+      `);
+      db.pragma('user_version = 1');
+    })();
   }
 
   // Create High-Performance B-Tree Indexes

@@ -8,7 +8,8 @@
     "start": "node dist/server.js",
     "start:dev": "node --watch dist/server.js",
     "dev": "tsc -w",
-    "test": "node test_full_suite.js"
+    "test": "node test_full_suite.js",
+    "test:views": "node test_render_views.js"
   },
   "keywords": [],
   "author": "",
