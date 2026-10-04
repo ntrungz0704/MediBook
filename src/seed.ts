@@ -36,6 +36,19 @@ export function seedDemoData(db: any): void {
         db.prepare(sql).run(...cols.map(c => record[c]));
       }
     }
+    // Demo opening hours belong to demo seed data, not database startup.
+    // Removing a shift in the admin UI must persist across restarts.
+    const schedule = db.prepare(`
+      INSERT INTO doctor_schedules
+        (doctor_id, day_of_week, start_time, end_time, slot_duration, max_patients, status)
+      VALUES (?, ?, '08:00:00', ?, 30, 16, 'active')
+    `);
+    const doctors = db.prepare('SELECT id FROM doctors').all() as { id: number }[];
+    for (const doctor of doctors) {
+      for (let day = 0; day < 7; day++) {
+        schedule.run(doctor.id, day, day === 0 ? '12:00:00' : '17:00:00');
+      }
+    }
   });
   run();
 }

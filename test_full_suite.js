@@ -8,6 +8,7 @@ const querystring = require('querystring');
 const os = require('os');
 const path = require('path');
 const fs = require('fs');
+const { spawnSync } = require('child_process');
 
 // Cô lập dữ liệu: mặc định chạy trên CSDL SQLite tạm (được seed demo tự động), KHÔNG đụng database/medibook.sqlite.
 // Muốn dùng CSDL khác thì đặt DATABASE_PATH trước khi chạy.
@@ -224,6 +225,46 @@ async function runTests() {
     // Patient trying to access /admin should be 403 / redirect
     res = await patientClient.get('/admin/dashboard', false);
     assert(res.statusCode === 403 || res.statusCode === 302, 'Bệnh nhân không thể truy cập /admin/dashboard (Chặn 403)');
+
+    const doctorBefore = db.prepare('SELECT consultation_fee FROM doctors WHERE id = 1').get().consultation_fee;
+    await adminClient.post('/admin/doctors/update/1', {
+      title: 'Bác sĩ', room_number: 'P.101', experience_years: '5',
+      consultation_fee: '-1', bio: '', 'specialty_ids[]': '1'
+    }, false);
+    assert(db.prepare('SELECT consultation_fee FROM doctors WHERE id = 1').get().consultation_fee === doctorBefore,
+      'Admin không thể lưu phí khám âm hoặc ghi dở hồ sơ bác sĩ');
+    await adminClient.post('/admin/services/store', {
+      specialty_id: '1', name: 'Dịch vụ sai', price: '-100', duration_minutes: '30', description: '', status: 'active'
+    }, false);
+    assert(!db.prepare("SELECT id FROM services WHERE name = 'Dịch vụ sai'").get(),
+      'Admin không thể tạo dịch vụ có giá âm');
+    await adminClient.post('/admin/medicines/store', {
+      code: 'INVALID-STOCK', name: 'Thuốc sai', category: '', unit: 'Viên',
+      unit_price: '5000', stock_quantity: '-1', usage_instruction: '', status: 'active'
+    }, false);
+    assert(!db.prepare("SELECT id FROM medicines WHERE code = 'INVALID-STOCK'").get(),
+      'Admin không thể tạo thuốc có tồn kho âm');
+    await adminClient.post('/admin/specialties/store', {
+      name: 'Chuyên khoa sai', slug: 'INVALID SLUG', description: '', status: 'active'
+    }, false);
+    assert(!db.prepare("SELECT id FROM specialties WHERE name = 'Chuyên khoa sai'").get(),
+      'Admin không thể tạo chuyên khoa với slug sai');
+    await adminClient.post('/admin/schedules/store', {
+      doctor_id: '1', day_of_week: '1', start_time: '17:00', end_time: '08:00',
+      slot_duration: '30', max_patients: '16'
+    }, false);
+    assert(!db.prepare("SELECT id FROM doctor_schedules WHERE doctor_id = 1 AND start_time = '17:00:00' AND end_time = '08:00:00'").get(),
+      'Admin không thể tạo ca trực kết thúc trước lúc bắt đầu');
+    await adminClient.post('/admin/services/store', {
+      specialty_id: '1', name: 'Khám kiểm thử đồng bộ', price: '317000', duration_minutes: '45',
+      description: 'Dịch vụ kiểm thử', status: 'active'
+    }, false);
+    const savedService = db.prepare("SELECT price, duration_minutes FROM services WHERE name = 'Khám kiểm thử đồng bộ'").get();
+    assert(savedService && savedService.price === 317000 && savedService.duration_minutes === 45,
+      'Admin lưu giá và thời lượng dịch vụ đúng dữ liệu nhập');
+    res = await guest.get('/api/services/by-specialty/1');
+    assert(JSON.parse(res.body).services.some(service => service.name === 'Khám kiểm thử đồng bộ' && service.price === 317000),
+      'Giá dịch vụ vừa chỉnh đồng bộ tới API trang đặt lịch');
 
     // -------------------------------------------------------------
     // TEST 4: API Slot & Chống Đặt Lịch Quá Khứ, Chống Double-Booking
@@ -536,6 +577,62 @@ async function runTests() {
     // Bác sĩ chuyển lại vai trò sang Bác sĩ
     res = await doctorClient.get('/switch-role/doctor');
     assert(res.statusCode === 200 && res.body.includes('Tổng quan ca trực'), 'Bác sĩ chuyển đổi lại vai trò "Bác sĩ" thành công');
+
+    // Admin changes must propagate to an already logged-in session and every public booking surface.
+    const syncedEmail = `rolesync.${Date.now()}@example.test`;
+    await adminClient.post('/admin/users/store', {
+      name: 'Bac si dong bo', phone: '0912345688', email: syncedEmail,
+      status: 'active', password: 'StrongPass123!', 'roles[]': ['doctor', 'patient']
+    }, false);
+    const syncedUser = db.prepare('SELECT id FROM users WHERE email = ?').get(syncedEmail);
+    const syncedDoctor = syncedUser && db.prepare('SELECT id FROM doctors WHERE user_id = ?').get(syncedUser.id);
+    assert(syncedDoctor && db.prepare("SELECT count(*) n FROM user_roles WHERE user_id = ? AND role IN ('doctor', 'patient')").get(syncedUser.id).n === 2,
+      'Admin tạo người dùng nhiều role và hồ sơ bác sĩ trong cùng giao dịch');
+    db.prepare('INSERT INTO doctor_specialties (doctor_id, specialty_id) VALUES (?, 1)').run(syncedDoctor.id);
+    const syncedClient = new TestClient('RoleSyncDoctor');
+    await syncedClient.post('/login', { email: syncedEmail, password: 'StrongPass123!' });
+    assert((await syncedClient.get('/doctor/dashboard')).statusCode === 200, 'Bác sĩ mới đăng nhập và xem dashboard');
+    assert((await guest.get(`/doctors/${syncedDoctor.id}`, false)).statusCode === 200,
+      'Bác sĩ đang hoạt động xuất hiện ở trang công khai');
+    res = await adminClient.get(`/admin/users/edit/${syncedUser.id}`);
+    assert(res.body.includes('value="doctor" checked') && res.body.includes('value="patient" checked'),
+      'Form quản trị giữ đủ cả hai role đang gán khi sửa');
+    await adminClient.post(`/admin/users/update/${syncedUser.id}`, {
+      name: 'Bac si dong bo', phone: '0912345688', email: syncedEmail,
+      status: 'active', password: '', 'roles[]': ['doctor']
+    }, false);
+    db.prepare(`INSERT INTO doctor_schedules (doctor_id, day_of_week, start_time, end_time, slot_duration, max_patients, status)
+      VALUES (?, 1, '08:00:00', '09:00:00', 30, 2, 'active')`).run(syncedDoctor.id);
+    db.prepare('DELETE FROM doctor_schedules WHERE doctor_id = ?').run(syncedDoctor.id);
+    const restart = spawnSync(process.execPath, ['-e', `
+      const db = require('./dist/db');
+      const result = {
+        patientRole: db.prepare("SELECT count(*) n FROM user_roles WHERE user_id = ? AND role = 'patient'").get(${syncedUser.id}).n,
+        schedules: db.prepare('SELECT count(*) n FROM doctor_schedules WHERE doctor_id = ?').get(${syncedDoctor.id}).n
+      };
+      console.log(JSON.stringify(result)); db.close();
+    `], { cwd: __dirname, env: { ...process.env, NODE_ENV: 'test' }, encoding: 'utf8' });
+    const restartState = restart.status === 0 ? JSON.parse(restart.stdout.trim().split('\n').pop()) : null;
+    assert(restartState && restartState.patientRole === 0 && restartState.schedules === 0,
+      'Khởi động lại không tự cấp lại role đã gỡ hoặc ca trực đã xóa');
+    await adminClient.post(`/admin/users/update/${syncedUser.id}`, {
+      name: 'Bac si dong bo', phone: '0912345688', email: syncedEmail,
+      status: 'active', password: '', 'roles[]': ['patient']
+    }, false);
+    res = await syncedClient.get('/doctor/dashboard', false);
+    assert(res.statusCode === 403, 'Gỡ role bác sĩ làm phiên đăng nhập cũ mất quyền ngay request tiếp theo');
+    assert((await guest.get(`/doctors/${syncedDoctor.id}`, false)).statusCode === 404,
+      'Gỡ role bác sĩ ẩn hồ sơ khỏi trang công khai');
+    res = await guest.get('/api/doctors/by-specialty/1');
+    assert(!JSON.parse(res.body).doctors.some(d => d.id === syncedDoctor.id),
+      'Gỡ role bác sĩ đồng bộ danh sách AJAX đặt lịch');
+    await adminClient.post(`/admin/users/update/${syncedUser.id}`, {
+      name: 'Bac si dong bo', phone: '0912345688', email: syncedEmail,
+      status: 'inactive', password: '', 'roles[]': ['patient']
+    }, false);
+    res = await syncedClient.get('/profile', false);
+    assert(res.statusCode === 302 && res.headers.location === '/login',
+      'Khóa tài khoản làm phiên đăng nhập cũ mất quyền ngay request tiếp theo');
 
     // -------------------------------------------------------------
     // TEST 8: Phân Luồng Ưu Tiên Tiếp Đón (Khẩn cấp -> Người già/Trẻ em/Thai phụ -> Online -> Offline)
@@ -1098,8 +1195,12 @@ async function runTests() {
       const Database = require('better-sqlite3');
       const roDb = new Database(prodNoPw.dbFile, { readonly: true });
       const userCount = roDb.prepare('SELECT count(*) c FROM users').get().c;
+      const articleCount = roDb.prepare('SELECT count(*) c FROM articles').get().c;
+      const roomCount = roDb.prepare('SELECT count(*) c FROM rooms').get().c;
       roDb.close();
       assert(userCount === 0, 'R-05: CSDL production rỗng không bị nhồi dữ liệu demo');
+      assert(articleCount === 0 && roomCount === 0,
+        'R-05: Production không tự xuất bản bài viết y tế hoặc phòng bệnh demo');
     } finally { prodNoPw.child.kill(); await sleep(300); dropDb(prodNoPw.dbFile); }
 
     const prodAdmin = spawnServer(3004, { NODE_ENV: 'production', SESSION_SECRET: 'y'.repeat(40), ADMIN_INITIAL_PASSWORD: 'Init-Pass-2026!' });

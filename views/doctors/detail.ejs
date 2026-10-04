@@ -24,11 +24,11 @@
       </div>
 
       <div style="font-size: 14.5px; color: var(--text-muted); margin-bottom: 12px;">
-        Chuyên khoa: <strong style="color:#0088ff;"><%= doctor.specialty_names || 'Nội tổng quát' %></strong> &bull; Phòng khám: <strong><%= doctor.room_number %></strong>
+        Chuyên khoa: <strong style="color:#0088ff;"><%= doctor.specialty_names || 'Chưa phân công' %></strong> &bull; Phòng khám: <strong><%= doctor.room_number || 'Chưa cập nhật' %></strong>
       </div>
 
       <div style="display: flex; align-items: center; gap: 20px; font-size: 14px;">
-        <div style="color:#f59e0b; font-weight:700;">★ <strong><%= Number(doctor.rating).toFixed(1) %></strong> (<%= doctor.rating_count %> đánh giá)</div>
+        <div style="color:#f59e0b; font-weight:700;"><%= doctor.rating_count ? `★ ${Number(doctor.rating).toFixed(1)} (${doctor.rating_count} đánh giá)` : 'Chưa có đánh giá' %></div>
         <div>Phí khám: <strong style="color:#0088ff; font-size:16px;"><%= formatCurrency(doctor.consultation_fee) %></strong></div>
       </div>
     </div>

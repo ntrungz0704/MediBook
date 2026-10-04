@@ -25,19 +25,19 @@
 
       <div class="form-group">
         <label>Đơn vị tính <span style="color:red;">*</span></label>
-        <input type="text" name="unit" class="form-control" value="<%= isEdit ? medicine.unit : 'Viên' %>" placeholder="Viên, Gói, Lọ, Tuýp..." required>
+        <input type="text" name="unit" class="form-control" value="<%= isEdit ? medicine.unit : '' %>" placeholder="Viên, Gói, Lọ, Tuýp..." required>
       </div>
     </div>
 
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
       <div class="form-group">
         <label>Đơn giá bán (VNĐ) <span style="color:red;">*</span></label>
-        <input type="number" name="unit_price" class="form-control" value="<%= isEdit ? medicine.unit_price : 5000 %>" required step="500">
+        <input type="number" name="unit_price" class="form-control" value="<%= isEdit ? medicine.unit_price : '' %>" required min="0" step="any">
       </div>
 
       <div class="form-group">
         <label>Số lượng tồn kho <span style="color:red;">*</span></label>
-        <input type="number" name="stock_quantity" class="form-control" value="<%= isEdit ? medicine.stock_quantity : 100 %>" required>
+        <input type="number" name="stock_quantity" class="form-control" value="<%= isEdit ? medicine.stock_quantity : '' %>" required min="0" step="1">
       </div>
     </div>
 

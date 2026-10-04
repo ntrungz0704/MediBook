@@ -11,52 +11,80 @@ document.addEventListener('DOMContentLoaded', () => {
   const selectedTimeInput = document.getElementById('selected_time_slot');
   const slotLoading = document.getElementById('slots_loading');
   const slotError = document.getElementById('slots_error');
+  const summaryDoctor = document.getElementById('summary_doctor');
+  const summaryRoom = document.getElementById('summary_room');
+  const summaryFee = document.getElementById('summary_fee');
+  let slotRequest = 0;
+
+  function updateSummary() {
+    const doctor = doctorSelect?.selectedOptions[0];
+    const service = serviceSelect?.selectedOptions[0];
+    if (summaryDoctor) summaryDoctor.textContent = doctor?.value ? doctor.textContent.trim() : 'Chưa chọn';
+    if (summaryRoom) summaryRoom.textContent = doctor?.value ? doctor.dataset.room || 'Chưa cập nhật' : 'Chưa chọn';
+    const amount = service?.value ? Number(service.dataset.price) : Number(doctor?.dataset.fee);
+    if (summaryFee) summaryFee.textContent = doctor?.value && Number.isFinite(amount)
+      ? `${new Intl.NumberFormat('vi-VN').format(amount)} ₫` : 'Chọn bác sĩ';
+  }
 
   // Handle specialty change
+  function loadServices(specialtyId) {
+    if (!serviceSelect) return;
+    serviceSelect.innerHTML = '<option value="">-- Chọn dịch vụ khám --</option>';
+    updateSummary();
+    if (!specialtyId) return;
+    fetch(`/api/services/by-specialty/${encodeURIComponent(specialtyId)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (!data.success || specialtySelect.value !== specialtyId) return;
+        data.services.forEach(srv => {
+          const opt = document.createElement('option');
+          opt.value = srv.id;
+          opt.dataset.price = srv.price;
+          opt.textContent = `${srv.name} (${new Intl.NumberFormat('vi-VN').format(srv.price)} ₫)`;
+          serviceSelect.appendChild(opt);
+        });
+        updateSummary();
+      });
+  }
+
   if (specialtySelect) {
     specialtySelect.addEventListener('change', () => {
       const specialtyId = specialtySelect.value;
+      if (doctorSelect) doctorSelect.innerHTML = '<option value="">-- Chọn bác sĩ --</option>';
+      if (selectedTimeInput) selectedTimeInput.value = '';
+      loadServices(specialtyId);
+      updateSummary();
+      loadSlots();
       if (!specialtyId) return;
 
       // Fetch doctors by specialty
-      fetch(`/api/doctors/by-specialty/${specialtyId}`)
+      fetch(`/api/doctors/by-specialty/${encodeURIComponent(specialtyId)}`)
         .then(res => res.json())
         .then(data => {
-          if (doctorSelect && data.success) {
+          if (doctorSelect && data.success && specialtySelect.value === specialtyId) {
             doctorSelect.innerHTML = '<option value="">-- Chọn bác sĩ --</option>';
             data.doctors.forEach(doc => {
               const opt = document.createElement('option');
               opt.value = doc.id;
+              opt.dataset.fee = doc.consultation_fee;
+              opt.dataset.room = doc.room_number || '';
               const docDisplayName = (doc.name && doc.name.startsWith(doc.title)) ? doc.name : `${doc.title} ${doc.name}`;
               opt.textContent = `${docDisplayName} (${doc.room_number})`;
               doctorSelect.appendChild(opt);
             });
+            updateSummary();
           }
         });
 
-      // Fetch services by specialty
-      if (serviceSelect) {
-        fetch(`/api/services/by-specialty/${specialtyId}`)
-          .then(res => res.json())
-          .then(data => {
-            if (data.success) {
-              serviceSelect.innerHTML = '<option value="">-- Chọn dịch vụ khám --</option>';
-              data.services.forEach(srv => {
-                const opt = document.createElement('option');
-                opt.value = srv.id;
-                const formattedPrice = new Intl.NumberFormat('vi-VN').format(srv.price) + ' ₫';
-                opt.textContent = `${srv.name} (${formattedPrice})`;
-                serviceSelect.appendChild(opt);
-              });
-            }
-          });
-      }
     });
+    if (specialtySelect.value) loadServices(specialtySelect.value);
   }
 
   // Load available slots
   function loadSlots() {
     if (!doctorSelect || !dateInput || !slotsContainer) return;
+    const requestId = ++slotRequest;
+    if (selectedTimeInput) selectedTimeInput.value = '';
 
     const doctorId = doctorSelect.value;
     const date = dateInput.value;
@@ -73,18 +101,19 @@ document.addEventListener('DOMContentLoaded', () => {
     fetch(`/api/slots?doctor_id=${doctorId}&date=${date}`)
       .then(res => res.json())
       .then(res => {
+        if (requestId !== slotRequest) return;
         if (slotLoading) slotLoading.style.display = 'none';
 
         if (!res.success) {
           if (slotError) {
-            slotError.innerHTML = `<strong>⚠️ Lưu ý:</strong> ${res.error || 'Bác sĩ không có ca trực vào ngày này.'}`;
+            slotError.textContent = `⚠️ ${res.error || 'Bác sĩ không có ca trực vào ngày này.'}`;
             slotError.style.display = 'block';
           }
           slotsContainer.innerHTML = `
             <div style="grid-column: 1/-1; background: #fffbeb; border: 1.5px dashed #f59e0b; border-radius: 8px; padding: 20px; text-align: center; color: #92400e;">
               <div style="font-size: 26px; margin-bottom: 6px;">📅</div>
               <div style="font-weight: 700; font-size: 15px; margin-bottom: 6px;">Bác sĩ chưa có ca trực vào ngày đã chọn</div>
-              <p style="font-size: 13.5px; margin: 0; line-height: 1.5; color: #b45309;">${res.error || 'Vui lòng chọn ngày khám khác hoặc chọn một Bác sĩ khác đang trực.'}</p>
+              <p style="font-size: 13.5px; margin: 0; line-height: 1.5; color: #b45309;">Vui lòng chọn ngày khám khác hoặc chọn bác sĩ khác đang trực.</p>
             </div>
           `;
           return;
@@ -123,6 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       })
       .catch(() => {
+        if (requestId !== slotRequest) return;
         if (slotLoading) slotLoading.style.display = 'none';
         if (slotError) {
           slotError.innerHTML = '<strong>❌ Lỗi:</strong> Không thể kết nối tới máy chủ để tải khung giờ. Vui lòng thử lại.';
@@ -131,8 +161,10 @@ document.addEventListener('DOMContentLoaded', () => {
       });
   }
 
-  if (doctorSelect) doctorSelect.addEventListener('change', loadSlots);
+  if (doctorSelect) doctorSelect.addEventListener('change', () => { updateSummary(); loadSlots(); });
+  if (serviceSelect) serviceSelect.addEventListener('change', updateSummary);
   if (dateInput) dateInput.addEventListener('change', loadSlots);
+  updateSummary();
 
   // Auto trigger slot loading if pre-selected
   if (doctorSelect && doctorSelect.value && dateInput && dateInput.value) {

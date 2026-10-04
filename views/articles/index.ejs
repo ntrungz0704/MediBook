@@ -80,7 +80,7 @@
               <%= article.summary %>
             </p>
             <div class="news-meta" style="margin-top: auto; border-top: 1px solid var(--border-light); padding-top: 10px; font-size: 12px; color: #64748b;">
-              <span>👨‍⚕️ <%= article.author_name %></span> &bull; <span>👁️ <%= (article.views_count || 120).toLocaleString('vi-VN') %> xem</span>
+              <span>👨‍⚕️ <%= article.author_name %></span> &bull; <span>👁️ <%= Number(article.views_count || 0).toLocaleString('vi-VN') %> xem</span>
             </div>
           </div>
         </a>

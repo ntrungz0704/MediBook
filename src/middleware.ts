@@ -32,7 +32,7 @@ export function requireRole(...roles: string[]) {
     const hasRole = roles.some(r => userRoles.includes(r));
     if (!hasRole) {
       (req as any).flash('error', 'Bạn không có quyền truy cập trang này.');
-      res.status(403).redirect('/');
+      res.redirect(403, '/');
       return;
     }
     next();

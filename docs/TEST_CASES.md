@@ -1,5 +1,7 @@
 # MediBook - Kịch bản kiểm thử toàn diện (TEST_CASES)
 
+> Bảng trạng thái bên dưới là tài liệu lịch sử; một số dòng còn ghi MySQL/FOR UPDATE. Kết quả tự động đang chạy nằm trong `test_full_suite.js` và [báo cáo xác minh](VERIFICATION_2026-10-04.md). Cơ chế chống đặt trùng hiện tại dùng transaction và unique index của SQLite.
+
 Tài liệu này tổng hợp các trường hợp kiểm thử (Test Cases) đảm bảo tính toàn vẹn nghiệp vụ, an toàn bảo mật và trải nghiệm người dùng của hệ thống MediBook.
 
 ---

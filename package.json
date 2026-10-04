@@ -9,7 +9,9 @@
     "start:dev": "node --watch dist/server.js",
     "dev": "tsc -w",
     "test": "node test_full_suite.js",
-    "test:views": "node test_render_views.js"
+    "test:views": "node test_render_views.js",
+    "erd:sync": "node scripts/sync-erd.js",
+    "erd:check": "node scripts/sync-erd.js --check"
   },
   "keywords": [],
   "author": "",

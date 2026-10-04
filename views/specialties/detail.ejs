@@ -40,10 +40,10 @@
           <h3 class="doctor-name">
             <a href="/doctors/<%= doc.id %>" style="color:inherit;"><%= doc.name %></a>
           </h3>
-          <div class="doctor-specialty"><%= specialty.name %> &bull; <%= doc.room_number %></div>
+          <div class="doctor-specialty"><%= specialty.name %> &bull; <%= doc.room_number || 'Phòng chưa cập nhật' %></div>
           <div class="doctor-meta">
             <div class="doctor-rating">
-              ⭐ <%= Number(doc.rating).toFixed(1) %>
+              <%= doc.rating_count ? `⭐ ${Number(doc.rating).toFixed(1)}` : 'Chưa có đánh giá' %>
             </div>
             <span class="doctor-badge-exp"><%= doc.experience_years %>+ năm kinh nghiệm</span>
           </div>

@@ -1,5 +1,7 @@
 # PROJECT_AUDIT — MediBook
 
+> Cập nhật 04/10/2026: xem [báo cáo xác minh mới](docs/VERIFICATION_2026-10-04.md) và [ERD sinh từ SQLite](docs/ERD.md). Schema hiện tại có 27 bảng/41 FK (thêm `contact_requests`), kiểm thử 154/154 và render 49/49. Các số 26 bảng, 137 assertion và mô tả schema MySQL bên dưới thuộc ảnh chụp lịch sử trước đợt sửa mới.
+
 **Ngày kiểm tra:** 04/10/2026 (Asia/Ho_Chi_Minh). Chỉ kiểm tra dự án `D:\MediBook`. Các mục 1–8 và phụ lục là **ảnh chụp trước khi sửa** tại commit `b68492a`; đường dẫn dòng trong các mục đó trỏ tới bản gốc và có thể dịch chuyển sau thay đổi. Bảng dưới đây là kết quả hiện tại và có hiệu lực khi khác phần baseline. Dữ liệu kiểm thử dùng SQLite tạm, không thay đổi DB đang chạy.
 
 ## Kết quả sau sửa
