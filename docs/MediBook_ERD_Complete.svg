@@ -1,0 +1,1096 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3705" height="3763" viewBox="0 0 3705 3763" role="img" aria-labelledby="erd-title erd-desc">
+<title id="erd-title">MediBook · ERD đầy đủ</title>
+<desc id="erd-desc">27 bảng, 273 trường, 41 khóa ngoại; bảng vai trò có hai quan hệ nghiệp vụ nét đứt.</desc>
+<rect width="100%" height="100%" fill="#f8fafc"/>
+<text x="70" y="76" font-family="Segoe UI, Arial, sans-serif" font-size="39" font-weight="700" fill="#0f172a">MediBook · ERD đầy đủ</text>
+<text x="70" y="117" font-family="Segoe UI, Arial, sans-serif" font-size="22" fill="#334155">27 bảng · 273 trường · 41 khóa ngoại thật · 2 dây nghiệp vụ nét đứt</text>
+<text x="70" y="148" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#64748b">Dữ liệu và dây nối sinh từ SQLite đang chạy; xem ERD_GIAI_THICH.md để đọc R01–R41, bội số và ý nghĩa đầy đủ.</text>
+<rect x="70" y="170" width="790" height="40" rx="12" fill="#1d4ed8"/>
+<text x="88" y="197" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700" fill="#fff">Tài khoản &amp; liên hệ</text>
+<rect x="995" y="170" width="790" height="40" rx="12" fill="#0f766e"/>
+<text x="1013" y="197" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700" fill="#fff">Danh mục &amp; lịch làm việc</text>
+<rect x="1920" y="170" width="790" height="40" rx="12" fill="#b45309"/>
+<text x="1938" y="197" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700" fill="#fff">Đặt lịch &amp; khám bệnh</text>
+<rect x="2845" y="170" width="790" height="40" rx="12" fill="#7c3aed"/>
+<text x="2863" y="197" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700" fill="#fff">Đơn thuốc, tiền &amp; nội trú</text>
+<path d="M 860 330 C 918 330, 918 2972, 860 2972" fill="none" stroke="#1d4ed8" stroke-width="2.4" stroke-opacity="0.38" ><title>R01 users o|--o{ activity_logs · activity_logs.user_id</title></path>
+<path d="M 2710 330 C 2768 330, 2768 1137, 2710 1137" fill="none" stroke="#b45309" stroke-width="2.4" stroke-opacity="0.38" ><title>R02 appointments ||--o{ appointment_status_history · appointment_status_history.appointment_id</title></path>
+<path d="M 860 330 C 1390 330, 1390 1230, 1920 1230" fill="none" stroke="#b45309" stroke-width="2.4" stroke-opacity="0.38" ><title>R03 users o|--o{ appointment_status_history · appointment_status_history.changed_by_user_id</title></path>
+<path d="M 860 1760 C 1390 1760, 1390 423, 1920 423" fill="none" stroke="#b45309" stroke-width="2.4" stroke-opacity="0.38" ><title>R04 doctors ||--o{ appointments · appointments.doctor_id</title></path>
+<path d="M 860 1263 C 1390 1263, 1390 392, 1920 392" fill="none" stroke="#b45309" stroke-width="2.4" stroke-opacity="0.38" ><title>R05 patients ||--o{ appointments · appointments.patient_id</title></path>
+<path d="M 1785 1014 C 1852.5 1014, 1852.5 485, 1920 485" fill="none" stroke="#b45309" stroke-width="2.4" stroke-opacity="0.38" ><title>R06 services o|--o{ appointments · appointments.service_id</title></path>
+<path d="M 1785 330 C 1852.5 330, 1852.5 454, 1920 454" fill="none" stroke="#b45309" stroke-width="2.4" stroke-opacity="0.38" ><title>R07 specialties o|--o{ appointments · appointments.specialty_id</title></path>
+<path d="M 860 1760 C 1852.5 1760, 1852.5 2473, 2845 2473" fill="none" stroke="#7c3aed" stroke-width="2.4" stroke-opacity="0.38" ><title>R08 doctors o|--o{ beds · beds.current_doctor_id</title></path>
+<path d="M 2710 2038 C 2777.5 2038, 2777.5 2442, 2845 2442" fill="none" stroke="#7c3aed" stroke-width="2.4" stroke-opacity="0.38" ><title>R09 medical_records o|--o{ beds · beds.current_medical_record_id</title></path>
+<path d="M 860 1263 C 1852.5 1263, 1852.5 2411, 2845 2411" fill="none" stroke="#7c3aed" stroke-width="2.4" stroke-opacity="0.38" ><title>R10 patients o|--o{ beds · beds.current_patient_id</title></path>
+<path d="M 3635 1914 C 3693 1914, 3693 2318, 3635 2318" fill="none" stroke="#7c3aed" stroke-width="2.4" stroke-opacity="0.38" ><title>R11 rooms ||--o{ beds · beds.room_id</title></path>
+<path d="M 860 330 C 918 330, 918 3376, 860 3376" fill="none" stroke="#1d4ed8" stroke-width="2.4" stroke-opacity="0.38" ><title>R12 users o|--o{ contact_requests · contact_requests.user_id</title></path>
+<path d="M 860 1760 C 927.5 1760, 927.5 1915, 995 1915" fill="none" stroke="#0f766e" stroke-width="2.4" stroke-opacity="0.38" ><title>R13 doctors ||--o{ doctor_leaves · doctor_leaves.doctor_id</title></path>
+<path d="M 860 1760 C 927.5 1760, 927.5 1449, 995 1449" fill="none" stroke="#0f766e" stroke-width="2.4" stroke-opacity="0.38" ><title>R14 doctors ||--o{ doctor_schedules · doctor_schedules.doctor_id</title></path>
+<path d="M 860 1760 C 927.5 1760, 927.5 765, 995 765" fill="none" stroke="#0f766e" stroke-width="2.4" stroke-opacity="0.38" ><title>R15 doctors ||--o{ doctor_specialties · doctor_specialties.doctor_id</title></path>
+<path d="M 1785 330 C 1843 330, 1843 796, 1785 796" fill="none" stroke="#0f766e" stroke-width="2.4" stroke-opacity="0.38" ><title>R16 specialties ||--o{ doctor_specialties · doctor_specialties.specialty_id</title></path>
+<path d="M 860 330 C 918 330, 918 1791, 860 1791" fill="none" stroke="#1d4ed8" stroke-width="2.4" stroke-opacity="0.38" ><title>R17 users ||--o| doctors · doctors.user_id</title></path>
+<path d="M 2710 330 C 2768 330, 2768 1479, 2710 1479" fill="none" stroke="#b45309" stroke-width="2.4" stroke-opacity="0.38" ><title>R18 appointments ||--o| examination_queues · examination_queues.appointment_id</title></path>
+<path d="M 860 1760 C 927.5 1760, 927.5 2288, 995 2288" fill="none" stroke="#0f766e" stroke-width="2.4" stroke-opacity="0.38" ><title>R19 doctors ||--o{ favorite_doctors · favorite_doctors.doctor_id</title></path>
+<path d="M 860 1263 C 927.5 1263, 927.5 2257, 995 2257" fill="none" stroke="#0f766e" stroke-width="2.4" stroke-opacity="0.38" ><title>R20 patients ||--o{ favorite_doctors · favorite_doctors.patient_id</title></path>
+<path d="M 2710 330 C 2768 330, 2768 2069, 2710 2069" fill="none" stroke="#b45309" stroke-width="2.4" stroke-opacity="0.38" ><title>R21 appointments ||--o| medical_records · medical_records.appointment_id</title></path>
+<path d="M 2845 2287 C 2777.5 2287, 2777.5 2658, 2710 2658" fill="none" stroke="#b45309" stroke-width="2.4" stroke-opacity="0.38" ><title>R22 beds o|--o{ medical_records · medical_records.bed_id</title></path>
+<path d="M 860 1760 C 1390 1760, 1390 2131, 1920 2131" fill="none" stroke="#b45309" stroke-width="2.4" stroke-opacity="0.38" ><title>R23 doctors ||--o{ medical_records · medical_records.doctor_id</title></path>
+<path d="M 2710 2038 C 2768 2038, 2768 2162, 2710 2162" fill="none" stroke="#b45309" stroke-width="2.4" stroke-opacity="0.38" ><title>R24 medical_records o|--o{ medical_records · medical_records.parent_visit_id</title></path>
+<path d="M 860 1263 C 1390 1263, 1390 2100, 1920 2100" fill="none" stroke="#b45309" stroke-width="2.4" stroke-opacity="0.38" ><title>R25 patients ||--o{ medical_records · medical_records.patient_id</title></path>
+<path d="M 860 330 C 918 330, 918 2599, 860 2599" fill="none" stroke="#1d4ed8" stroke-width="2.4" stroke-opacity="0.38" ><title>R26 users ||--o{ notifications · notifications.user_id</title></path>
+<path d="M 860 330 C 918 330, 918 1294, 860 1294" fill="none" stroke="#1d4ed8" stroke-width="2.4" stroke-opacity="0.38" ><title>R27 users ||--o| patients · patients.user_id</title></path>
+<path d="M 2710 330 C 2777.5 330, 2777.5 1324, 2845 1324" fill="none" stroke="#7c3aed" stroke-width="2.4" stroke-opacity="0.38" ><title>R28 appointments ||--o| payments · payments.appointment_id</title></path>
+<path d="M 860 330 C 1852.5 330, 1852.5 1634, 2845 1634" fill="none" stroke="#7c3aed" stroke-width="2.4" stroke-opacity="0.38" ><title>R29 users o|--o{ payments · payments.cashier_user_id</title></path>
+<path d="M 1785 2475 C 2315 2475, 2315 765, 2845 765" fill="none" stroke="#7c3aed" stroke-width="2.4" stroke-opacity="0.38" ><title>R30 medicines o|--o{ prescription_items · prescription_items.medicine_id</title></path>
+<path d="M 3635 330 C 3693 330, 3693 734, 3635 734" fill="none" stroke="#7c3aed" stroke-width="2.4" stroke-opacity="0.38" ><title>R31 prescriptions ||--o{ prescription_items · prescription_items.prescription_id</title></path>
+<path d="M 2710 330 C 2777.5 330, 2777.5 392, 2845 392" fill="none" stroke="#7c3aed" stroke-width="2.4" stroke-opacity="0.38" ><title>R32 appointments o|--o{ prescriptions · prescriptions.appointment_id</title></path>
+<path d="M 860 1760 C 1852.5 1760, 1852.5 423, 2845 423" fill="none" stroke="#7c3aed" stroke-width="2.4" stroke-opacity="0.38" ><title>R33 doctors o|--o{ prescriptions · prescriptions.doctor_id</title></path>
+<path d="M 2710 2038 C 2777.5 2038, 2777.5 361, 2845 361" fill="none" stroke="#7c3aed" stroke-width="2.4" stroke-opacity="0.38" ><title>R34 medical_records ||--o| prescriptions · prescriptions.medical_record_id</title></path>
+<path d="M 860 1263 C 1852.5 1263, 1852.5 454, 2845 454" fill="none" stroke="#7c3aed" stroke-width="2.4" stroke-opacity="0.38" ><title>R35 patients o|--o{ prescriptions · prescriptions.patient_id</title></path>
+<path d="M 860 330 C 918 330, 918 2257, 860 2257" fill="none" stroke="#1d4ed8" stroke-width="2.4" stroke-opacity="0.38" ><title>R36 users ||--o| receptionists · receptionists.user_id</title></path>
+<path d="M 2710 330 C 2768 330, 2768 2907, 2710 2907" fill="none" stroke="#b45309" stroke-width="2.4" stroke-opacity="0.38" ><title>R37 appointments o|--o| reviews · reviews.appointment_id</title></path>
+<path d="M 860 1760 C 1390 1760, 1390 2876, 1920 2876" fill="none" stroke="#b45309" stroke-width="2.4" stroke-opacity="0.38" ><title>R38 doctors ||--o{ reviews · reviews.doctor_id</title></path>
+<path d="M 860 1263 C 1390 1263, 1390 2845, 1920 2845" fill="none" stroke="#b45309" stroke-width="2.4" stroke-opacity="0.38" ><title>R39 patients ||--o{ reviews · reviews.patient_id</title></path>
+<path d="M 1785 330 C 1843 330, 1843 1045, 1785 1045" fill="none" stroke="#0f766e" stroke-width="2.4" stroke-opacity="0.38" ><title>R40 specialties o|--o{ services · services.specialty_id</title></path>
+<path d="M 860 330 C 918 330, 918 1045, 860 1045" fill="none" stroke="#1d4ed8" stroke-width="2.4" stroke-opacity="0.38" ><title>R41 users ||--o{ user_roles · user_roles.user_id</title></path>
+<path d="M 860 796 C 918 796, 918 1076, 860 1076" fill="none" stroke="#dc2626" stroke-width="2.8" stroke-opacity="0.75" stroke-dasharray="9 6"><title>Nghiệp vụ: roles.code ⇢ user_roles.role; chưa có FK vật lý</title></path>
+<path d="M 860 796 C 918 796, 918 361, 860 361" fill="none" stroke="#dc2626" stroke-width="2.8" stroke-opacity="0.75" stroke-dasharray="9 6"><title>Nghiệp vụ: roles.code ⇢ users.role; vai trò chính/di sản, chưa có FK vật lý</title></path>
+<rect x="70" y="220" width="790" height="401" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 83 220 H 847 Q 860 220 860 233 V 301 H 70 V 233 Q 70 220 83 220" fill="#eff6ff"/>
+<rect x="70" y="220" width="10" height="401" rx="5" fill="#1d4ed8"/>
+<text x="94" y="254" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">users</text>
+<text x="840" y="254" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#1d4ed8">10 trường</text>
+<text x="94" y="285" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Tài khoản đăng nhập và thông tin định danh chung.<title>Tài khoản đăng nhập và thông tin định danh chung.</title></text>
+<rect x="90" y="316" width="31" height="21" rx="4" fill="#dbeafe"/>
+<text x="105" y="331" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">PK</text>
+<text x="130" y="332" font-family="Consolas, monospace" font-size="16" fill="#0f172a">id</text>
+<text x="382" y="332" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã duy nhất của users<title>Mã duy nhất của users</title></text>
+<rect x="81" y="342" width="778" height="31" fill="#f8fafc"/>
+<text x="130" y="363" font-family="Consolas, monospace" font-size="16" fill="#0f172a">role</text>
+<text x="382" y="363" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Vai trò chính/giá trị tương thích cũ; quyề…<title>Vai trò chính/giá trị tương thích cũ; quyền thực đọc user_roles</title></text>
+<text x="130" y="394" font-family="Consolas, monospace" font-size="16" fill="#0f172a">name</text>
+<text x="382" y="394" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Tên hiển thị của bản ghi<title>Tên hiển thị của bản ghi</title></text>
+<rect x="81" y="404" width="778" height="31" fill="#f8fafc"/>
+<rect x="90" y="409" width="31" height="21" rx="4" fill="#fef3c7"/>
+<text x="105" y="424" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">UQ</text>
+<text x="130" y="425" font-family="Consolas, monospace" font-size="16" fill="#0f172a">email</text>
+<text x="382" y="425" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Địa chỉ email<title>Địa chỉ email</title></text>
+<text x="130" y="456" font-family="Consolas, monospace" font-size="16" fill="#0f172a">password_hash</text>
+<text x="382" y="456" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mật khẩu đã băm; không lưu mật khẩu gốc<title>Mật khẩu đã băm; không lưu mật khẩu gốc</title></text>
+<rect x="81" y="466" width="778" height="31" fill="#f8fafc"/>
+<text x="130" y="487" font-family="Consolas, monospace" font-size="16" fill="#0f172a">phone</text>
+<text x="382" y="487" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Số điện thoại<title>Số điện thoại</title></text>
+<text x="130" y="518" font-family="Consolas, monospace" font-size="16" fill="#0f172a">avatar</text>
+<text x="382" y="518" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Đường dẫn ảnh đại diện<title>Đường dẫn ảnh đại diện</title></text>
+<rect x="81" y="528" width="778" height="31" fill="#f8fafc"/>
+<text x="130" y="549" font-family="Consolas, monospace" font-size="16" fill="#0f172a">status</text>
+<text x="382" y="549" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">active=được đăng nhập, inactive=tài khoản …<title>active=được đăng nhập, inactive=tài khoản bị khóa</title></text>
+<text x="130" y="580" font-family="Consolas, monospace" font-size="16" fill="#0f172a">created_at</text>
+<text x="382" y="580" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm tạo bản ghi<title>Thời điểm tạo bản ghi</title></text>
+<rect x="81" y="590" width="778" height="31" fill="#f8fafc"/>
+<text x="130" y="611" font-family="Consolas, monospace" font-size="16" fill="#0f172a">updated_at</text>
+<text x="382" y="611" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm cập nhật gần nhất<title>Thời điểm cập nhật gần nhất</title></text>
+<rect x="70" y="655" width="790" height="215" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 83 655 H 847 Q 860 655 860 668 V 736 H 70 V 668 Q 70 655 83 655" fill="#eff6ff"/>
+<rect x="70" y="655" width="10" height="215" rx="5" fill="#1d4ed8"/>
+<text x="94" y="689" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">roles</text>
+<text x="840" y="689" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#1d4ed8">4 trường</text>
+<text x="94" y="720" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Danh mục mã vai trò dùng để giải thích quyền trong hệ thống.<title>Danh mục mã vai trò dùng để giải thích quyền trong hệ thống.</title></text>
+<rect x="90" y="751" width="31" height="21" rx="4" fill="#dbeafe"/>
+<text x="105" y="766" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">PK</text>
+<text x="130" y="767" font-family="Consolas, monospace" font-size="16" fill="#0f172a">id</text>
+<text x="382" y="767" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã duy nhất của roles<title>Mã duy nhất của roles</title></text>
+<rect x="81" y="777" width="778" height="31" fill="#f8fafc"/>
+<rect x="90" y="782" width="31" height="21" rx="4" fill="#fef3c7"/>
+<text x="105" y="797" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">UQ</text>
+<text x="130" y="798" font-family="Consolas, monospace" font-size="16" fill="#0f172a">code</text>
+<text x="382" y="798" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã role: admin, doctor, receptionist, pati…<title>Mã role: admin, doctor, receptionist, patient</title></text>
+<text x="130" y="829" font-family="Consolas, monospace" font-size="16" fill="#0f172a">name</text>
+<text x="382" y="829" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Tên vai trò tiếng Việt<title>Tên vai trò tiếng Việt</title></text>
+<rect x="81" y="839" width="778" height="31" fill="#f8fafc"/>
+<text x="130" y="860" font-family="Consolas, monospace" font-size="16" fill="#0f172a">description</text>
+<text x="382" y="860" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mô tả quyền của vai trò<title>Mô tả quyền của vai trò</title></text>
+<rect x="70" y="904" width="790" height="215" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 83 904 H 847 Q 860 904 860 917 V 985 H 70 V 917 Q 70 904 83 904" fill="#eff6ff"/>
+<rect x="70" y="904" width="10" height="215" rx="5" fill="#1d4ed8"/>
+<text x="94" y="938" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">user_roles</text>
+<text x="840" y="938" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#1d4ed8">4 trường</text>
+<text x="94" y="969" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Những vai trò được cấp cho tài khoản; một tài khoản có nhiều dòng.<title>Những vai trò được cấp cho tài khoản; một tài khoản có nhiều dòng.</title></text>
+<rect x="90" y="1000" width="31" height="21" rx="4" fill="#dbeafe"/>
+<text x="105" y="1015" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">PK</text>
+<text x="130" y="1016" font-family="Consolas, monospace" font-size="16" fill="#0f172a">id</text>
+<text x="382" y="1016" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã duy nhất của user_roles<title>Mã duy nhất của user_roles</title></text>
+<rect x="81" y="1026" width="778" height="31" fill="#f8fafc"/>
+<rect x="90" y="1031" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="105" y="1046" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="130" y="1047" font-family="Consolas, monospace" font-size="16" fill="#0f172a">user_id</text>
+<text x="382" y="1047" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã tài khoản users.id<title>Mã tài khoản users.id</title></text>
+<text x="845" y="1047" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#1d4ed8">R41</text>
+<text x="130" y="1078" font-family="Consolas, monospace" font-size="16" fill="#0f172a">role</text>
+<text x="382" y="1078" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Vai trò thực sự được cấp cho user; một dòn…<title>Vai trò thực sự được cấp cho user; một dòng/một role</title></text>
+<rect x="81" y="1088" width="778" height="31" fill="#f8fafc"/>
+<text x="130" y="1109" font-family="Consolas, monospace" font-size="16" fill="#0f172a">created_at</text>
+<text x="382" y="1109" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm tạo bản ghi<title>Thời điểm tạo bản ghi</title></text>
+<rect x="70" y="1153" width="790" height="463" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 83 1153 H 847 Q 860 1153 860 1166 V 1234 H 70 V 1166 Q 70 1153 83 1153" fill="#eff6ff"/>
+<rect x="70" y="1153" width="10" height="463" rx="5" fill="#1d4ed8"/>
+<text x="94" y="1187" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">patients</text>
+<text x="840" y="1187" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#1d4ed8">12 trường</text>
+<text x="94" y="1218" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Thông tin y tế của tài khoản có vai trò bệnh nhân.<title>Thông tin y tế của tài khoản có vai trò bệnh nhân.</title></text>
+<rect x="90" y="1249" width="31" height="21" rx="4" fill="#dbeafe"/>
+<text x="105" y="1264" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">PK</text>
+<text x="130" y="1265" font-family="Consolas, monospace" font-size="16" fill="#0f172a">id</text>
+<text x="382" y="1265" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã duy nhất của patients<title>Mã duy nhất của patients</title></text>
+<rect x="81" y="1275" width="778" height="31" fill="#f8fafc"/>
+<rect x="90" y="1280" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="105" y="1295" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="130" y="1296" font-family="Consolas, monospace" font-size="16" fill="#0f172a">user_id</text>
+<text x="382" y="1296" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã tài khoản users.id<title>Mã tài khoản users.id</title></text>
+<text x="845" y="1296" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#1d4ed8">R27</text>
+<text x="130" y="1327" font-family="Consolas, monospace" font-size="16" fill="#0f172a">dob</text>
+<text x="382" y="1327" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Ngày sinh (date of birth)<title>Ngày sinh (date of birth)</title></text>
+<rect x="81" y="1337" width="778" height="31" fill="#f8fafc"/>
+<text x="130" y="1358" font-family="Consolas, monospace" font-size="16" fill="#0f172a">gender</text>
+<text x="382" y="1358" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Giới tính: male=nam, female=nữ, other=khác<title>Giới tính: male=nam, female=nữ, other=khác</title></text>
+<text x="130" y="1389" font-family="Consolas, monospace" font-size="16" fill="#0f172a">blood_group</text>
+<text x="382" y="1389" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Nhóm máu<title>Nhóm máu</title></text>
+<rect x="81" y="1399" width="778" height="31" fill="#f8fafc"/>
+<text x="130" y="1420" font-family="Consolas, monospace" font-size="16" fill="#0f172a">address</text>
+<text x="382" y="1420" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Địa chỉ liên hệ<title>Địa chỉ liên hệ</title></text>
+<text x="130" y="1451" font-family="Consolas, monospace" font-size="16" fill="#0f172a">emergency_contact</text>
+<text x="382" y="1451" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Người liên hệ khẩn cấp<title>Người liên hệ khẩn cấp</title></text>
+<rect x="81" y="1461" width="778" height="31" fill="#f8fafc"/>
+<text x="130" y="1482" font-family="Consolas, monospace" font-size="16" fill="#0f172a">health_insurance_no</text>
+<text x="382" y="1482" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Số thẻ bảo hiểm y tế<title>Số thẻ bảo hiểm y tế</title></text>
+<text x="130" y="1513" font-family="Consolas, monospace" font-size="16" fill="#0f172a">medical_history</text>
+<text x="382" y="1513" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Tiền sử bệnh<title>Tiền sử bệnh</title></text>
+<rect x="81" y="1523" width="778" height="31" fill="#f8fafc"/>
+<text x="130" y="1544" font-family="Consolas, monospace" font-size="16" fill="#0f172a">priority_category</text>
+<text x="382" y="1544" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Nhóm ưu tiên tiếp đón<title>Nhóm ưu tiên tiếp đón</title></text>
+<text x="130" y="1575" font-family="Consolas, monospace" font-size="16" fill="#0f172a">created_at</text>
+<text x="382" y="1575" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm tạo bản ghi<title>Thời điểm tạo bản ghi</title></text>
+<rect x="81" y="1585" width="778" height="31" fill="#f8fafc"/>
+<text x="130" y="1606" font-family="Consolas, monospace" font-size="16" fill="#0f172a">updated_at</text>
+<text x="382" y="1606" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm cập nhật gần nhất<title>Thời điểm cập nhật gần nhất</title></text>
+<rect x="70" y="1650" width="790" height="432" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 83 1650 H 847 Q 860 1650 860 1663 V 1731 H 70 V 1663 Q 70 1650 83 1650" fill="#eff6ff"/>
+<rect x="70" y="1650" width="10" height="432" rx="5" fill="#1d4ed8"/>
+<text x="94" y="1684" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">doctors</text>
+<text x="840" y="1684" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#1d4ed8">11 trường</text>
+<text x="94" y="1715" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Thông tin nghề nghiệp và biểu phí của một tài khoản bác sĩ.<title>Thông tin nghề nghiệp và biểu phí của một tài khoản bác sĩ.</title></text>
+<rect x="90" y="1746" width="31" height="21" rx="4" fill="#dbeafe"/>
+<text x="105" y="1761" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">PK</text>
+<text x="130" y="1762" font-family="Consolas, monospace" font-size="16" fill="#0f172a">id</text>
+<text x="382" y="1762" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã duy nhất của doctors<title>Mã duy nhất của doctors</title></text>
+<rect x="81" y="1772" width="778" height="31" fill="#f8fafc"/>
+<rect x="90" y="1777" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="105" y="1792" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="130" y="1793" font-family="Consolas, monospace" font-size="16" fill="#0f172a">user_id</text>
+<text x="382" y="1793" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã tài khoản users.id<title>Mã tài khoản users.id</title></text>
+<text x="845" y="1793" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#1d4ed8">R17</text>
+<text x="130" y="1824" font-family="Consolas, monospace" font-size="16" fill="#0f172a">title</text>
+<text x="382" y="1824" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Học vị/chức danh bác sĩ<title>Học vị/chức danh bác sĩ</title></text>
+<rect x="81" y="1834" width="778" height="31" fill="#f8fafc"/>
+<text x="130" y="1855" font-family="Consolas, monospace" font-size="16" fill="#0f172a">bio</text>
+<text x="382" y="1855" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Tiểu sử và kinh nghiệm mô tả<title>Tiểu sử và kinh nghiệm mô tả</title></text>
+<text x="130" y="1886" font-family="Consolas, monospace" font-size="16" fill="#0f172a">experience_years</text>
+<text x="382" y="1886" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Số năm kinh nghiệm<title>Số năm kinh nghiệm</title></text>
+<rect x="81" y="1896" width="778" height="31" fill="#f8fafc"/>
+<text x="130" y="1917" font-family="Consolas, monospace" font-size="16" fill="#0f172a">consultation_fee</text>
+<text x="382" y="1917" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Phí khám mặc định của bác sĩ<title>Phí khám mặc định của bác sĩ</title></text>
+<text x="130" y="1948" font-family="Consolas, monospace" font-size="16" fill="#0f172a">rating</text>
+<text x="382" y="1948" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Điểm đánh giá trung bình<title>Điểm đánh giá trung bình</title></text>
+<rect x="81" y="1958" width="778" height="31" fill="#f8fafc"/>
+<text x="130" y="1979" font-family="Consolas, monospace" font-size="16" fill="#0f172a">rating_count</text>
+<text x="382" y="1979" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Số lượt đánh giá<title>Số lượt đánh giá</title></text>
+<text x="130" y="2010" font-family="Consolas, monospace" font-size="16" fill="#0f172a">room_number</text>
+<text x="382" y="2010" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã phòng khám đang phụ trách<title>Mã phòng khám đang phụ trách</title></text>
+<rect x="81" y="2020" width="778" height="31" fill="#f8fafc"/>
+<text x="130" y="2041" font-family="Consolas, monospace" font-size="16" fill="#0f172a">created_at</text>
+<text x="382" y="2041" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm tạo bản ghi<title>Thời điểm tạo bản ghi</title></text>
+<text x="130" y="2072" font-family="Consolas, monospace" font-size="16" fill="#0f172a">updated_at</text>
+<text x="382" y="2072" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm cập nhật gần nhất<title>Thời điểm cập nhật gần nhất</title></text>
+<rect x="70" y="2116" width="790" height="308" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 83 2116 H 847 Q 860 2116 860 2129 V 2197 H 70 V 2129 Q 70 2116 83 2116" fill="#eff6ff"/>
+<rect x="70" y="2116" width="10" height="308" rx="5" fill="#1d4ed8"/>
+<text x="94" y="2150" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">receptionists</text>
+<text x="840" y="2150" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#1d4ed8">7 trường</text>
+<text x="94" y="2181" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Hồ sơ nhân viên lễ tân của một tài khoản.<title>Hồ sơ nhân viên lễ tân của một tài khoản.</title></text>
+<rect x="90" y="2212" width="31" height="21" rx="4" fill="#dbeafe"/>
+<text x="105" y="2227" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">PK</text>
+<text x="130" y="2228" font-family="Consolas, monospace" font-size="16" fill="#0f172a">id</text>
+<text x="382" y="2228" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã duy nhất của receptionists<title>Mã duy nhất của receptionists</title></text>
+<rect x="81" y="2238" width="778" height="31" fill="#f8fafc"/>
+<rect x="90" y="2243" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="105" y="2258" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="130" y="2259" font-family="Consolas, monospace" font-size="16" fill="#0f172a">user_id</text>
+<text x="382" y="2259" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã tài khoản users.id<title>Mã tài khoản users.id</title></text>
+<text x="845" y="2259" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#1d4ed8">R36</text>
+<rect x="90" y="2274" width="31" height="21" rx="4" fill="#fef3c7"/>
+<text x="105" y="2289" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">UQ</text>
+<text x="130" y="2290" font-family="Consolas, monospace" font-size="16" fill="#0f172a">staff_code</text>
+<text x="382" y="2290" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã nhân viên lễ tân duy nhất<title>Mã nhân viên lễ tân duy nhất</title></text>
+<rect x="81" y="2300" width="778" height="31" fill="#f8fafc"/>
+<text x="130" y="2321" font-family="Consolas, monospace" font-size="16" fill="#0f172a">created_at</text>
+<text x="382" y="2321" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm tạo bản ghi<title>Thời điểm tạo bản ghi</title></text>
+<text x="130" y="2352" font-family="Consolas, monospace" font-size="16" fill="#0f172a">updated_at</text>
+<text x="382" y="2352" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm cập nhật gần nhất<title>Thời điểm cập nhật gần nhất</title></text>
+<rect x="81" y="2362" width="778" height="31" fill="#f8fafc"/>
+<text x="130" y="2383" font-family="Consolas, monospace" font-size="16" fill="#0f172a">department</text>
+<text x="382" y="2383" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Bộ phận làm việc<title>Bộ phận làm việc</title></text>
+<text x="130" y="2414" font-family="Consolas, monospace" font-size="16" fill="#0f172a">shift_default</text>
+<text x="382" y="2414" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Ca làm việc mặc định mô tả bằng chữ<title>Ca làm việc mặc định mô tả bằng chữ</title></text>
+<rect x="70" y="2458" width="790" height="339" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 83 2458 H 847 Q 860 2458 860 2471 V 2539 H 70 V 2471 Q 70 2458 83 2458" fill="#eff6ff"/>
+<rect x="70" y="2458" width="10" height="339" rx="5" fill="#1d4ed8"/>
+<text x="94" y="2492" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">notifications</text>
+<text x="840" y="2492" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#1d4ed8">8 trường</text>
+<text x="94" y="2523" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Thông báo trong ứng dụng cho tài khoản.<title>Thông báo trong ứng dụng cho tài khoản.</title></text>
+<rect x="90" y="2554" width="31" height="21" rx="4" fill="#dbeafe"/>
+<text x="105" y="2569" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">PK</text>
+<text x="130" y="2570" font-family="Consolas, monospace" font-size="16" fill="#0f172a">id</text>
+<text x="382" y="2570" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã duy nhất của notifications<title>Mã duy nhất của notifications</title></text>
+<rect x="81" y="2580" width="778" height="31" fill="#f8fafc"/>
+<rect x="90" y="2585" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="105" y="2600" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="130" y="2601" font-family="Consolas, monospace" font-size="16" fill="#0f172a">user_id</text>
+<text x="382" y="2601" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã tài khoản users.id<title>Mã tài khoản users.id</title></text>
+<text x="845" y="2601" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#1d4ed8">R26</text>
+<text x="130" y="2632" font-family="Consolas, monospace" font-size="16" fill="#0f172a">title</text>
+<text x="382" y="2632" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Tiêu đề thông báo<title>Tiêu đề thông báo</title></text>
+<rect x="81" y="2642" width="778" height="31" fill="#f8fafc"/>
+<text x="130" y="2663" font-family="Consolas, monospace" font-size="16" fill="#0f172a">message</text>
+<text x="382" y="2663" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Nội dung thông báo<title>Nội dung thông báo</title></text>
+<text x="130" y="2694" font-family="Consolas, monospace" font-size="16" fill="#0f172a">type</text>
+<text x="382" y="2694" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Loại thông báo<title>Loại thông báo</title></text>
+<rect x="81" y="2704" width="778" height="31" fill="#f8fafc"/>
+<text x="130" y="2725" font-family="Consolas, monospace" font-size="16" fill="#0f172a">link</text>
+<text x="382" y="2725" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Đường dẫn trang liên quan<title>Đường dẫn trang liên quan</title></text>
+<text x="130" y="2756" font-family="Consolas, monospace" font-size="16" fill="#0f172a">is_read</text>
+<text x="382" y="2756" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Đã đọc thông báo hay chưa (0/1)<title>Đã đọc thông báo hay chưa (0/1)</title></text>
+<rect x="81" y="2766" width="778" height="31" fill="#f8fafc"/>
+<text x="130" y="2787" font-family="Consolas, monospace" font-size="16" fill="#0f172a">created_at</text>
+<text x="382" y="2787" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm tạo bản ghi<title>Thời điểm tạo bản ghi</title></text>
+<rect x="70" y="2831" width="790" height="370" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 83 2831 H 847 Q 860 2831 860 2844 V 2912 H 70 V 2844 Q 70 2831 83 2831" fill="#eff6ff"/>
+<rect x="70" y="2831" width="10" height="370" rx="5" fill="#1d4ed8"/>
+<text x="94" y="2865" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">activity_logs</text>
+<text x="840" y="2865" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#1d4ed8">9 trường</text>
+<text x="94" y="2896" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Nhật ký thao tác để truy vết người dùng và đối tượng bị thay đổi.<title>Nhật ký thao tác để truy vết người dùng và đối tượng bị thay đổi.</title></text>
+<rect x="90" y="2927" width="31" height="21" rx="4" fill="#dbeafe"/>
+<text x="105" y="2942" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">PK</text>
+<text x="130" y="2943" font-family="Consolas, monospace" font-size="16" fill="#0f172a">id</text>
+<text x="382" y="2943" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã duy nhất của activity_logs<title>Mã duy nhất của activity_logs</title></text>
+<rect x="81" y="2953" width="778" height="31" fill="#f8fafc"/>
+<rect x="90" y="2958" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="105" y="2973" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="130" y="2974" font-family="Consolas, monospace" font-size="16" fill="#0f172a">user_id</text>
+<text x="382" y="2974" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã tài khoản users.id<title>Mã tài khoản users.id</title></text>
+<text x="845" y="2974" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#1d4ed8">R01</text>
+<text x="130" y="3005" font-family="Consolas, monospace" font-size="16" fill="#0f172a">action</text>
+<text x="382" y="3005" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã hành động được ghi lại<title>Mã hành động được ghi lại</title></text>
+<rect x="81" y="3015" width="778" height="31" fill="#f8fafc"/>
+<text x="130" y="3036" font-family="Consolas, monospace" font-size="16" fill="#0f172a">entity_type</text>
+<text x="382" y="3036" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Loại đối tượng bị tác động<title>Loại đối tượng bị tác động</title></text>
+<text x="130" y="3067" font-family="Consolas, monospace" font-size="16" fill="#0f172a">entity_id</text>
+<text x="382" y="3067" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã đối tượng bị tác động; không có FK chung<title>Mã đối tượng bị tác động; không có FK chung</title></text>
+<rect x="81" y="3077" width="778" height="31" fill="#f8fafc"/>
+<text x="130" y="3098" font-family="Consolas, monospace" font-size="16" fill="#0f172a">details</text>
+<text x="382" y="3098" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Chi tiết thao tác<title>Chi tiết thao tác</title></text>
+<text x="130" y="3129" font-family="Consolas, monospace" font-size="16" fill="#0f172a">ip_address</text>
+<text x="382" y="3129" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Địa chỉ IP gửi yêu cầu<title>Địa chỉ IP gửi yêu cầu</title></text>
+<rect x="81" y="3139" width="778" height="31" fill="#f8fafc"/>
+<text x="130" y="3160" font-family="Consolas, monospace" font-size="16" fill="#0f172a">user_agent</text>
+<text x="382" y="3160" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thông tin trình duyệt/thiết bị<title>Thông tin trình duyệt/thiết bị</title></text>
+<text x="130" y="3191" font-family="Consolas, monospace" font-size="16" fill="#0f172a">created_at</text>
+<text x="382" y="3191" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm tạo bản ghi<title>Thời điểm tạo bản ghi</title></text>
+<rect x="70" y="3235" width="790" height="339" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 83 3235 H 847 Q 860 3235 860 3248 V 3316 H 70 V 3248 Q 70 3235 83 3235" fill="#eff6ff"/>
+<rect x="70" y="3235" width="10" height="339" rx="5" fill="#1d4ed8"/>
+<text x="94" y="3269" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">contact_requests</text>
+<text x="840" y="3269" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#1d4ed8">8 trường</text>
+<text x="94" y="3300" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Yêu cầu liên hệ do khách hoặc tài khoản gửi.<title>Yêu cầu liên hệ do khách hoặc tài khoản gửi.</title></text>
+<rect x="90" y="3331" width="31" height="21" rx="4" fill="#dbeafe"/>
+<text x="105" y="3346" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">PK</text>
+<text x="130" y="3347" font-family="Consolas, monospace" font-size="16" fill="#0f172a">id</text>
+<text x="382" y="3347" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã duy nhất của contact_requests<title>Mã duy nhất của contact_requests</title></text>
+<rect x="81" y="3357" width="778" height="31" fill="#f8fafc"/>
+<rect x="90" y="3362" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="105" y="3377" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="130" y="3378" font-family="Consolas, monospace" font-size="16" fill="#0f172a">user_id</text>
+<text x="382" y="3378" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã tài khoản users.id<title>Mã tài khoản users.id</title></text>
+<text x="845" y="3378" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#1d4ed8">R12</text>
+<text x="130" y="3409" font-family="Consolas, monospace" font-size="16" fill="#0f172a">name</text>
+<text x="382" y="3409" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Tên người gửi liên hệ<title>Tên người gửi liên hệ</title></text>
+<rect x="81" y="3419" width="778" height="31" fill="#f8fafc"/>
+<text x="130" y="3440" font-family="Consolas, monospace" font-size="16" fill="#0f172a">phone</text>
+<text x="382" y="3440" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Số điện thoại<title>Số điện thoại</title></text>
+<text x="130" y="3471" font-family="Consolas, monospace" font-size="16" fill="#0f172a">email</text>
+<text x="382" y="3471" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Địa chỉ email<title>Địa chỉ email</title></text>
+<rect x="81" y="3481" width="778" height="31" fill="#f8fafc"/>
+<text x="130" y="3502" font-family="Consolas, monospace" font-size="16" fill="#0f172a">subject</text>
+<text x="382" y="3502" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Chủ đề cần hỗ trợ<title>Chủ đề cần hỗ trợ</title></text>
+<text x="130" y="3533" font-family="Consolas, monospace" font-size="16" fill="#0f172a">message</text>
+<text x="382" y="3533" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Nội dung lời nhắn<title>Nội dung lời nhắn</title></text>
+<rect x="81" y="3543" width="778" height="31" fill="#f8fafc"/>
+<text x="130" y="3564" font-family="Consolas, monospace" font-size="16" fill="#0f172a">created_at</text>
+<text x="382" y="3564" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm tạo bản ghi<title>Thời điểm tạo bản ghi</title></text>
+<rect x="995" y="220" width="790" height="370" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 1008 220 H 1772 Q 1785 220 1785 233 V 301 H 995 V 233 Q 995 220 1008 220" fill="#ecfdf5"/>
+<rect x="995" y="220" width="10" height="370" rx="5" fill="#0f766e"/>
+<text x="1019" y="254" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">specialties</text>
+<text x="1765" y="254" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#0f766e">9 trường</text>
+<text x="1019" y="285" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Danh mục chuyên khoa khám.<title>Danh mục chuyên khoa khám.</title></text>
+<rect x="1015" y="316" width="31" height="21" rx="4" fill="#dbeafe"/>
+<text x="1030" y="331" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">PK</text>
+<text x="1055" y="332" font-family="Consolas, monospace" font-size="16" fill="#0f172a">id</text>
+<text x="1307" y="332" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã duy nhất của specialties<title>Mã duy nhất của specialties</title></text>
+<rect x="1006" y="342" width="778" height="31" fill="#f8fafc"/>
+<rect x="1015" y="347" width="31" height="21" rx="4" fill="#fef3c7"/>
+<text x="1030" y="362" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">UQ</text>
+<text x="1055" y="363" font-family="Consolas, monospace" font-size="16" fill="#0f172a">name</text>
+<text x="1307" y="363" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Tên hiển thị của bản ghi<title>Tên hiển thị của bản ghi</title></text>
+<rect x="1015" y="378" width="31" height="21" rx="4" fill="#fef3c7"/>
+<text x="1030" y="393" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">UQ</text>
+<text x="1055" y="394" font-family="Consolas, monospace" font-size="16" fill="#0f172a">slug</text>
+<text x="1307" y="394" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Đoạn URL duy nhất của chuyên khoa<title>Đoạn URL duy nhất của chuyên khoa</title></text>
+<rect x="1006" y="404" width="778" height="31" fill="#f8fafc"/>
+<text x="1055" y="425" font-family="Consolas, monospace" font-size="16" fill="#0f172a">description</text>
+<text x="1307" y="425" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Nội dung mô tả<title>Nội dung mô tả</title></text>
+<text x="1055" y="456" font-family="Consolas, monospace" font-size="16" fill="#0f172a">icon</text>
+<text x="1307" y="456" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Tên biểu tượng hiển thị<title>Tên biểu tượng hiển thị</title></text>
+<rect x="1006" y="466" width="778" height="31" fill="#f8fafc"/>
+<text x="1055" y="487" font-family="Consolas, monospace" font-size="16" fill="#0f172a">created_at</text>
+<text x="1307" y="487" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm tạo bản ghi<title>Thời điểm tạo bản ghi</title></text>
+<text x="1055" y="518" font-family="Consolas, monospace" font-size="16" fill="#0f172a">updated_at</text>
+<text x="1307" y="518" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm cập nhật gần nhất<title>Thời điểm cập nhật gần nhất</title></text>
+<rect x="1006" y="528" width="778" height="31" fill="#f8fafc"/>
+<text x="1055" y="549" font-family="Consolas, monospace" font-size="16" fill="#0f172a">image</text>
+<text x="1307" y="549" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Đường dẫn ảnh hiển thị<title>Đường dẫn ảnh hiển thị</title></text>
+<text x="1055" y="580" font-family="Consolas, monospace" font-size="16" fill="#0f172a">status</text>
+<text x="1307" y="580" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">active=hiển thị, inactive=ẩn khỏi đặt lịch<title>active=hiển thị, inactive=ẩn khỏi đặt lịch</title></text>
+<rect x="995" y="624" width="790" height="246" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 1008 624 H 1772 Q 1785 624 1785 637 V 705 H 995 V 637 Q 995 624 1008 624" fill="#ecfdf5"/>
+<rect x="995" y="624" width="10" height="246" rx="5" fill="#0f766e"/>
+<text x="1019" y="658" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">doctor_specialties</text>
+<text x="1765" y="658" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#0f766e">5 trường</text>
+<text x="1019" y="689" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Bảng nối bác sĩ với chuyên khoa mà bác sĩ phụ trách.<title>Bảng nối bác sĩ với chuyên khoa mà bác sĩ phụ trách.</title></text>
+<rect x="1015" y="720" width="31" height="21" rx="4" fill="#dbeafe"/>
+<text x="1030" y="735" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">PK</text>
+<text x="1055" y="736" font-family="Consolas, monospace" font-size="16" fill="#0f172a">id</text>
+<text x="1307" y="736" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã duy nhất của doctor_specialties<title>Mã duy nhất của doctor_specialties</title></text>
+<rect x="1006" y="746" width="778" height="31" fill="#f8fafc"/>
+<rect x="1015" y="751" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="1030" y="766" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="1055" y="767" font-family="Consolas, monospace" font-size="16" fill="#0f172a">doctor_id</text>
+<text x="1307" y="767" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã hồ sơ bác sĩ doctors.id<title>Mã hồ sơ bác sĩ doctors.id</title></text>
+<text x="1770" y="767" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#0f766e">R15</text>
+<rect x="1015" y="782" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="1030" y="797" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="1055" y="798" font-family="Consolas, monospace" font-size="16" fill="#0f172a">specialty_id</text>
+<text x="1307" y="798" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã chuyên khoa specialties.id<title>Mã chuyên khoa specialties.id</title></text>
+<text x="1770" y="798" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#0f766e">R16</text>
+<rect x="1006" y="808" width="778" height="31" fill="#f8fafc"/>
+<text x="1055" y="829" font-family="Consolas, monospace" font-size="16" fill="#0f172a">is_primary</text>
+<text x="1307" y="829" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Chuyên khoa chính của bác sĩ (0/1)<title>Chuyên khoa chính của bác sĩ (0/1)</title></text>
+<text x="1055" y="860" font-family="Consolas, monospace" font-size="16" fill="#0f172a">created_at</text>
+<text x="1307" y="860" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm tạo bản ghi<title>Thời điểm tạo bản ghi</title></text>
+<rect x="995" y="904" width="790" height="370" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 1008 904 H 1772 Q 1785 904 1785 917 V 985 H 995 V 917 Q 995 904 1008 904" fill="#ecfdf5"/>
+<rect x="995" y="904" width="10" height="370" rx="5" fill="#0f766e"/>
+<text x="1019" y="938" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">services</text>
+<text x="1765" y="938" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#0f766e">9 trường</text>
+<text x="1019" y="969" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Dịch vụ khám và giá gắn với chuyên khoa.<title>Dịch vụ khám và giá gắn với chuyên khoa.</title></text>
+<rect x="1015" y="1000" width="31" height="21" rx="4" fill="#dbeafe"/>
+<text x="1030" y="1015" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">PK</text>
+<text x="1055" y="1016" font-family="Consolas, monospace" font-size="16" fill="#0f172a">id</text>
+<text x="1307" y="1016" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã duy nhất của services<title>Mã duy nhất của services</title></text>
+<rect x="1006" y="1026" width="778" height="31" fill="#f8fafc"/>
+<rect x="1015" y="1031" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="1030" y="1046" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="1055" y="1047" font-family="Consolas, monospace" font-size="16" fill="#0f172a">specialty_id</text>
+<text x="1307" y="1047" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã chuyên khoa specialties.id<title>Mã chuyên khoa specialties.id</title></text>
+<text x="1770" y="1047" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#0f766e">R40</text>
+<text x="1055" y="1078" font-family="Consolas, monospace" font-size="16" fill="#0f172a">name</text>
+<text x="1307" y="1078" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Tên hiển thị của bản ghi<title>Tên hiển thị của bản ghi</title></text>
+<rect x="1006" y="1088" width="778" height="31" fill="#f8fafc"/>
+<text x="1055" y="1109" font-family="Consolas, monospace" font-size="16" fill="#0f172a">description</text>
+<text x="1307" y="1109" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Nội dung mô tả<title>Nội dung mô tả</title></text>
+<text x="1055" y="1140" font-family="Consolas, monospace" font-size="16" fill="#0f172a">price</text>
+<text x="1307" y="1140" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Giá dịch vụ<title>Giá dịch vụ</title></text>
+<rect x="1006" y="1150" width="778" height="31" fill="#f8fafc"/>
+<text x="1055" y="1171" font-family="Consolas, monospace" font-size="16" fill="#0f172a">duration_minutes</text>
+<text x="1307" y="1171" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời lượng dịch vụ tính bằng phút<title>Thời lượng dịch vụ tính bằng phút</title></text>
+<text x="1055" y="1202" font-family="Consolas, monospace" font-size="16" fill="#0f172a">status</text>
+<text x="1307" y="1202" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">active=đang cung cấp, inactive=ngừng cung …<title>active=đang cung cấp, inactive=ngừng cung cấp</title></text>
+<rect x="1006" y="1212" width="778" height="31" fill="#f8fafc"/>
+<text x="1055" y="1233" font-family="Consolas, monospace" font-size="16" fill="#0f172a">created_at</text>
+<text x="1307" y="1233" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm tạo bản ghi<title>Thời điểm tạo bản ghi</title></text>
+<text x="1055" y="1264" font-family="Consolas, monospace" font-size="16" fill="#0f172a">updated_at</text>
+<text x="1307" y="1264" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm cập nhật gần nhất<title>Thời điểm cập nhật gần nhất</title></text>
+<rect x="995" y="1308" width="790" height="432" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 1008 1308 H 1772 Q 1785 1308 1785 1321 V 1389 H 995 V 1321 Q 995 1308 1008 1308" fill="#ecfdf5"/>
+<rect x="995" y="1308" width="10" height="432" rx="5" fill="#0f766e"/>
+<text x="1019" y="1342" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">doctor_schedules</text>
+<text x="1765" y="1342" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#0f766e">11 trường</text>
+<text x="1019" y="1373" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Ca làm việc lặp theo thứ trong tuần của bác sĩ.<title>Ca làm việc lặp theo thứ trong tuần của bác sĩ.</title></text>
+<rect x="1015" y="1404" width="31" height="21" rx="4" fill="#dbeafe"/>
+<text x="1030" y="1419" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">PK</text>
+<text x="1055" y="1420" font-family="Consolas, monospace" font-size="16" fill="#0f172a">id</text>
+<text x="1307" y="1420" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã duy nhất của doctor_schedules<title>Mã duy nhất của doctor_schedules</title></text>
+<rect x="1006" y="1430" width="778" height="31" fill="#f8fafc"/>
+<rect x="1015" y="1435" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="1030" y="1450" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="1055" y="1451" font-family="Consolas, monospace" font-size="16" fill="#0f172a">doctor_id</text>
+<text x="1307" y="1451" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã hồ sơ bác sĩ doctors.id<title>Mã hồ sơ bác sĩ doctors.id</title></text>
+<text x="1770" y="1451" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#0f766e">R14</text>
+<text x="1055" y="1482" font-family="Consolas, monospace" font-size="16" fill="#0f172a">day_of_week</text>
+<text x="1307" y="1482" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thứ trong tuần: 0 Chủ nhật, 1 Thứ hai…6 Th…<title>Thứ trong tuần: 0 Chủ nhật, 1 Thứ hai…6 Thứ bảy</title></text>
+<rect x="1006" y="1492" width="778" height="31" fill="#f8fafc"/>
+<text x="1055" y="1513" font-family="Consolas, monospace" font-size="16" fill="#0f172a">start_time</text>
+<text x="1307" y="1513" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Giờ bắt đầu<title>Giờ bắt đầu</title></text>
+<text x="1055" y="1544" font-family="Consolas, monospace" font-size="16" fill="#0f172a">end_time</text>
+<text x="1307" y="1544" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Giờ kết thúc<title>Giờ kết thúc</title></text>
+<rect x="1006" y="1554" width="778" height="31" fill="#f8fafc"/>
+<text x="1055" y="1575" font-family="Consolas, monospace" font-size="16" fill="#0f172a">max_patients</text>
+<text x="1307" y="1575" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Số bệnh nhân tối đa của ca<title>Số bệnh nhân tối đa của ca</title></text>
+<text x="1055" y="1606" font-family="Consolas, monospace" font-size="16" fill="#0f172a">is_active</text>
+<text x="1307" y="1606" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Cờ hoạt động cũ; ứng dụng hiện đọc status<title>Cờ hoạt động cũ; ứng dụng hiện đọc status</title></text>
+<rect x="1006" y="1616" width="778" height="31" fill="#f8fafc"/>
+<text x="1055" y="1637" font-family="Consolas, monospace" font-size="16" fill="#0f172a">created_at</text>
+<text x="1307" y="1637" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm tạo bản ghi<title>Thời điểm tạo bản ghi</title></text>
+<text x="1055" y="1668" font-family="Consolas, monospace" font-size="16" fill="#0f172a">updated_at</text>
+<text x="1307" y="1668" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm cập nhật gần nhất<title>Thời điểm cập nhật gần nhất</title></text>
+<rect x="1006" y="1678" width="778" height="31" fill="#f8fafc"/>
+<text x="1055" y="1699" font-family="Consolas, monospace" font-size="16" fill="#0f172a">slot_duration</text>
+<text x="1307" y="1699" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Số phút một khung khám<title>Số phút một khung khám</title></text>
+<text x="1055" y="1730" font-family="Consolas, monospace" font-size="16" fill="#0f172a">status</text>
+<text x="1307" y="1730" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Ca đang hoạt động (active) hoặc ngừng (ina…<title>Ca đang hoạt động (active) hoặc ngừng (inactive)</title></text>
+<rect x="995" y="1774" width="790" height="308" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 1008 1774 H 1772 Q 1785 1774 1785 1787 V 1855 H 995 V 1787 Q 995 1774 1008 1774" fill="#ecfdf5"/>
+<rect x="995" y="1774" width="10" height="308" rx="5" fill="#0f766e"/>
+<text x="1019" y="1808" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">doctor_leaves</text>
+<text x="1765" y="1808" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#0f766e">7 trường</text>
+<text x="1019" y="1839" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Khoảng thời gian bác sĩ xin nghỉ hoặc được duyệt nghỉ.<title>Khoảng thời gian bác sĩ xin nghỉ hoặc được duyệt nghỉ.</title></text>
+<rect x="1015" y="1870" width="31" height="21" rx="4" fill="#dbeafe"/>
+<text x="1030" y="1885" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">PK</text>
+<text x="1055" y="1886" font-family="Consolas, monospace" font-size="16" fill="#0f172a">id</text>
+<text x="1307" y="1886" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã duy nhất của doctor_leaves<title>Mã duy nhất của doctor_leaves</title></text>
+<rect x="1006" y="1896" width="778" height="31" fill="#f8fafc"/>
+<rect x="1015" y="1901" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="1030" y="1916" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="1055" y="1917" font-family="Consolas, monospace" font-size="16" fill="#0f172a">doctor_id</text>
+<text x="1307" y="1917" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã hồ sơ bác sĩ doctors.id<title>Mã hồ sơ bác sĩ doctors.id</title></text>
+<text x="1770" y="1917" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#0f766e">R13</text>
+<text x="1055" y="1948" font-family="Consolas, monospace" font-size="16" fill="#0f172a">start_date</text>
+<text x="1307" y="1948" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Ngày bắt đầu<title>Ngày bắt đầu</title></text>
+<rect x="1006" y="1958" width="778" height="31" fill="#f8fafc"/>
+<text x="1055" y="1979" font-family="Consolas, monospace" font-size="16" fill="#0f172a">end_date</text>
+<text x="1307" y="1979" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Ngày kết thúc<title>Ngày kết thúc</title></text>
+<text x="1055" y="2010" font-family="Consolas, monospace" font-size="16" fill="#0f172a">reason</text>
+<text x="1307" y="2010" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Lý do<title>Lý do</title></text>
+<rect x="1006" y="2020" width="778" height="31" fill="#f8fafc"/>
+<text x="1055" y="2041" font-family="Consolas, monospace" font-size="16" fill="#0f172a">status</text>
+<text x="1307" y="2041" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">pending=chờ duyệt, approved=đã duyệt, reje…<title>pending=chờ duyệt, approved=đã duyệt, rejected=từ chối</title></text>
+<text x="1055" y="2072" font-family="Consolas, monospace" font-size="16" fill="#0f172a">created_at</text>
+<text x="1307" y="2072" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm tạo bản ghi<title>Thời điểm tạo bản ghi</title></text>
+<rect x="995" y="2116" width="790" height="215" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 1008 2116 H 1772 Q 1785 2116 1785 2129 V 2197 H 995 V 2129 Q 995 2116 1008 2116" fill="#ecfdf5"/>
+<rect x="995" y="2116" width="10" height="215" rx="5" fill="#0f766e"/>
+<text x="1019" y="2150" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">favorite_doctors</text>
+<text x="1765" y="2150" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#0f766e">4 trường</text>
+<text x="1019" y="2181" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Danh sách bác sĩ được bệnh nhân lưu yêu thích.<title>Danh sách bác sĩ được bệnh nhân lưu yêu thích.</title></text>
+<rect x="1015" y="2212" width="31" height="21" rx="4" fill="#dbeafe"/>
+<text x="1030" y="2227" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">PK</text>
+<text x="1055" y="2228" font-family="Consolas, monospace" font-size="16" fill="#0f172a">id</text>
+<text x="1307" y="2228" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã duy nhất của favorite_doctors<title>Mã duy nhất của favorite_doctors</title></text>
+<rect x="1006" y="2238" width="778" height="31" fill="#f8fafc"/>
+<rect x="1015" y="2243" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="1030" y="2258" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="1055" y="2259" font-family="Consolas, monospace" font-size="16" fill="#0f172a">patient_id</text>
+<text x="1307" y="2259" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã hồ sơ bệnh nhân patients.id<title>Mã hồ sơ bệnh nhân patients.id</title></text>
+<text x="1770" y="2259" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#0f766e">R20</text>
+<rect x="1015" y="2274" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="1030" y="2289" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="1055" y="2290" font-family="Consolas, monospace" font-size="16" fill="#0f172a">doctor_id</text>
+<text x="1307" y="2290" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã hồ sơ bác sĩ doctors.id<title>Mã hồ sơ bác sĩ doctors.id</title></text>
+<text x="1770" y="2290" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#0f766e">R19</text>
+<rect x="1006" y="2300" width="778" height="31" fill="#f8fafc"/>
+<text x="1055" y="2321" font-family="Consolas, monospace" font-size="16" fill="#0f172a">created_at</text>
+<text x="1307" y="2321" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm tạo bản ghi<title>Thời điểm tạo bản ghi</title></text>
+<rect x="995" y="2365" width="790" height="432" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 1008 2365 H 1772 Q 1785 2365 1785 2378 V 2446 H 995 V 2378 Q 995 2365 1008 2365" fill="#ecfdf5"/>
+<rect x="995" y="2365" width="10" height="432" rx="5" fill="#0f766e"/>
+<text x="1019" y="2399" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">medicines</text>
+<text x="1765" y="2399" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#0f766e">11 trường</text>
+<text x="1019" y="2430" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Danh mục thuốc và số lượng tồn kho.<title>Danh mục thuốc và số lượng tồn kho.</title></text>
+<rect x="1015" y="2461" width="31" height="21" rx="4" fill="#dbeafe"/>
+<text x="1030" y="2476" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">PK</text>
+<text x="1055" y="2477" font-family="Consolas, monospace" font-size="16" fill="#0f172a">id</text>
+<text x="1307" y="2477" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã duy nhất của medicines<title>Mã duy nhất của medicines</title></text>
+<rect x="1006" y="2487" width="778" height="31" fill="#f8fafc"/>
+<rect x="1015" y="2492" width="31" height="21" rx="4" fill="#fef3c7"/>
+<text x="1030" y="2507" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">UQ</text>
+<text x="1055" y="2508" font-family="Consolas, monospace" font-size="16" fill="#0f172a">code</text>
+<text x="1307" y="2508" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã nghiệp vụ<title>Mã nghiệp vụ</title></text>
+<text x="1055" y="2539" font-family="Consolas, monospace" font-size="16" fill="#0f172a">name</text>
+<text x="1307" y="2539" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Tên hiển thị của bản ghi<title>Tên hiển thị của bản ghi</title></text>
+<rect x="1006" y="2549" width="778" height="31" fill="#f8fafc"/>
+<text x="1055" y="2570" font-family="Consolas, monospace" font-size="16" fill="#0f172a">unit</text>
+<text x="1307" y="2570" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Đơn vị tính<title>Đơn vị tính</title></text>
+<text x="1055" y="2601" font-family="Consolas, monospace" font-size="16" fill="#0f172a">usage_instruction</text>
+<text x="1307" y="2601" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Hướng dẫn dùng thuốc mặc định<title>Hướng dẫn dùng thuốc mặc định</title></text>
+<rect x="1006" y="2611" width="778" height="31" fill="#f8fafc"/>
+<text x="1055" y="2632" font-family="Consolas, monospace" font-size="16" fill="#0f172a">unit_price</text>
+<text x="1307" y="2632" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Giá một đơn vị<title>Giá một đơn vị</title></text>
+<text x="1055" y="2663" font-family="Consolas, monospace" font-size="16" fill="#0f172a">stock_quantity</text>
+<text x="1307" y="2663" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Số lượng hiện còn trong kho<title>Số lượng hiện còn trong kho</title></text>
+<rect x="1006" y="2673" width="778" height="31" fill="#f8fafc"/>
+<text x="1055" y="2694" font-family="Consolas, monospace" font-size="16" fill="#0f172a">status</text>
+<text x="1307" y="2694" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">active=được kê, inactive=ngừng dùng<title>active=được kê, inactive=ngừng dùng</title></text>
+<text x="1055" y="2725" font-family="Consolas, monospace" font-size="16" fill="#0f172a">created_at</text>
+<text x="1307" y="2725" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm tạo bản ghi<title>Thời điểm tạo bản ghi</title></text>
+<rect x="1006" y="2735" width="778" height="31" fill="#f8fafc"/>
+<text x="1055" y="2756" font-family="Consolas, monospace" font-size="16" fill="#0f172a">updated_at</text>
+<text x="1307" y="2756" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm cập nhật gần nhất<title>Thời điểm cập nhật gần nhất</title></text>
+<text x="1055" y="2787" font-family="Consolas, monospace" font-size="16" fill="#0f172a">category</text>
+<text x="1307" y="2787" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Nhóm thuốc<title>Nhóm thuốc</title></text>
+<rect x="995" y="2831" width="790" height="556" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 1008 2831 H 1772 Q 1785 2831 1785 2844 V 2912 H 995 V 2844 Q 995 2831 1008 2831" fill="#ecfdf5"/>
+<rect x="995" y="2831" width="10" height="556" rx="5" fill="#0f766e"/>
+<text x="1019" y="2865" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">articles</text>
+<text x="1765" y="2865" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#0f766e">15 trường</text>
+<text x="1019" y="2896" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Bài viết/cẩm nang y tế hiển thị công khai khi được bật.<title>Bài viết/cẩm nang y tế hiển thị công khai khi được bật.</title></text>
+<rect x="1015" y="2927" width="31" height="21" rx="4" fill="#dbeafe"/>
+<text x="1030" y="2942" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">PK</text>
+<text x="1055" y="2943" font-family="Consolas, monospace" font-size="16" fill="#0f172a">id</text>
+<text x="1307" y="2943" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã duy nhất của articles<title>Mã duy nhất của articles</title></text>
+<rect x="1006" y="2953" width="778" height="31" fill="#f8fafc"/>
+<text x="1055" y="2974" font-family="Consolas, monospace" font-size="16" fill="#0f172a">category</text>
+<text x="1307" y="2974" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã nhóm bài viết<title>Mã nhóm bài viết</title></text>
+<text x="1055" y="3005" font-family="Consolas, monospace" font-size="16" fill="#0f172a">category_name</text>
+<text x="1307" y="3005" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Tên nhóm bài viết<title>Tên nhóm bài viết</title></text>
+<rect x="1006" y="3015" width="778" height="31" fill="#f8fafc"/>
+<text x="1055" y="3036" font-family="Consolas, monospace" font-size="16" fill="#0f172a">pill_label</text>
+<text x="1307" y="3036" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Nhãn ngắn trên thẻ bài<title>Nhãn ngắn trên thẻ bài</title></text>
+<text x="1055" y="3067" font-family="Consolas, monospace" font-size="16" fill="#0f172a">icon</text>
+<text x="1307" y="3067" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Tên biểu tượng hiển thị<title>Tên biểu tượng hiển thị</title></text>
+<rect x="1006" y="3077" width="778" height="31" fill="#f8fafc"/>
+<rect x="1015" y="3082" width="31" height="21" rx="4" fill="#fef3c7"/>
+<text x="1030" y="3097" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">UQ</text>
+<text x="1055" y="3098" font-family="Consolas, monospace" font-size="16" fill="#0f172a">slug</text>
+<text x="1307" y="3098" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Đoạn URL duy nhất của bài<title>Đoạn URL duy nhất của bài</title></text>
+<text x="1055" y="3129" font-family="Consolas, monospace" font-size="16" fill="#0f172a">title</text>
+<text x="1307" y="3129" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Tiêu đề bài viết<title>Tiêu đề bài viết</title></text>
+<rect x="1006" y="3139" width="778" height="31" fill="#f8fafc"/>
+<text x="1055" y="3160" font-family="Consolas, monospace" font-size="16" fill="#0f172a">summary</text>
+<text x="1307" y="3160" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Tóm tắt bài<title>Tóm tắt bài</title></text>
+<text x="1055" y="3191" font-family="Consolas, monospace" font-size="16" fill="#0f172a">content</text>
+<text x="1307" y="3191" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Nội dung HTML của bài<title>Nội dung HTML của bài</title></text>
+<rect x="1006" y="3201" width="778" height="31" fill="#f8fafc"/>
+<text x="1055" y="3222" font-family="Consolas, monospace" font-size="16" fill="#0f172a">author_name</text>
+<text x="1307" y="3222" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Tên tác giả ghi trong bài; không liên kết …<title>Tên tác giả ghi trong bài; không liên kết users</title></text>
+<text x="1055" y="3253" font-family="Consolas, monospace" font-size="16" fill="#0f172a">author_role</text>
+<text x="1307" y="3253" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Vai trò/chức danh tác giả ghi trong bài<title>Vai trò/chức danh tác giả ghi trong bài</title></text>
+<rect x="1006" y="3263" width="778" height="31" fill="#f8fafc"/>
+<text x="1055" y="3284" font-family="Consolas, monospace" font-size="16" fill="#0f172a">views_count</text>
+<text x="1307" y="3284" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Số lần xem được đếm<title>Số lần xem được đếm</title></text>
+<text x="1055" y="3315" font-family="Consolas, monospace" font-size="16" fill="#0f172a">status</text>
+<text x="1307" y="3315" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Bật hoặc ẩn bài viết; chỉ active hiển thị …<title>Bật hoặc ẩn bài viết; chỉ active hiển thị công khai</title></text>
+<rect x="1006" y="3325" width="778" height="31" fill="#f8fafc"/>
+<text x="1055" y="3346" font-family="Consolas, monospace" font-size="16" fill="#0f172a">created_at</text>
+<text x="1307" y="3346" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm tạo bản ghi<title>Thời điểm tạo bản ghi</title></text>
+<text x="1055" y="3377" font-family="Consolas, monospace" font-size="16" fill="#0f172a">updated_at</text>
+<text x="1307" y="3377" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm cập nhật gần nhất<title>Thời điểm cập nhật gần nhất</title></text>
+<rect x="1920" y="220" width="790" height="742" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 1933 220 H 2697 Q 2710 220 2710 233 V 301 H 1920 V 233 Q 1920 220 1933 220" fill="#fffbeb"/>
+<rect x="1920" y="220" width="10" height="742" rx="5" fill="#b45309"/>
+<text x="1944" y="254" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">appointments</text>
+<text x="2690" y="254" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#b45309">21 trường</text>
+<text x="1944" y="285" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Một lần đặt khám của một bệnh nhân với một bác sĩ.<title>Một lần đặt khám của một bệnh nhân với một bác sĩ.</title></text>
+<rect x="1940" y="316" width="31" height="21" rx="4" fill="#dbeafe"/>
+<text x="1955" y="331" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">PK</text>
+<text x="1980" y="332" font-family="Consolas, monospace" font-size="16" fill="#0f172a">id</text>
+<text x="2232" y="332" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã duy nhất của appointments<title>Mã duy nhất của appointments</title></text>
+<rect x="1931" y="342" width="778" height="31" fill="#f8fafc"/>
+<rect x="1940" y="347" width="31" height="21" rx="4" fill="#fef3c7"/>
+<text x="1955" y="362" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">UQ</text>
+<text x="1980" y="363" font-family="Consolas, monospace" font-size="16" fill="#0f172a">booking_code</text>
+<text x="2232" y="363" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã đặt khám duy nhất gửi bệnh nhân<title>Mã đặt khám duy nhất gửi bệnh nhân</title></text>
+<rect x="1940" y="378" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="1955" y="393" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="1980" y="394" font-family="Consolas, monospace" font-size="16" fill="#0f172a">patient_id</text>
+<text x="2232" y="394" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã hồ sơ bệnh nhân patients.id<title>Mã hồ sơ bệnh nhân patients.id</title></text>
+<text x="2695" y="394" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#b45309">R05</text>
+<rect x="1931" y="404" width="778" height="31" fill="#f8fafc"/>
+<rect x="1940" y="409" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="1955" y="424" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="1980" y="425" font-family="Consolas, monospace" font-size="16" fill="#0f172a">doctor_id</text>
+<text x="2232" y="425" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã hồ sơ bác sĩ doctors.id<title>Mã hồ sơ bác sĩ doctors.id</title></text>
+<text x="2695" y="425" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#b45309">R04</text>
+<rect x="1940" y="440" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="1955" y="455" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="1980" y="456" font-family="Consolas, monospace" font-size="16" fill="#0f172a">specialty_id</text>
+<text x="2232" y="456" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã chuyên khoa specialties.id<title>Mã chuyên khoa specialties.id</title></text>
+<text x="2695" y="456" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#b45309">R07</text>
+<rect x="1931" y="466" width="778" height="31" fill="#f8fafc"/>
+<rect x="1940" y="471" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="1955" y="486" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="1980" y="487" font-family="Consolas, monospace" font-size="16" fill="#0f172a">service_id</text>
+<text x="2232" y="487" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã dịch vụ services.id<title>Mã dịch vụ services.id</title></text>
+<text x="2695" y="487" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#b45309">R06</text>
+<text x="1980" y="518" font-family="Consolas, monospace" font-size="16" fill="#0f172a">appointment_date</text>
+<text x="2232" y="518" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Ngày đến khám<title>Ngày đến khám</title></text>
+<rect x="1931" y="528" width="778" height="31" fill="#f8fafc"/>
+<text x="1980" y="549" font-family="Consolas, monospace" font-size="16" fill="#0f172a">start_time</text>
+<text x="2232" y="549" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Giờ bắt đầu<title>Giờ bắt đầu</title></text>
+<text x="1980" y="580" font-family="Consolas, monospace" font-size="16" fill="#0f172a">end_time</text>
+<text x="2232" y="580" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Giờ kết thúc<title>Giờ kết thúc</title></text>
+<rect x="1931" y="590" width="778" height="31" fill="#f8fafc"/>
+<text x="1980" y="611" font-family="Consolas, monospace" font-size="16" fill="#0f172a">status</text>
+<text x="2232" y="611" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Trạng thái lịch: chờ xác nhận, đã xác nhận…<title>Trạng thái lịch: chờ xác nhận, đã xác nhận, đã đến, đang khám, hoàn tất, hủy hoặc vắng mặt</title></text>
+<text x="1980" y="642" font-family="Consolas, monospace" font-size="16" fill="#0f172a">symptoms</text>
+<text x="2232" y="642" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Triệu chứng bệnh nhân mô tả<title>Triệu chứng bệnh nhân mô tả</title></text>
+<rect x="1931" y="652" width="778" height="31" fill="#f8fafc"/>
+<text x="1980" y="673" font-family="Consolas, monospace" font-size="16" fill="#0f172a">notes</text>
+<text x="2232" y="673" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Ghi chú<title>Ghi chú</title></text>
+<text x="1980" y="704" font-family="Consolas, monospace" font-size="16" fill="#0f172a">cancellation_reason</text>
+<text x="2232" y="704" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Lý do hủy lịch<title>Lý do hủy lịch</title></text>
+<rect x="1931" y="714" width="778" height="31" fill="#f8fafc"/>
+<text x="1980" y="735" font-family="Consolas, monospace" font-size="16" fill="#0f172a">source</text>
+<text x="2232" y="735" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Nguồn đặt: trực tuyến hoặc tại quầy<title>Nguồn đặt: trực tuyến hoặc tại quầy</title></text>
+<text x="1980" y="766" font-family="Consolas, monospace" font-size="16" fill="#0f172a">priority_level</text>
+<text x="2232" y="766" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mức ưu tiên hàng đợi<title>Mức ưu tiên hàng đợi</title></text>
+<rect x="1931" y="776" width="778" height="31" fill="#f8fafc"/>
+<text x="1980" y="797" font-family="Consolas, monospace" font-size="16" fill="#0f172a">priority_reason</text>
+<text x="2232" y="797" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Lý do được ưu tiên<title>Lý do được ưu tiên</title></text>
+<text x="1980" y="828" font-family="Consolas, monospace" font-size="16" fill="#0f172a">is_bumped</text>
+<text x="2232" y="828" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Có bị nhường khung giờ hay không (0/1)<title>Có bị nhường khung giờ hay không (0/1)</title></text>
+<rect x="1931" y="838" width="778" height="31" fill="#f8fafc"/>
+<text x="1980" y="859" font-family="Consolas, monospace" font-size="16" fill="#0f172a">bumped_from_slot</text>
+<text x="2232" y="859" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Khung giờ cũ trước khi nhường<title>Khung giờ cũ trước khi nhường</title></text>
+<text x="1980" y="890" font-family="Consolas, monospace" font-size="16" fill="#0f172a">estimated_start_time</text>
+<text x="2232" y="890" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Giờ khám dự kiến sau điều phối<title>Giờ khám dự kiến sau điều phối</title></text>
+<rect x="1931" y="900" width="778" height="31" fill="#f8fafc"/>
+<text x="1980" y="921" font-family="Consolas, monospace" font-size="16" fill="#0f172a">created_at</text>
+<text x="2232" y="921" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm tạo bản ghi<title>Thời điểm tạo bản ghi</title></text>
+<text x="1980" y="952" font-family="Consolas, monospace" font-size="16" fill="#0f172a">updated_at</text>
+<text x="2232" y="952" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm cập nhật gần nhất<title>Thời điểm cập nhật gần nhất</title></text>
+<rect x="1920" y="996" width="790" height="308" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 1933 996 H 2697 Q 2710 996 2710 1009 V 1077 H 1920 V 1009 Q 1920 996 1933 996" fill="#fffbeb"/>
+<rect x="1920" y="996" width="10" height="308" rx="5" fill="#b45309"/>
+<text x="1944" y="1030" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">appointment_status_history</text>
+<text x="2690" y="1030" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#b45309">7 trường</text>
+<text x="1944" y="1061" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Lịch sử mỗi lần lịch hẹn đổi trạng thái.<title>Lịch sử mỗi lần lịch hẹn đổi trạng thái.</title></text>
+<rect x="1940" y="1092" width="31" height="21" rx="4" fill="#dbeafe"/>
+<text x="1955" y="1107" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">PK</text>
+<text x="1980" y="1108" font-family="Consolas, monospace" font-size="16" fill="#0f172a">id</text>
+<text x="2232" y="1108" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã duy nhất của appointment_status_history<title>Mã duy nhất của appointment_status_history</title></text>
+<rect x="1931" y="1118" width="778" height="31" fill="#f8fafc"/>
+<rect x="1940" y="1123" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="1955" y="1138" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="1980" y="1139" font-family="Consolas, monospace" font-size="16" fill="#0f172a">appointment_id</text>
+<text x="2232" y="1139" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã lịch hẹn appointments.id<title>Mã lịch hẹn appointments.id</title></text>
+<text x="2695" y="1139" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#b45309">R02</text>
+<text x="1980" y="1170" font-family="Consolas, monospace" font-size="16" fill="#0f172a">old_status</text>
+<text x="2232" y="1170" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Trạng thái lịch hẹn trước thay đổi<title>Trạng thái lịch hẹn trước thay đổi</title></text>
+<rect x="1931" y="1180" width="778" height="31" fill="#f8fafc"/>
+<text x="1980" y="1201" font-family="Consolas, monospace" font-size="16" fill="#0f172a">new_status</text>
+<text x="2232" y="1201" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Trạng thái sau thay đổi<title>Trạng thái sau thay đổi</title></text>
+<rect x="1940" y="1216" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="1955" y="1231" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="1980" y="1232" font-family="Consolas, monospace" font-size="16" fill="#0f172a">changed_by_user_id</text>
+<text x="2232" y="1232" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Tài khoản thực hiện đổi trạng thái<title>Tài khoản thực hiện đổi trạng thái</title></text>
+<text x="2695" y="1232" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#b45309">R03</text>
+<rect x="1931" y="1242" width="778" height="31" fill="#f8fafc"/>
+<text x="1980" y="1263" font-family="Consolas, monospace" font-size="16" fill="#0f172a">note</text>
+<text x="2232" y="1263" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Ghi chú<title>Ghi chú</title></text>
+<text x="1980" y="1294" font-family="Consolas, monospace" font-size="16" fill="#0f172a">created_at</text>
+<text x="2232" y="1294" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm tạo bản ghi<title>Thời điểm tạo bản ghi</title></text>
+<rect x="1920" y="1338" width="790" height="556" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 1933 1338 H 2697 Q 2710 1338 2710 1351 V 1419 H 1920 V 1351 Q 1920 1338 1933 1338" fill="#fffbeb"/>
+<rect x="1920" y="1338" width="10" height="556" rx="5" fill="#b45309"/>
+<text x="1944" y="1372" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">examination_queues</text>
+<text x="2690" y="1372" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#b45309">15 trường</text>
+<text x="1944" y="1403" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Một số thứ tự tiếp đón ứng với một lịch hẹn.<title>Một số thứ tự tiếp đón ứng với một lịch hẹn.</title></text>
+<rect x="1940" y="1434" width="31" height="21" rx="4" fill="#dbeafe"/>
+<text x="1955" y="1449" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">PK</text>
+<text x="1980" y="1450" font-family="Consolas, monospace" font-size="16" fill="#0f172a">id</text>
+<text x="2232" y="1450" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã duy nhất của examination_queues<title>Mã duy nhất của examination_queues</title></text>
+<rect x="1931" y="1460" width="778" height="31" fill="#f8fafc"/>
+<rect x="1940" y="1465" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="1955" y="1480" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="1980" y="1481" font-family="Consolas, monospace" font-size="16" fill="#0f172a">appointment_id</text>
+<text x="2232" y="1481" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã lịch hẹn appointments.id<title>Mã lịch hẹn appointments.id</title></text>
+<text x="2695" y="1481" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#b45309">R18</text>
+<text x="1980" y="1512" font-family="Consolas, monospace" font-size="16" fill="#0f172a">queue_number</text>
+<text x="2232" y="1512" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Số thứ tự hiển thị khi gọi<title>Số thứ tự hiển thị khi gọi</title></text>
+<rect x="1931" y="1522" width="778" height="31" fill="#f8fafc"/>
+<text x="1980" y="1543" font-family="Consolas, monospace" font-size="16" fill="#0f172a">queue_date</text>
+<text x="2232" y="1543" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Ngày của hàng đợi<title>Ngày của hàng đợi</title></text>
+<text x="1980" y="1574" font-family="Consolas, monospace" font-size="16" fill="#0f172a">room</text>
+<text x="2232" y="1574" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Phòng xếp hàng<title>Phòng xếp hàng</title></text>
+<rect x="1931" y="1584" width="778" height="31" fill="#f8fafc"/>
+<text x="1980" y="1605" font-family="Consolas, monospace" font-size="16" fill="#0f172a">status</text>
+<text x="2232" y="1605" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">waiting=chờ, calling=đang gọi, in_room=đã …<title>waiting=chờ, calling=đang gọi, in_room=đã vào phòng, completed=hoàn tất</title></text>
+<text x="1980" y="1636" font-family="Consolas, monospace" font-size="16" fill="#0f172a">priority_level</text>
+<text x="2232" y="1636" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Loại ưu tiên<title>Loại ưu tiên</title></text>
+<rect x="1931" y="1646" width="778" height="31" fill="#f8fafc"/>
+<text x="1980" y="1667" font-family="Consolas, monospace" font-size="16" fill="#0f172a">priority_order</text>
+<text x="2232" y="1667" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thứ tự ưu tiên để sắp hàng<title>Thứ tự ưu tiên để sắp hàng</title></text>
+<text x="1980" y="1698" font-family="Consolas, monospace" font-size="16" fill="#0f172a">is_bumped</text>
+<text x="2232" y="1698" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Lượt có bị đẩy/nhường không (0/1)<title>Lượt có bị đẩy/nhường không (0/1)</title></text>
+<rect x="1931" y="1708" width="778" height="31" fill="#f8fafc"/>
+<text x="1980" y="1729" font-family="Consolas, monospace" font-size="16" fill="#0f172a">bumped_reason</text>
+<text x="2232" y="1729" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Lý do thay đổi thứ tự<title>Lý do thay đổi thứ tự</title></text>
+<text x="1980" y="1760" font-family="Consolas, monospace" font-size="16" fill="#0f172a">checkin_time</text>
+<text x="2232" y="1760" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Lúc đến quầy tiếp đón<title>Lúc đến quầy tiếp đón</title></text>
+<rect x="1931" y="1770" width="778" height="31" fill="#f8fafc"/>
+<text x="1980" y="1791" font-family="Consolas, monospace" font-size="16" fill="#0f172a">called_time</text>
+<text x="2232" y="1791" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Lúc bác sĩ gọi số<title>Lúc bác sĩ gọi số</title></text>
+<text x="1980" y="1822" font-family="Consolas, monospace" font-size="16" fill="#0f172a">finish_time</text>
+<text x="2232" y="1822" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Lúc kết thúc lượt<title>Lúc kết thúc lượt</title></text>
+<rect x="1931" y="1832" width="778" height="31" fill="#f8fafc"/>
+<text x="1980" y="1853" font-family="Consolas, monospace" font-size="16" fill="#0f172a">created_at</text>
+<text x="2232" y="1853" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm tạo bản ghi<title>Thời điểm tạo bản ghi</title></text>
+<text x="1980" y="1884" font-family="Consolas, monospace" font-size="16" fill="#0f172a">updated_at</text>
+<text x="2232" y="1884" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm cập nhật gần nhất<title>Thời điểm cập nhật gần nhất</title></text>
+<rect x="1920" y="1928" width="790" height="742" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 1933 1928 H 2697 Q 2710 1928 2710 1941 V 2009 H 1920 V 1941 Q 1920 1928 1933 1928" fill="#fffbeb"/>
+<rect x="1920" y="1928" width="10" height="742" rx="5" fill="#b45309"/>
+<text x="1944" y="1962" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">medical_records</text>
+<text x="2690" y="1962" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#b45309">21 trường</text>
+<text x="1944" y="1993" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Bệnh án tạo từ một lịch hẹn đã khám.<title>Bệnh án tạo từ một lịch hẹn đã khám.</title></text>
+<rect x="1940" y="2024" width="31" height="21" rx="4" fill="#dbeafe"/>
+<text x="1955" y="2039" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">PK</text>
+<text x="1980" y="2040" font-family="Consolas, monospace" font-size="16" fill="#0f172a">id</text>
+<text x="2232" y="2040" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã duy nhất của medical_records<title>Mã duy nhất của medical_records</title></text>
+<rect x="1931" y="2050" width="778" height="31" fill="#f8fafc"/>
+<rect x="1940" y="2055" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="1955" y="2070" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="1980" y="2071" font-family="Consolas, monospace" font-size="16" fill="#0f172a">appointment_id</text>
+<text x="2232" y="2071" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã lịch hẹn appointments.id<title>Mã lịch hẹn appointments.id</title></text>
+<text x="2695" y="2071" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#b45309">R21</text>
+<rect x="1940" y="2086" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="1955" y="2101" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="1980" y="2102" font-family="Consolas, monospace" font-size="16" fill="#0f172a">patient_id</text>
+<text x="2232" y="2102" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã hồ sơ bệnh nhân patients.id<title>Mã hồ sơ bệnh nhân patients.id</title></text>
+<text x="2695" y="2102" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#b45309">R25</text>
+<rect x="1931" y="2112" width="778" height="31" fill="#f8fafc"/>
+<rect x="1940" y="2117" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="1955" y="2132" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="1980" y="2133" font-family="Consolas, monospace" font-size="16" fill="#0f172a">doctor_id</text>
+<text x="2232" y="2133" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã hồ sơ bác sĩ doctors.id<title>Mã hồ sơ bác sĩ doctors.id</title></text>
+<text x="2695" y="2133" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#b45309">R23</text>
+<rect x="1940" y="2148" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="1955" y="2163" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="1980" y="2164" font-family="Consolas, monospace" font-size="16" fill="#0f172a">parent_visit_id</text>
+<text x="2232" y="2164" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Bệnh án trước mà lần tái khám nối tiếp<title>Bệnh án trước mà lần tái khám nối tiếp</title></text>
+<text x="2695" y="2164" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#b45309">R24</text>
+<rect x="1931" y="2174" width="778" height="31" fill="#f8fafc"/>
+<text x="1980" y="2195" font-family="Consolas, monospace" font-size="16" fill="#0f172a">visit_type</text>
+<text x="2232" y="2195" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Loại lượt: khám đầu hoặc tái khám<title>Loại lượt: khám đầu hoặc tái khám</title></text>
+<text x="1980" y="2226" font-family="Consolas, monospace" font-size="16" fill="#0f172a">treatment_type</text>
+<text x="2232" y="2226" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Ngoại trú hay nội trú<title>Ngoại trú hay nội trú</title></text>
+<rect x="1931" y="2236" width="778" height="31" fill="#f8fafc"/>
+<text x="1980" y="2257" font-family="Consolas, monospace" font-size="16" fill="#0f172a">inpatient_room</text>
+<text x="2232" y="2257" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã phòng nội trú ghi tại thời điểm khám<title>Mã phòng nội trú ghi tại thời điểm khám</title></text>
+<text x="1980" y="2288" font-family="Consolas, monospace" font-size="16" fill="#0f172a">inpatient_bed</text>
+<text x="2232" y="2288" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã giường nội trú ghi tại thời điểm khám<title>Mã giường nội trú ghi tại thời điểm khám</title></text>
+<rect x="1931" y="2298" width="778" height="31" fill="#f8fafc"/>
+<text x="1980" y="2319" font-family="Consolas, monospace" font-size="16" fill="#0f172a">admission_date</text>
+<text x="2232" y="2319" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Ngày nhập viện<title>Ngày nhập viện</title></text>
+<text x="1980" y="2350" font-family="Consolas, monospace" font-size="16" fill="#0f172a">discharge_date</text>
+<text x="2232" y="2350" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Ngày xuất viện<title>Ngày xuất viện</title></text>
+<rect x="1931" y="2360" width="778" height="31" fill="#f8fafc"/>
+<text x="1980" y="2381" font-family="Consolas, monospace" font-size="16" fill="#0f172a">vital_signs</text>
+<text x="2232" y="2381" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Chỉ số sinh tồn lưu dạng JSON/text<title>Chỉ số sinh tồn lưu dạng JSON/text</title></text>
+<text x="1980" y="2412" font-family="Consolas, monospace" font-size="16" fill="#0f172a">anamnesis</text>
+<text x="2232" y="2412" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Bệnh sử do bác sĩ ghi<title>Bệnh sử do bác sĩ ghi</title></text>
+<rect x="1931" y="2422" width="778" height="31" fill="#f8fafc"/>
+<text x="1980" y="2443" font-family="Consolas, monospace" font-size="16" fill="#0f172a">clinical_diagnosis</text>
+<text x="2232" y="2443" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Chẩn đoán lâm sàng<title>Chẩn đoán lâm sàng</title></text>
+<text x="1980" y="2474" font-family="Consolas, monospace" font-size="16" fill="#0f172a">icd10_code</text>
+<text x="2232" y="2474" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã bệnh theo ICD-10 nếu có<title>Mã bệnh theo ICD-10 nếu có</title></text>
+<rect x="1931" y="2484" width="778" height="31" fill="#f8fafc"/>
+<text x="1980" y="2505" font-family="Consolas, monospace" font-size="16" fill="#0f172a">treatment_plan</text>
+<text x="2232" y="2505" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Kế hoạch điều trị<title>Kế hoạch điều trị</title></text>
+<text x="1980" y="2536" font-family="Consolas, monospace" font-size="16" fill="#0f172a">doctor_notes</text>
+<text x="2232" y="2536" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Ghi chú của bác sĩ<title>Ghi chú của bác sĩ</title></text>
+<rect x="1931" y="2546" width="778" height="31" fill="#f8fafc"/>
+<text x="1980" y="2567" font-family="Consolas, monospace" font-size="16" fill="#0f172a">re_examination_date</text>
+<text x="2232" y="2567" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Ngày hẹn tái khám<title>Ngày hẹn tái khám</title></text>
+<text x="1980" y="2598" font-family="Consolas, monospace" font-size="16" fill="#0f172a">created_at</text>
+<text x="2232" y="2598" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm tạo bản ghi<title>Thời điểm tạo bản ghi</title></text>
+<rect x="1931" y="2608" width="778" height="31" fill="#f8fafc"/>
+<text x="1980" y="2629" font-family="Consolas, monospace" font-size="16" fill="#0f172a">updated_at</text>
+<text x="2232" y="2629" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm cập nhật gần nhất<title>Thời điểm cập nhật gần nhất</title></text>
+<rect x="1940" y="2644" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="1955" y="2659" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="1980" y="2660" font-family="Consolas, monospace" font-size="16" fill="#0f172a">bed_id</text>
+<text x="2232" y="2660" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Giường nội trú được cấp<title>Giường nội trú được cấp</title></text>
+<text x="2695" y="2660" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#b45309">R22</text>
+<rect x="1920" y="2704" width="790" height="339" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 1933 2704 H 2697 Q 2710 2704 2710 2717 V 2785 H 1920 V 2717 Q 1920 2704 1933 2704" fill="#fffbeb"/>
+<rect x="1920" y="2704" width="10" height="339" rx="5" fill="#b45309"/>
+<text x="1944" y="2738" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">reviews</text>
+<text x="2690" y="2738" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#b45309">8 trường</text>
+<text x="1944" y="2769" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Đánh giá sau khám do bệnh nhân gửi cho bác sĩ.<title>Đánh giá sau khám do bệnh nhân gửi cho bác sĩ.</title></text>
+<rect x="1940" y="2800" width="31" height="21" rx="4" fill="#dbeafe"/>
+<text x="1955" y="2815" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">PK</text>
+<text x="1980" y="2816" font-family="Consolas, monospace" font-size="16" fill="#0f172a">id</text>
+<text x="2232" y="2816" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã duy nhất của reviews<title>Mã duy nhất của reviews</title></text>
+<rect x="1931" y="2826" width="778" height="31" fill="#f8fafc"/>
+<rect x="1940" y="2831" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="1955" y="2846" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="1980" y="2847" font-family="Consolas, monospace" font-size="16" fill="#0f172a">patient_id</text>
+<text x="2232" y="2847" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã hồ sơ bệnh nhân patients.id<title>Mã hồ sơ bệnh nhân patients.id</title></text>
+<text x="2695" y="2847" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#b45309">R39</text>
+<rect x="1940" y="2862" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="1955" y="2877" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="1980" y="2878" font-family="Consolas, monospace" font-size="16" fill="#0f172a">doctor_id</text>
+<text x="2232" y="2878" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã hồ sơ bác sĩ doctors.id<title>Mã hồ sơ bác sĩ doctors.id</title></text>
+<text x="2695" y="2878" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#b45309">R38</text>
+<rect x="1931" y="2888" width="778" height="31" fill="#f8fafc"/>
+<rect x="1940" y="2893" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="1955" y="2908" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="1980" y="2909" font-family="Consolas, monospace" font-size="16" fill="#0f172a">appointment_id</text>
+<text x="2232" y="2909" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã lịch hẹn appointments.id<title>Mã lịch hẹn appointments.id</title></text>
+<text x="2695" y="2909" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#b45309">R37</text>
+<text x="1980" y="2940" font-family="Consolas, monospace" font-size="16" fill="#0f172a">rating</text>
+<text x="2232" y="2940" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Điểm đánh giá từ 1 đến 5 (DB có CHECK)<title>Điểm đánh giá từ 1 đến 5 (DB có CHECK)</title></text>
+<rect x="1931" y="2950" width="778" height="31" fill="#f8fafc"/>
+<text x="1980" y="2971" font-family="Consolas, monospace" font-size="16" fill="#0f172a">comment</text>
+<text x="2232" y="2971" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Nội dung nhận xét<title>Nội dung nhận xét</title></text>
+<text x="1980" y="3002" font-family="Consolas, monospace" font-size="16" fill="#0f172a">created_at</text>
+<text x="2232" y="3002" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm tạo bản ghi<title>Thời điểm tạo bản ghi</title></text>
+<rect x="1931" y="3012" width="778" height="31" fill="#f8fafc"/>
+<text x="1980" y="3033" font-family="Consolas, monospace" font-size="16" fill="#0f172a">is_anonymous</text>
+<text x="2232" y="3033" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Ẩn tên người đánh giá hay không (0/1)<title>Ẩn tên người đánh giá hay không (0/1)</title></text>
+<rect x="2845" y="220" width="790" height="339" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 2858 220 H 3622 Q 3635 220 3635 233 V 301 H 2845 V 233 Q 2845 220 2858 220" fill="#f5f3ff"/>
+<rect x="2845" y="220" width="10" height="339" rx="5" fill="#7c3aed"/>
+<text x="2869" y="254" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">prescriptions</text>
+<text x="3615" y="254" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#7c3aed">8 trường</text>
+<text x="2869" y="285" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Đầu đơn thuốc thuộc một bệnh án.<title>Đầu đơn thuốc thuộc một bệnh án.</title></text>
+<rect x="2865" y="316" width="31" height="21" rx="4" fill="#dbeafe"/>
+<text x="2880" y="331" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">PK</text>
+<text x="2905" y="332" font-family="Consolas, monospace" font-size="16" fill="#0f172a">id</text>
+<text x="3157" y="332" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã duy nhất của prescriptions<title>Mã duy nhất của prescriptions</title></text>
+<rect x="2856" y="342" width="778" height="31" fill="#f8fafc"/>
+<rect x="2865" y="347" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="2880" y="362" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="2905" y="363" font-family="Consolas, monospace" font-size="16" fill="#0f172a">medical_record_id</text>
+<text x="3157" y="363" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã bệnh án medical_records.id<title>Mã bệnh án medical_records.id</title></text>
+<text x="3620" y="363" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#7c3aed">R34</text>
+<rect x="2865" y="378" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="2880" y="393" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="2905" y="394" font-family="Consolas, monospace" font-size="16" fill="#0f172a">appointment_id</text>
+<text x="3157" y="394" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã lịch hẹn appointments.id<title>Mã lịch hẹn appointments.id</title></text>
+<text x="3620" y="394" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#7c3aed">R32</text>
+<rect x="2856" y="404" width="778" height="31" fill="#f8fafc"/>
+<rect x="2865" y="409" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="2880" y="424" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="2905" y="425" font-family="Consolas, monospace" font-size="16" fill="#0f172a">doctor_id</text>
+<text x="3157" y="425" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã hồ sơ bác sĩ doctors.id<title>Mã hồ sơ bác sĩ doctors.id</title></text>
+<text x="3620" y="425" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#7c3aed">R33</text>
+<rect x="2865" y="440" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="2880" y="455" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="2905" y="456" font-family="Consolas, monospace" font-size="16" fill="#0f172a">patient_id</text>
+<text x="3157" y="456" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã hồ sơ bệnh nhân patients.id<title>Mã hồ sơ bệnh nhân patients.id</title></text>
+<text x="3620" y="456" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#7c3aed">R35</text>
+<rect x="2856" y="466" width="778" height="31" fill="#f8fafc"/>
+<text x="2905" y="487" font-family="Consolas, monospace" font-size="16" fill="#0f172a">total_amount</text>
+<text x="3157" y="487" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Tổng tiền trước giảm giá<title>Tổng tiền trước giảm giá</title></text>
+<text x="2905" y="518" font-family="Consolas, monospace" font-size="16" fill="#0f172a">usage_instructions</text>
+<text x="3157" y="518" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Hướng dẫn dùng chung toàn đơn thuốc<title>Hướng dẫn dùng chung toàn đơn thuốc</title></text>
+<rect x="2856" y="528" width="778" height="31" fill="#f8fafc"/>
+<text x="2905" y="549" font-family="Consolas, monospace" font-size="16" fill="#0f172a">created_at</text>
+<text x="3157" y="549" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm tạo bản ghi<title>Thời điểm tạo bản ghi</title></text>
+<rect x="2845" y="593" width="790" height="556" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 2858 593 H 3622 Q 3635 593 3635 606 V 674 H 2845 V 606 Q 2845 593 2858 593" fill="#f5f3ff"/>
+<rect x="2845" y="593" width="10" height="556" rx="5" fill="#7c3aed"/>
+<text x="2869" y="627" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">prescription_items</text>
+<text x="3615" y="627" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#7c3aed">15 trường</text>
+<text x="2869" y="658" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Từng dòng thuốc, liều và giá đã chốt trong đơn.<title>Từng dòng thuốc, liều và giá đã chốt trong đơn.</title></text>
+<rect x="2865" y="689" width="31" height="21" rx="4" fill="#dbeafe"/>
+<text x="2880" y="704" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">PK</text>
+<text x="2905" y="705" font-family="Consolas, monospace" font-size="16" fill="#0f172a">id</text>
+<text x="3157" y="705" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã duy nhất của prescription_items<title>Mã duy nhất của prescription_items</title></text>
+<rect x="2856" y="715" width="778" height="31" fill="#f8fafc"/>
+<rect x="2865" y="720" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="2880" y="735" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="2905" y="736" font-family="Consolas, monospace" font-size="16" fill="#0f172a">prescription_id</text>
+<text x="3157" y="736" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã đơn thuốc prescriptions.id<title>Mã đơn thuốc prescriptions.id</title></text>
+<text x="3620" y="736" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#7c3aed">R31</text>
+<rect x="2865" y="751" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="2880" y="766" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="2905" y="767" font-family="Consolas, monospace" font-size="16" fill="#0f172a">medicine_id</text>
+<text x="3157" y="767" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã thuốc medicines.id<title>Mã thuốc medicines.id</title></text>
+<text x="3620" y="767" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#7c3aed">R30</text>
+<rect x="2856" y="777" width="778" height="31" fill="#f8fafc"/>
+<text x="2905" y="798" font-family="Consolas, monospace" font-size="16" fill="#0f172a">medicine_name</text>
+<text x="3157" y="798" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Tên thuốc chốt lúc kê; giữ khi danh mục đổi<title>Tên thuốc chốt lúc kê; giữ khi danh mục đổi</title></text>
+<text x="2905" y="829" font-family="Consolas, monospace" font-size="16" fill="#0f172a">dosage</text>
+<text x="3157" y="829" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Hàm lượng/liều thuốc<title>Hàm lượng/liều thuốc</title></text>
+<rect x="2856" y="839" width="778" height="31" fill="#f8fafc"/>
+<text x="2905" y="860" font-family="Consolas, monospace" font-size="16" fill="#0f172a">unit</text>
+<text x="3157" y="860" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Đơn vị tính<title>Đơn vị tính</title></text>
+<text x="2905" y="891" font-family="Consolas, monospace" font-size="16" fill="#0f172a">quantity</text>
+<text x="3157" y="891" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Số lượng<title>Số lượng</title></text>
+<rect x="2856" y="901" width="778" height="31" fill="#f8fafc"/>
+<text x="2905" y="922" font-family="Consolas, monospace" font-size="16" fill="#0f172a">morning</text>
+<text x="3157" y="922" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Liều buổi sáng<title>Liều buổi sáng</title></text>
+<text x="2905" y="953" font-family="Consolas, monospace" font-size="16" fill="#0f172a">noon</text>
+<text x="3157" y="953" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Liều buổi trưa<title>Liều buổi trưa</title></text>
+<rect x="2856" y="963" width="778" height="31" fill="#f8fafc"/>
+<text x="2905" y="984" font-family="Consolas, monospace" font-size="16" fill="#0f172a">afternoon</text>
+<text x="3157" y="984" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Liều buổi chiều<title>Liều buổi chiều</title></text>
+<text x="2905" y="1015" font-family="Consolas, monospace" font-size="16" fill="#0f172a">night</text>
+<text x="3157" y="1015" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Liều buổi tối<title>Liều buổi tối</title></text>
+<rect x="2856" y="1025" width="778" height="31" fill="#f8fafc"/>
+<text x="2905" y="1046" font-family="Consolas, monospace" font-size="16" fill="#0f172a">instructions</text>
+<text x="3157" y="1046" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Dặn dò riêng cho dòng thuốc<title>Dặn dò riêng cho dòng thuốc</title></text>
+<text x="2905" y="1077" font-family="Consolas, monospace" font-size="16" fill="#0f172a">unit_price</text>
+<text x="3157" y="1077" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Giá một đơn vị<title>Giá một đơn vị</title></text>
+<rect x="2856" y="1087" width="778" height="31" fill="#f8fafc"/>
+<text x="2905" y="1108" font-family="Consolas, monospace" font-size="16" fill="#0f172a">amount</text>
+<text x="3157" y="1108" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thành tiền của dòng<title>Thành tiền của dòng</title></text>
+<text x="2905" y="1139" font-family="Consolas, monospace" font-size="16" fill="#0f172a">created_at</text>
+<text x="3157" y="1139" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm tạo bản ghi<title>Thời điểm tạo bản ghi</title></text>
+<rect x="2845" y="1183" width="790" height="587" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 2858 1183 H 3622 Q 3635 1183 3635 1196 V 1264 H 2845 V 1196 Q 2845 1183 2858 1183" fill="#f5f3ff"/>
+<rect x="2845" y="1183" width="10" height="587" rx="5" fill="#7c3aed"/>
+<text x="2869" y="1217" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">payments</text>
+<text x="3615" y="1217" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#7c3aed">16 trường</text>
+<text x="2869" y="1248" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Hóa đơn và trạng thái thanh toán của lịch hẹn.<title>Hóa đơn và trạng thái thanh toán của lịch hẹn.</title></text>
+<rect x="2865" y="1279" width="31" height="21" rx="4" fill="#dbeafe"/>
+<text x="2880" y="1294" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">PK</text>
+<text x="2905" y="1295" font-family="Consolas, monospace" font-size="16" fill="#0f172a">id</text>
+<text x="3157" y="1295" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã duy nhất của payments<title>Mã duy nhất của payments</title></text>
+<rect x="2856" y="1305" width="778" height="31" fill="#f8fafc"/>
+<rect x="2865" y="1310" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="2880" y="1325" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="2905" y="1326" font-family="Consolas, monospace" font-size="16" fill="#0f172a">appointment_id</text>
+<text x="3157" y="1326" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã lịch hẹn appointments.id<title>Mã lịch hẹn appointments.id</title></text>
+<text x="3620" y="1326" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#7c3aed">R28</text>
+<rect x="2865" y="1341" width="31" height="21" rx="4" fill="#fef3c7"/>
+<text x="2880" y="1356" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">UQ</text>
+<text x="2905" y="1357" font-family="Consolas, monospace" font-size="16" fill="#0f172a">invoice_code</text>
+<text x="3157" y="1357" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã hóa đơn duy nhất<title>Mã hóa đơn duy nhất</title></text>
+<rect x="2856" y="1367" width="778" height="31" fill="#f8fafc"/>
+<text x="2905" y="1388" font-family="Consolas, monospace" font-size="16" fill="#0f172a">service_fee</text>
+<text x="3157" y="1388" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Tiền công khám/dịch vụ<title>Tiền công khám/dịch vụ</title></text>
+<text x="2905" y="1419" font-family="Consolas, monospace" font-size="16" fill="#0f172a">medicine_fee</text>
+<text x="3157" y="1419" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Tiền thuốc trong đơn<title>Tiền thuốc trong đơn</title></text>
+<rect x="2856" y="1429" width="778" height="31" fill="#f8fafc"/>
+<text x="2905" y="1450" font-family="Consolas, monospace" font-size="16" fill="#0f172a">discount</text>
+<text x="3157" y="1450" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Số tiền được giảm<title>Số tiền được giảm</title></text>
+<text x="2905" y="1481" font-family="Consolas, monospace" font-size="16" fill="#0f172a">total_amount</text>
+<text x="3157" y="1481" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Tổng tiền trước giảm giá<title>Tổng tiền trước giảm giá</title></text>
+<rect x="2856" y="1491" width="778" height="31" fill="#f8fafc"/>
+<text x="2905" y="1512" font-family="Consolas, monospace" font-size="16" fill="#0f172a">final_amount</text>
+<text x="3157" y="1512" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Số tiền cuối cùng phải thu<title>Số tiền cuối cùng phải thu</title></text>
+<text x="2905" y="1543" font-family="Consolas, monospace" font-size="16" fill="#0f172a">payment_method</text>
+<text x="3157" y="1543" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Cách trả: tiền mặt/chuyển khoản…<title>Cách trả: tiền mặt/chuyển khoản…</title></text>
+<rect x="2856" y="1553" width="778" height="31" fill="#f8fafc"/>
+<text x="2905" y="1574" font-family="Consolas, monospace" font-size="16" fill="#0f172a">payment_status</text>
+<text x="3157" y="1574" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Trạng thái chưa trả/đã trả<title>Trạng thái chưa trả/đã trả</title></text>
+<text x="2905" y="1605" font-family="Consolas, monospace" font-size="16" fill="#0f172a">paid_at</text>
+<text x="3157" y="1605" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Ngày giờ đã thanh toán<title>Ngày giờ đã thanh toán</title></text>
+<rect x="2856" y="1615" width="778" height="31" fill="#f8fafc"/>
+<rect x="2865" y="1620" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="2880" y="1635" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="2905" y="1636" font-family="Consolas, monospace" font-size="16" fill="#0f172a">cashier_user_id</text>
+<text x="3157" y="1636" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Tài khoản thu ngân ghi nhận thanh toán<title>Tài khoản thu ngân ghi nhận thanh toán</title></text>
+<text x="3620" y="1636" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#7c3aed">R29</text>
+<text x="2905" y="1667" font-family="Consolas, monospace" font-size="16" fill="#0f172a">notes</text>
+<text x="3157" y="1667" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Ghi chú hóa đơn hiện dùng<title>Ghi chú hóa đơn hiện dùng</title></text>
+<rect x="2856" y="1677" width="778" height="31" fill="#f8fafc"/>
+<text x="2905" y="1698" font-family="Consolas, monospace" font-size="16" fill="#0f172a">created_at</text>
+<text x="3157" y="1698" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm tạo bản ghi<title>Thời điểm tạo bản ghi</title></text>
+<text x="2905" y="1729" font-family="Consolas, monospace" font-size="16" fill="#0f172a">updated_at</text>
+<text x="3157" y="1729" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm cập nhật gần nhất<title>Thời điểm cập nhật gần nhất</title></text>
+<rect x="2856" y="1739" width="778" height="31" fill="#f8fafc"/>
+<text x="2905" y="1760" font-family="Consolas, monospace" font-size="16" fill="#0f172a">note</text>
+<text x="3157" y="1760" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Ghi chú tương thích dữ liệu cũ<title>Ghi chú tương thích dữ liệu cũ</title></text>
+<rect x="2845" y="1804" width="790" height="339" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 2858 1804 H 3622 Q 3635 1804 3635 1817 V 1885 H 2845 V 1817 Q 2845 1804 2858 1804" fill="#f5f3ff"/>
+<rect x="2845" y="1804" width="10" height="339" rx="5" fill="#7c3aed"/>
+<text x="2869" y="1838" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">rooms</text>
+<text x="3615" y="1838" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#7c3aed">8 trường</text>
+<text x="2869" y="1869" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Phòng nội trú chứa các giường.<title>Phòng nội trú chứa các giường.</title></text>
+<rect x="2865" y="1900" width="31" height="21" rx="4" fill="#dbeafe"/>
+<text x="2880" y="1915" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">PK</text>
+<text x="2905" y="1916" font-family="Consolas, monospace" font-size="16" fill="#0f172a">id</text>
+<text x="3157" y="1916" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã duy nhất của rooms<title>Mã duy nhất của rooms</title></text>
+<rect x="2856" y="1926" width="778" height="31" fill="#f8fafc"/>
+<rect x="2865" y="1931" width="31" height="21" rx="4" fill="#fef3c7"/>
+<text x="2880" y="1946" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">UQ</text>
+<text x="2905" y="1947" font-family="Consolas, monospace" font-size="16" fill="#0f172a">room_number</text>
+<text x="3157" y="1947" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã phòng nội trú duy nhất<title>Mã phòng nội trú duy nhất</title></text>
+<text x="2905" y="1978" font-family="Consolas, monospace" font-size="16" fill="#0f172a">room_name</text>
+<text x="3157" y="1978" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Tên phòng nội trú<title>Tên phòng nội trú</title></text>
+<rect x="2856" y="1988" width="778" height="31" fill="#f8fafc"/>
+<text x="2905" y="2009" font-family="Consolas, monospace" font-size="16" fill="#0f172a">department_name</text>
+<text x="3157" y="2009" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Tên khoa phụ trách<title>Tên khoa phụ trách</title></text>
+<text x="2905" y="2040" font-family="Consolas, monospace" font-size="16" fill="#0f172a">room_type</text>
+<text x="3157" y="2040" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Loại phòng, ví dụ inpatient hoặc ICU<title>Loại phòng, ví dụ inpatient hoặc ICU</title></text>
+<rect x="2856" y="2050" width="778" height="31" fill="#f8fafc"/>
+<text x="2905" y="2071" font-family="Consolas, monospace" font-size="16" fill="#0f172a">total_beds</text>
+<text x="3157" y="2071" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Số giường thiết kế của phòng<title>Số giường thiết kế của phòng</title></text>
+<text x="2905" y="2102" font-family="Consolas, monospace" font-size="16" fill="#0f172a">status</text>
+<text x="3157" y="2102" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Trạng thái hoạt động của phòng; mặc định a…<title>Trạng thái hoạt động của phòng; mặc định active</title></text>
+<rect x="2856" y="2112" width="778" height="31" fill="#f8fafc"/>
+<text x="2905" y="2133" font-family="Consolas, monospace" font-size="16" fill="#0f172a">created_at</text>
+<text x="3157" y="2133" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm tạo bản ghi<title>Thời điểm tạo bản ghi</title></text>
+<rect x="2845" y="2177" width="790" height="401" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 2858 2177 H 3622 Q 3635 2177 3635 2190 V 2258 H 2845 V 2190 Q 2845 2177 2858 2177" fill="#f5f3ff"/>
+<rect x="2845" y="2177" width="10" height="401" rx="5" fill="#7c3aed"/>
+<text x="2869" y="2211" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">beds</text>
+<text x="3615" y="2211" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#7c3aed">10 trường</text>
+<text x="2869" y="2242" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Giường thuộc phòng nội trú và tình trạng sử dụng hiện tại.<title>Giường thuộc phòng nội trú và tình trạng sử dụng hiện tại.</title></text>
+<rect x="2865" y="2273" width="31" height="21" rx="4" fill="#dbeafe"/>
+<text x="2880" y="2288" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">PK</text>
+<text x="2905" y="2289" font-family="Consolas, monospace" font-size="16" fill="#0f172a">id</text>
+<text x="3157" y="2289" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã duy nhất của beds<title>Mã duy nhất của beds</title></text>
+<rect x="2856" y="2299" width="778" height="31" fill="#f8fafc"/>
+<rect x="2865" y="2304" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="2880" y="2319" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="2905" y="2320" font-family="Consolas, monospace" font-size="16" fill="#0f172a">room_id</text>
+<text x="3157" y="2320" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Mã phòng nội trú rooms.id<title>Mã phòng nội trú rooms.id</title></text>
+<text x="3620" y="2320" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#7c3aed">R11</text>
+<text x="2905" y="2351" font-family="Consolas, monospace" font-size="16" fill="#0f172a">bed_number</text>
+<text x="3157" y="2351" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Số giường trong phòng<title>Số giường trong phòng</title></text>
+<rect x="2856" y="2361" width="778" height="31" fill="#f8fafc"/>
+<text x="2905" y="2382" font-family="Consolas, monospace" font-size="16" fill="#0f172a">status</text>
+<text x="3157" y="2382" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">available=trống, occupied=đang nằm, cleani…<title>available=trống, occupied=đang nằm, cleaning=đang dọn, maintenance=bảo trì</title></text>
+<rect x="2865" y="2397" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="2880" y="2412" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="2905" y="2413" font-family="Consolas, monospace" font-size="16" fill="#0f172a">current_patient_id</text>
+<text x="3157" y="2413" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Bệnh nhân đang nằm giường, nếu có<title>Bệnh nhân đang nằm giường, nếu có</title></text>
+<text x="3620" y="2413" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#7c3aed">R10</text>
+<rect x="2856" y="2423" width="778" height="31" fill="#f8fafc"/>
+<rect x="2865" y="2428" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="2880" y="2443" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="2905" y="2444" font-family="Consolas, monospace" font-size="16" fill="#0f172a">current_medical_record_id</text>
+<text x="3157" y="2444" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Bệnh án gắn lần nằm giường hiện tại<title>Bệnh án gắn lần nằm giường hiện tại</title></text>
+<text x="3620" y="2444" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#7c3aed">R09</text>
+<rect x="2865" y="2459" width="31" height="21" rx="4" fill="#dcfce7"/>
+<text x="2880" y="2474" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#334155">FK</text>
+<text x="2905" y="2475" font-family="Consolas, monospace" font-size="16" fill="#0f172a">current_doctor_id</text>
+<text x="3157" y="2475" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Bác sĩ phụ trách giường hiện tại<title>Bác sĩ phụ trách giường hiện tại</title></text>
+<text x="3620" y="2475" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#7c3aed">R08</text>
+<rect x="2856" y="2485" width="778" height="31" fill="#f8fafc"/>
+<text x="2905" y="2506" font-family="Consolas, monospace" font-size="16" fill="#0f172a">admission_date</text>
+<text x="3157" y="2506" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Ngày giờ nhận giường<title>Ngày giờ nhận giường</title></text>
+<text x="2905" y="2537" font-family="Consolas, monospace" font-size="16" fill="#0f172a">notes</text>
+<text x="3157" y="2537" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Ghi chú<title>Ghi chú</title></text>
+<rect x="2856" y="2547" width="778" height="31" fill="#f8fafc"/>
+<text x="2905" y="2568" font-family="Consolas, monospace" font-size="16" fill="#0f172a">updated_at</text>
+<text x="3157" y="2568" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#334155">Thời điểm cập nhật gần nhất<title>Thời điểm cập nhật gần nhất</title></text>
+<rect x="70" y="3641" width="3565" height="84" rx="12" fill="#e2e8f0"/>
+<text x="93" y="3676" font-family="Segoe UI, Arial, sans-serif" font-size="19" fill="#0f172a">PK = khóa chính · FK = khóa ngoại thật · UQ = duy nhất · R01–R41 = số dây trong bảng giải thích</text>
+<text x="93" y="3706" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Nét đứt đỏ = quan hệ nghiệp vụ vai trò, chưa có FK SQLite. Mở SVG ở kích thước gốc để phóng to từng bảng.</text>
+</svg>

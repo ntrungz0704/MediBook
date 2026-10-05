@@ -226,6 +226,15 @@ async function runTests() {
     res = await patientClient.get('/admin/dashboard', false);
     assert(res.statusCode === 403 || res.statusCode === 302, 'Bệnh nhân không thể truy cập /admin/dashboard (Chặn 403)');
 
+    const profileUser = db.prepare("SELECT id, name FROM users WHERE email = 'patient@medibook.local'").get();
+    await patientClient.post('/profile', { name: 'Tên sai', phone: '0901234567', gender: 'invalid' }, false);
+    assert(db.prepare('SELECT name FROM users WHERE id = ?').get(profileUser.id).name === profileUser.name,
+      'Giới tính sai bị chặn và thông tin tài khoản không bị ghi dở');
+    await patientClient.post('/profile', { name: profileUser.name, phone: '0901234567', gender: 'female' }, false);
+    assert(db.prepare('SELECT gender FROM patients WHERE user_id = ?').get(profileUser.id).gender === 'female',
+      'Giới tính female được lưu đúng trong hồ sơ bệnh nhân');
+    await patientClient.post('/profile', { name: profileUser.name, phone: '0901234567', gender: 'other' }, false);
+
     const doctorBefore = db.prepare('SELECT consultation_fee FROM doctors WHERE id = 1').get().consultation_fee;
     await adminClient.post('/admin/doctors/update/1', {
       title: 'Bác sĩ', room_number: 'P.101', experience_years: '5',

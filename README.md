@@ -5,7 +5,7 @@ Hệ thống **MediBook** chạy trên **Node.js, TypeScript, Express, SQLite v�
 - ✅ **KHÔNG phụ thuộc phpMyAdmin hay MySQL Server**, database SQLite tự động tạo và seed đầy đủ dữ liệu demo độc lập ngay trong project.
 - ✅ Có luồng chính cho 4 vai trò: Admin, Doctor, Receptionist, Patient. Xem [báo cáo xác minh hiện tại](docs/VERIFICATION_2026-10-04.md) để biết phạm vi đã kiểm tra và giới hạn còn lại.
 
-Schema ứng dụng hiện có **27 bảng SQLite, 41 khóa ngoại**. Con số 26 bảng thuộc bản ERD trước khi thêm `contact_requests`. [ERD hiện tại](docs/ERD.md), [sơ đồ draw.io](docs/MediBook_ERD.drawio) và `database/schema.sql` được sinh từ cùng DB mới bằng `npm run erd:sync`; `npm run erd:check` phát hiện tài liệu lệch schema.
+Schema ứng dụng hiện có **27 bảng SQLite, 41 khóa ngoại**. Con số 26 bảng thuộc bản ERD trước khi thêm `contact_requests`. Xem [hướng dẫn từng trường và dây nối](docs/ERD_GIAI_THICH.md), [ảnh PNG đầy đủ](docs/MediBook_ERD_Complete.png), [SVG phóng to](docs/MediBook_ERD_Complete.svg), [ảnh tổng quan](docs/MediBook_ERD_Overview.png), [Mermaid](docs/ERD.md), [sơ đồ draw.io](docs/MediBook_ERD.drawio). Tài liệu, SVG, draw.io và `database/schema.sql` sinh từ DB mới bằng `npm run erd:sync`; PNG là bản xuất từ SVG. `npm run erd:check` phát hiện tài liệu nguồn lệch schema.
 
 ---
 

@@ -10,8 +10,8 @@
     "dev": "tsc -w",
     "test": "node test_full_suite.js",
     "test:views": "node test_render_views.js",
-    "erd:sync": "node scripts/sync-erd.js",
-    "erd:check": "node scripts/sync-erd.js --check"
+    "erd:sync": "npm run build && node scripts/sync-erd.js && node scripts/render-erd.js",
+    "erd:check": "npm run build && node scripts/sync-erd.js --check && node scripts/render-erd.js --check"
   },
   "keywords": [],
   "author": "",

@@ -1,0 +1,224 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3705" height="1635" viewBox="0 0 3705 1635" role="img" aria-labelledby="erd-title erd-desc">
+<title id="erd-title">MediBook · Tổng quan quan hệ dữ liệu</title>
+<desc id="erd-desc">27 bảng, 273 trường, 41 khóa ngoại; bảng vai trò có hai quan hệ nghiệp vụ nét đứt.</desc>
+<rect width="100%" height="100%" fill="#f8fafc"/>
+<text x="70" y="76" font-family="Segoe UI, Arial, sans-serif" font-size="39" font-weight="700" fill="#0f172a">MediBook · Tổng quan quan hệ dữ liệu</text>
+<text x="70" y="117" font-family="Segoe UI, Arial, sans-serif" font-size="22" fill="#334155">27 bảng · 273 trường · 41 khóa ngoại thật · 2 dây nghiệp vụ nét đứt</text>
+<text x="70" y="148" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#64748b">Dữ liệu và dây nối sinh từ SQLite đang chạy; xem ERD_GIAI_THICH.md để đọc R01–R41, bội số và ý nghĩa đầy đủ.</text>
+<rect x="70" y="170" width="790" height="40" rx="12" fill="#1d4ed8"/>
+<text x="88" y="197" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700" fill="#fff">Tài khoản &amp; liên hệ</text>
+<rect x="995" y="170" width="790" height="40" rx="12" fill="#0f766e"/>
+<text x="1013" y="197" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700" fill="#fff">Danh mục &amp; lịch làm việc</text>
+<rect x="1920" y="170" width="790" height="40" rx="12" fill="#b45309"/>
+<text x="1938" y="197" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700" fill="#fff">Đặt lịch &amp; khám bệnh</text>
+<rect x="2845" y="170" width="790" height="40" rx="12" fill="#7c3aed"/>
+<text x="2863" y="197" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700" fill="#fff">Đơn thuốc, tiền &amp; nội trú</text>
+<path d="M 860 276 C 918 276, 918 1256, 860 1256" fill="none" stroke="#1d4ed8" stroke-width="2.4" stroke-opacity="0.38" ><title>R01 users o|--o{ activity_logs · activity_logs.user_id</title></path>
+<path d="M 2710 276 C 2768 276, 2768 416, 2710 416" fill="none" stroke="#b45309" stroke-width="2.4" stroke-opacity="0.38" ><title>R02 appointments ||--o{ appointment_status_history · appointment_status_history.appointment_id</title></path>
+<path d="M 860 276 C 1390 276, 1390 416, 1920 416" fill="none" stroke="#b45309" stroke-width="2.4" stroke-opacity="0.38" ><title>R03 users o|--o{ appointment_status_history · appointment_status_history.changed_by_user_id</title></path>
+<path d="M 860 836 C 1390 836, 1390 276, 1920 276" fill="none" stroke="#b45309" stroke-width="2.4" stroke-opacity="0.38" ><title>R04 doctors ||--o{ appointments · appointments.doctor_id</title></path>
+<path d="M 860 696 C 1390 696, 1390 276, 1920 276" fill="none" stroke="#b45309" stroke-width="2.4" stroke-opacity="0.38" ><title>R05 patients ||--o{ appointments · appointments.patient_id</title></path>
+<path d="M 1785 556 C 1852.5 556, 1852.5 276, 1920 276" fill="none" stroke="#b45309" stroke-width="2.4" stroke-opacity="0.38" ><title>R06 services o|--o{ appointments · appointments.service_id</title></path>
+<path d="M 1785 276 C 1852.5 276, 1852.5 276, 1920 276" fill="none" stroke="#b45309" stroke-width="2.4" stroke-opacity="0.38" ><title>R07 specialties o|--o{ appointments · appointments.specialty_id</title></path>
+<path d="M 860 836 C 1852.5 836, 1852.5 836, 2845 836" fill="none" stroke="#7c3aed" stroke-width="2.4" stroke-opacity="0.38" ><title>R08 doctors o|--o{ beds · beds.current_doctor_id</title></path>
+<path d="M 2710 696 C 2777.5 696, 2777.5 836, 2845 836" fill="none" stroke="#7c3aed" stroke-width="2.4" stroke-opacity="0.38" ><title>R09 medical_records o|--o{ beds · beds.current_medical_record_id</title></path>
+<path d="M 860 696 C 1852.5 696, 1852.5 836, 2845 836" fill="none" stroke="#7c3aed" stroke-width="2.4" stroke-opacity="0.38" ><title>R10 patients o|--o{ beds · beds.current_patient_id</title></path>
+<path d="M 3635 696 C 3693 696, 3693 836, 3635 836" fill="none" stroke="#7c3aed" stroke-width="2.4" stroke-opacity="0.38" ><title>R11 rooms ||--o{ beds · beds.room_id</title></path>
+<path d="M 860 276 C 918 276, 918 1396, 860 1396" fill="none" stroke="#1d4ed8" stroke-width="2.4" stroke-opacity="0.38" ><title>R12 users o|--o{ contact_requests · contact_requests.user_id</title></path>
+<path d="M 860 836 C 927.5 836, 927.5 836, 995 836" fill="none" stroke="#0f766e" stroke-width="2.4" stroke-opacity="0.38" ><title>R13 doctors ||--o{ doctor_leaves · doctor_leaves.doctor_id</title></path>
+<path d="M 860 836 C 927.5 836, 927.5 696, 995 696" fill="none" stroke="#0f766e" stroke-width="2.4" stroke-opacity="0.38" ><title>R14 doctors ||--o{ doctor_schedules · doctor_schedules.doctor_id</title></path>
+<path d="M 860 836 C 927.5 836, 927.5 416, 995 416" fill="none" stroke="#0f766e" stroke-width="2.4" stroke-opacity="0.38" ><title>R15 doctors ||--o{ doctor_specialties · doctor_specialties.doctor_id</title></path>
+<path d="M 1785 276 C 1843 276, 1843 416, 1785 416" fill="none" stroke="#0f766e" stroke-width="2.4" stroke-opacity="0.38" ><title>R16 specialties ||--o{ doctor_specialties · doctor_specialties.specialty_id</title></path>
+<path d="M 860 276 C 918 276, 918 836, 860 836" fill="none" stroke="#1d4ed8" stroke-width="2.4" stroke-opacity="0.38" ><title>R17 users ||--o| doctors · doctors.user_id</title></path>
+<path d="M 2710 276 C 2768 276, 2768 556, 2710 556" fill="none" stroke="#b45309" stroke-width="2.4" stroke-opacity="0.38" ><title>R18 appointments ||--o| examination_queues · examination_queues.appointment_id</title></path>
+<path d="M 860 836 C 927.5 836, 927.5 976, 995 976" fill="none" stroke="#0f766e" stroke-width="2.4" stroke-opacity="0.38" ><title>R19 doctors ||--o{ favorite_doctors · favorite_doctors.doctor_id</title></path>
+<path d="M 860 696 C 927.5 696, 927.5 976, 995 976" fill="none" stroke="#0f766e" stroke-width="2.4" stroke-opacity="0.38" ><title>R20 patients ||--o{ favorite_doctors · favorite_doctors.patient_id</title></path>
+<path d="M 2710 276 C 2768 276, 2768 696, 2710 696" fill="none" stroke="#b45309" stroke-width="2.4" stroke-opacity="0.38" ><title>R21 appointments ||--o| medical_records · medical_records.appointment_id</title></path>
+<path d="M 2845 836 C 2777.5 836, 2777.5 696, 2710 696" fill="none" stroke="#b45309" stroke-width="2.4" stroke-opacity="0.38" ><title>R22 beds o|--o{ medical_records · medical_records.bed_id</title></path>
+<path d="M 860 836 C 1390 836, 1390 696, 1920 696" fill="none" stroke="#b45309" stroke-width="2.4" stroke-opacity="0.38" ><title>R23 doctors ||--o{ medical_records · medical_records.doctor_id</title></path>
+<path d="M 2710 696 C 2768 696, 2768 696, 2710 696" fill="none" stroke="#b45309" stroke-width="2.4" stroke-opacity="0.38" ><title>R24 medical_records o|--o{ medical_records · medical_records.parent_visit_id</title></path>
+<path d="M 860 696 C 1390 696, 1390 696, 1920 696" fill="none" stroke="#b45309" stroke-width="2.4" stroke-opacity="0.38" ><title>R25 patients ||--o{ medical_records · medical_records.patient_id</title></path>
+<path d="M 860 276 C 918 276, 918 1116, 860 1116" fill="none" stroke="#1d4ed8" stroke-width="2.4" stroke-opacity="0.38" ><title>R26 users ||--o{ notifications · notifications.user_id</title></path>
+<path d="M 860 276 C 918 276, 918 696, 860 696" fill="none" stroke="#1d4ed8" stroke-width="2.4" stroke-opacity="0.38" ><title>R27 users ||--o| patients · patients.user_id</title></path>
+<path d="M 2710 276 C 2777.5 276, 2777.5 556, 2845 556" fill="none" stroke="#7c3aed" stroke-width="2.4" stroke-opacity="0.38" ><title>R28 appointments ||--o| payments · payments.appointment_id</title></path>
+<path d="M 860 276 C 1852.5 276, 1852.5 556, 2845 556" fill="none" stroke="#7c3aed" stroke-width="2.4" stroke-opacity="0.38" ><title>R29 users o|--o{ payments · payments.cashier_user_id</title></path>
+<path d="M 1785 1116 C 2315 1116, 2315 416, 2845 416" fill="none" stroke="#7c3aed" stroke-width="2.4" stroke-opacity="0.38" ><title>R30 medicines o|--o{ prescription_items · prescription_items.medicine_id</title></path>
+<path d="M 3635 276 C 3693 276, 3693 416, 3635 416" fill="none" stroke="#7c3aed" stroke-width="2.4" stroke-opacity="0.38" ><title>R31 prescriptions ||--o{ prescription_items · prescription_items.prescription_id</title></path>
+<path d="M 2710 276 C 2777.5 276, 2777.5 276, 2845 276" fill="none" stroke="#7c3aed" stroke-width="2.4" stroke-opacity="0.38" ><title>R32 appointments o|--o{ prescriptions · prescriptions.appointment_id</title></path>
+<path d="M 860 836 C 1852.5 836, 1852.5 276, 2845 276" fill="none" stroke="#7c3aed" stroke-width="2.4" stroke-opacity="0.38" ><title>R33 doctors o|--o{ prescriptions · prescriptions.doctor_id</title></path>
+<path d="M 2710 696 C 2777.5 696, 2777.5 276, 2845 276" fill="none" stroke="#7c3aed" stroke-width="2.4" stroke-opacity="0.38" ><title>R34 medical_records ||--o| prescriptions · prescriptions.medical_record_id</title></path>
+<path d="M 860 696 C 1852.5 696, 1852.5 276, 2845 276" fill="none" stroke="#7c3aed" stroke-width="2.4" stroke-opacity="0.38" ><title>R35 patients o|--o{ prescriptions · prescriptions.patient_id</title></path>
+<path d="M 860 276 C 918 276, 918 976, 860 976" fill="none" stroke="#1d4ed8" stroke-width="2.4" stroke-opacity="0.38" ><title>R36 users ||--o| receptionists · receptionists.user_id</title></path>
+<path d="M 2710 276 C 2768 276, 2768 836, 2710 836" fill="none" stroke="#b45309" stroke-width="2.4" stroke-opacity="0.38" ><title>R37 appointments o|--o| reviews · reviews.appointment_id</title></path>
+<path d="M 860 836 C 1390 836, 1390 836, 1920 836" fill="none" stroke="#b45309" stroke-width="2.4" stroke-opacity="0.38" ><title>R38 doctors ||--o{ reviews · reviews.doctor_id</title></path>
+<path d="M 860 696 C 1390 696, 1390 836, 1920 836" fill="none" stroke="#b45309" stroke-width="2.4" stroke-opacity="0.38" ><title>R39 patients ||--o{ reviews · reviews.patient_id</title></path>
+<path d="M 1785 276 C 1843 276, 1843 556, 1785 556" fill="none" stroke="#0f766e" stroke-width="2.4" stroke-opacity="0.38" ><title>R40 specialties o|--o{ services · services.specialty_id</title></path>
+<path d="M 860 276 C 918 276, 918 556, 860 556" fill="none" stroke="#1d4ed8" stroke-width="2.4" stroke-opacity="0.38" ><title>R41 users ||--o{ user_roles · user_roles.user_id</title></path>
+<path d="M 860 416 C 918 416, 918 556, 860 556" fill="none" stroke="#dc2626" stroke-width="2.8" stroke-opacity="0.75" stroke-dasharray="9 6"><title>Nghiệp vụ: roles.code ⇢ user_roles.role; chưa có FK vật lý</title></path>
+<path d="M 860 416 C 918 416, 918 276, 860 276" fill="none" stroke="#dc2626" stroke-width="2.8" stroke-opacity="0.75" stroke-dasharray="9 6"><title>Nghiệp vụ: roles.code ⇢ users.role; vai trò chính/di sản, chưa có FK vật lý</title></path>
+<rect x="70" y="220" width="790" height="112" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 83 220 H 847 Q 860 220 860 233 V 301 H 70 V 233 Q 70 220 83 220" fill="#eff6ff"/>
+<rect x="70" y="220" width="10" height="112" rx="5" fill="#1d4ed8"/>
+<text x="94" y="254" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">users</text>
+<text x="840" y="254" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#1d4ed8">10 trường</text>
+<text x="94" y="285" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Tài khoản đăng nhập và thông tin định danh chung.<title>Tài khoản đăng nhập và thông tin định danh chung.</title></text>
+<rect x="70" y="360" width="790" height="112" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 83 360 H 847 Q 860 360 860 373 V 441 H 70 V 373 Q 70 360 83 360" fill="#eff6ff"/>
+<rect x="70" y="360" width="10" height="112" rx="5" fill="#1d4ed8"/>
+<text x="94" y="394" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">roles</text>
+<text x="840" y="394" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#1d4ed8">4 trường</text>
+<text x="94" y="425" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Danh mục mã vai trò dùng để giải thích quyền trong hệ thống.<title>Danh mục mã vai trò dùng để giải thích quyền trong hệ thống.</title></text>
+<rect x="70" y="500" width="790" height="112" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 83 500 H 847 Q 860 500 860 513 V 581 H 70 V 513 Q 70 500 83 500" fill="#eff6ff"/>
+<rect x="70" y="500" width="10" height="112" rx="5" fill="#1d4ed8"/>
+<text x="94" y="534" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">user_roles</text>
+<text x="840" y="534" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#1d4ed8">4 trường</text>
+<text x="94" y="565" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Những vai trò được cấp cho tài khoản; một tài khoản có nhiều dòng.<title>Những vai trò được cấp cho tài khoản; một tài khoản có nhiều dòng.</title></text>
+<rect x="70" y="640" width="790" height="112" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 83 640 H 847 Q 860 640 860 653 V 721 H 70 V 653 Q 70 640 83 640" fill="#eff6ff"/>
+<rect x="70" y="640" width="10" height="112" rx="5" fill="#1d4ed8"/>
+<text x="94" y="674" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">patients</text>
+<text x="840" y="674" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#1d4ed8">12 trường</text>
+<text x="94" y="705" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Thông tin y tế của tài khoản có vai trò bệnh nhân.<title>Thông tin y tế của tài khoản có vai trò bệnh nhân.</title></text>
+<rect x="70" y="780" width="790" height="112" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 83 780 H 847 Q 860 780 860 793 V 861 H 70 V 793 Q 70 780 83 780" fill="#eff6ff"/>
+<rect x="70" y="780" width="10" height="112" rx="5" fill="#1d4ed8"/>
+<text x="94" y="814" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">doctors</text>
+<text x="840" y="814" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#1d4ed8">11 trường</text>
+<text x="94" y="845" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Thông tin nghề nghiệp và biểu phí của một tài khoản bác sĩ.<title>Thông tin nghề nghiệp và biểu phí của một tài khoản bác sĩ.</title></text>
+<rect x="70" y="920" width="790" height="112" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 83 920 H 847 Q 860 920 860 933 V 1001 H 70 V 933 Q 70 920 83 920" fill="#eff6ff"/>
+<rect x="70" y="920" width="10" height="112" rx="5" fill="#1d4ed8"/>
+<text x="94" y="954" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">receptionists</text>
+<text x="840" y="954" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#1d4ed8">7 trường</text>
+<text x="94" y="985" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Hồ sơ nhân viên lễ tân của một tài khoản.<title>Hồ sơ nhân viên lễ tân của một tài khoản.</title></text>
+<rect x="70" y="1060" width="790" height="112" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 83 1060 H 847 Q 860 1060 860 1073 V 1141 H 70 V 1073 Q 70 1060 83 1060" fill="#eff6ff"/>
+<rect x="70" y="1060" width="10" height="112" rx="5" fill="#1d4ed8"/>
+<text x="94" y="1094" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">notifications</text>
+<text x="840" y="1094" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#1d4ed8">8 trường</text>
+<text x="94" y="1125" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Thông báo trong ứng dụng cho tài khoản.<title>Thông báo trong ứng dụng cho tài khoản.</title></text>
+<rect x="70" y="1200" width="790" height="112" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 83 1200 H 847 Q 860 1200 860 1213 V 1281 H 70 V 1213 Q 70 1200 83 1200" fill="#eff6ff"/>
+<rect x="70" y="1200" width="10" height="112" rx="5" fill="#1d4ed8"/>
+<text x="94" y="1234" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">activity_logs</text>
+<text x="840" y="1234" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#1d4ed8">9 trường</text>
+<text x="94" y="1265" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Nhật ký thao tác để truy vết người dùng và đối tượng bị thay đổi.<title>Nhật ký thao tác để truy vết người dùng và đối tượng bị thay đổi.</title></text>
+<rect x="70" y="1340" width="790" height="112" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 83 1340 H 847 Q 860 1340 860 1353 V 1421 H 70 V 1353 Q 70 1340 83 1340" fill="#eff6ff"/>
+<rect x="70" y="1340" width="10" height="112" rx="5" fill="#1d4ed8"/>
+<text x="94" y="1374" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">contact_requests</text>
+<text x="840" y="1374" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#1d4ed8">8 trường</text>
+<text x="94" y="1405" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Yêu cầu liên hệ do khách hoặc tài khoản gửi.<title>Yêu cầu liên hệ do khách hoặc tài khoản gửi.</title></text>
+<rect x="995" y="220" width="790" height="112" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 1008 220 H 1772 Q 1785 220 1785 233 V 301 H 995 V 233 Q 995 220 1008 220" fill="#ecfdf5"/>
+<rect x="995" y="220" width="10" height="112" rx="5" fill="#0f766e"/>
+<text x="1019" y="254" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">specialties</text>
+<text x="1765" y="254" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#0f766e">9 trường</text>
+<text x="1019" y="285" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Danh mục chuyên khoa khám.<title>Danh mục chuyên khoa khám.</title></text>
+<rect x="995" y="360" width="790" height="112" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 1008 360 H 1772 Q 1785 360 1785 373 V 441 H 995 V 373 Q 995 360 1008 360" fill="#ecfdf5"/>
+<rect x="995" y="360" width="10" height="112" rx="5" fill="#0f766e"/>
+<text x="1019" y="394" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">doctor_specialties</text>
+<text x="1765" y="394" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#0f766e">5 trường</text>
+<text x="1019" y="425" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Bảng nối bác sĩ với chuyên khoa mà bác sĩ phụ trách.<title>Bảng nối bác sĩ với chuyên khoa mà bác sĩ phụ trách.</title></text>
+<rect x="995" y="500" width="790" height="112" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 1008 500 H 1772 Q 1785 500 1785 513 V 581 H 995 V 513 Q 995 500 1008 500" fill="#ecfdf5"/>
+<rect x="995" y="500" width="10" height="112" rx="5" fill="#0f766e"/>
+<text x="1019" y="534" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">services</text>
+<text x="1765" y="534" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#0f766e">9 trường</text>
+<text x="1019" y="565" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Dịch vụ khám và giá gắn với chuyên khoa.<title>Dịch vụ khám và giá gắn với chuyên khoa.</title></text>
+<rect x="995" y="640" width="790" height="112" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 1008 640 H 1772 Q 1785 640 1785 653 V 721 H 995 V 653 Q 995 640 1008 640" fill="#ecfdf5"/>
+<rect x="995" y="640" width="10" height="112" rx="5" fill="#0f766e"/>
+<text x="1019" y="674" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">doctor_schedules</text>
+<text x="1765" y="674" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#0f766e">11 trường</text>
+<text x="1019" y="705" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Ca làm việc lặp theo thứ trong tuần của bác sĩ.<title>Ca làm việc lặp theo thứ trong tuần của bác sĩ.</title></text>
+<rect x="995" y="780" width="790" height="112" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 1008 780 H 1772 Q 1785 780 1785 793 V 861 H 995 V 793 Q 995 780 1008 780" fill="#ecfdf5"/>
+<rect x="995" y="780" width="10" height="112" rx="5" fill="#0f766e"/>
+<text x="1019" y="814" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">doctor_leaves</text>
+<text x="1765" y="814" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#0f766e">7 trường</text>
+<text x="1019" y="845" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Khoảng thời gian bác sĩ xin nghỉ hoặc được duyệt nghỉ.<title>Khoảng thời gian bác sĩ xin nghỉ hoặc được duyệt nghỉ.</title></text>
+<rect x="995" y="920" width="790" height="112" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 1008 920 H 1772 Q 1785 920 1785 933 V 1001 H 995 V 933 Q 995 920 1008 920" fill="#ecfdf5"/>
+<rect x="995" y="920" width="10" height="112" rx="5" fill="#0f766e"/>
+<text x="1019" y="954" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">favorite_doctors</text>
+<text x="1765" y="954" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#0f766e">4 trường</text>
+<text x="1019" y="985" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Danh sách bác sĩ được bệnh nhân lưu yêu thích.<title>Danh sách bác sĩ được bệnh nhân lưu yêu thích.</title></text>
+<rect x="995" y="1060" width="790" height="112" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 1008 1060 H 1772 Q 1785 1060 1785 1073 V 1141 H 995 V 1073 Q 995 1060 1008 1060" fill="#ecfdf5"/>
+<rect x="995" y="1060" width="10" height="112" rx="5" fill="#0f766e"/>
+<text x="1019" y="1094" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">medicines</text>
+<text x="1765" y="1094" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#0f766e">11 trường</text>
+<text x="1019" y="1125" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Danh mục thuốc và số lượng tồn kho.<title>Danh mục thuốc và số lượng tồn kho.</title></text>
+<rect x="995" y="1200" width="790" height="112" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 1008 1200 H 1772 Q 1785 1200 1785 1213 V 1281 H 995 V 1213 Q 995 1200 1008 1200" fill="#ecfdf5"/>
+<rect x="995" y="1200" width="10" height="112" rx="5" fill="#0f766e"/>
+<text x="1019" y="1234" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">articles</text>
+<text x="1765" y="1234" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#0f766e">15 trường</text>
+<text x="1019" y="1265" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Bài viết/cẩm nang y tế hiển thị công khai khi được bật.<title>Bài viết/cẩm nang y tế hiển thị công khai khi được bật.</title></text>
+<rect x="1920" y="220" width="790" height="112" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 1933 220 H 2697 Q 2710 220 2710 233 V 301 H 1920 V 233 Q 1920 220 1933 220" fill="#fffbeb"/>
+<rect x="1920" y="220" width="10" height="112" rx="5" fill="#b45309"/>
+<text x="1944" y="254" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">appointments</text>
+<text x="2690" y="254" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#b45309">21 trường</text>
+<text x="1944" y="285" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Một lần đặt khám của một bệnh nhân với một bác sĩ.<title>Một lần đặt khám của một bệnh nhân với một bác sĩ.</title></text>
+<rect x="1920" y="360" width="790" height="112" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 1933 360 H 2697 Q 2710 360 2710 373 V 441 H 1920 V 373 Q 1920 360 1933 360" fill="#fffbeb"/>
+<rect x="1920" y="360" width="10" height="112" rx="5" fill="#b45309"/>
+<text x="1944" y="394" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">appointment_status_history</text>
+<text x="2690" y="394" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#b45309">7 trường</text>
+<text x="1944" y="425" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Lịch sử mỗi lần lịch hẹn đổi trạng thái.<title>Lịch sử mỗi lần lịch hẹn đổi trạng thái.</title></text>
+<rect x="1920" y="500" width="790" height="112" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 1933 500 H 2697 Q 2710 500 2710 513 V 581 H 1920 V 513 Q 1920 500 1933 500" fill="#fffbeb"/>
+<rect x="1920" y="500" width="10" height="112" rx="5" fill="#b45309"/>
+<text x="1944" y="534" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">examination_queues</text>
+<text x="2690" y="534" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#b45309">15 trường</text>
+<text x="1944" y="565" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Một số thứ tự tiếp đón ứng với một lịch hẹn.<title>Một số thứ tự tiếp đón ứng với một lịch hẹn.</title></text>
+<rect x="1920" y="640" width="790" height="112" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 1933 640 H 2697 Q 2710 640 2710 653 V 721 H 1920 V 653 Q 1920 640 1933 640" fill="#fffbeb"/>
+<rect x="1920" y="640" width="10" height="112" rx="5" fill="#b45309"/>
+<text x="1944" y="674" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">medical_records</text>
+<text x="2690" y="674" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#b45309">21 trường</text>
+<text x="1944" y="705" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Bệnh án tạo từ một lịch hẹn đã khám.<title>Bệnh án tạo từ một lịch hẹn đã khám.</title></text>
+<rect x="1920" y="780" width="790" height="112" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 1933 780 H 2697 Q 2710 780 2710 793 V 861 H 1920 V 793 Q 1920 780 1933 780" fill="#fffbeb"/>
+<rect x="1920" y="780" width="10" height="112" rx="5" fill="#b45309"/>
+<text x="1944" y="814" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">reviews</text>
+<text x="2690" y="814" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#b45309">8 trường</text>
+<text x="1944" y="845" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Đánh giá sau khám do bệnh nhân gửi cho bác sĩ.<title>Đánh giá sau khám do bệnh nhân gửi cho bác sĩ.</title></text>
+<rect x="2845" y="220" width="790" height="112" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 2858 220 H 3622 Q 3635 220 3635 233 V 301 H 2845 V 233 Q 2845 220 2858 220" fill="#f5f3ff"/>
+<rect x="2845" y="220" width="10" height="112" rx="5" fill="#7c3aed"/>
+<text x="2869" y="254" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">prescriptions</text>
+<text x="3615" y="254" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#7c3aed">8 trường</text>
+<text x="2869" y="285" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Đầu đơn thuốc thuộc một bệnh án.<title>Đầu đơn thuốc thuộc một bệnh án.</title></text>
+<rect x="2845" y="360" width="790" height="112" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 2858 360 H 3622 Q 3635 360 3635 373 V 441 H 2845 V 373 Q 2845 360 2858 360" fill="#f5f3ff"/>
+<rect x="2845" y="360" width="10" height="112" rx="5" fill="#7c3aed"/>
+<text x="2869" y="394" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">prescription_items</text>
+<text x="3615" y="394" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#7c3aed">15 trường</text>
+<text x="2869" y="425" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Từng dòng thuốc, liều và giá đã chốt trong đơn.<title>Từng dòng thuốc, liều và giá đã chốt trong đơn.</title></text>
+<rect x="2845" y="500" width="790" height="112" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 2858 500 H 3622 Q 3635 500 3635 513 V 581 H 2845 V 513 Q 2845 500 2858 500" fill="#f5f3ff"/>
+<rect x="2845" y="500" width="10" height="112" rx="5" fill="#7c3aed"/>
+<text x="2869" y="534" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">payments</text>
+<text x="3615" y="534" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#7c3aed">16 trường</text>
+<text x="2869" y="565" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Hóa đơn và trạng thái thanh toán của lịch hẹn.<title>Hóa đơn và trạng thái thanh toán của lịch hẹn.</title></text>
+<rect x="2845" y="640" width="790" height="112" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 2858 640 H 3622 Q 3635 640 3635 653 V 721 H 2845 V 653 Q 2845 640 2858 640" fill="#f5f3ff"/>
+<rect x="2845" y="640" width="10" height="112" rx="5" fill="#7c3aed"/>
+<text x="2869" y="674" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">rooms</text>
+<text x="3615" y="674" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#7c3aed">8 trường</text>
+<text x="2869" y="705" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Phòng nội trú chứa các giường.<title>Phòng nội trú chứa các giường.</title></text>
+<rect x="2845" y="780" width="790" height="112" rx="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 2858 780 H 3622 Q 3635 780 3635 793 V 861 H 2845 V 793 Q 2845 780 2858 780" fill="#f5f3ff"/>
+<rect x="2845" y="780" width="10" height="112" rx="5" fill="#7c3aed"/>
+<text x="2869" y="814" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">beds</text>
+<text x="3615" y="814" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#7c3aed">10 trường</text>
+<text x="2869" y="845" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Giường thuộc phòng nội trú và tình trạng sử dụng hiện tại.<title>Giường thuộc phòng nội trú và tình trạng sử dụng hiện tại.</title></text>
+<rect x="70" y="1513" width="3565" height="84" rx="12" fill="#e2e8f0"/>
+<text x="93" y="1548" font-family="Segoe UI, Arial, sans-serif" font-size="19" fill="#0f172a">PK = khóa chính · FK = khóa ngoại thật · UQ = duy nhất · R01–R41 = số dây trong bảng giải thích</text>
+<text x="93" y="1578" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Nét đứt đỏ = quan hệ nghiệp vụ vai trò, chưa có FK SQLite. Mở SVG ở kích thước gốc để phóng to từng bảng.</text>
+</svg>
