@@ -31,8 +31,10 @@ try {
     for (const fk of table.foreignKeys) {
       const unique = table.uniqueColumns.some(cols => cols.length === 1 && cols[0] === fk.from)
         || table.columns.some(col => col.name === fk.from && col.pk);
+      const column = table.columns.find(col => col.name === fk.from);
       relationship.push({ child: table.name, parent: fk.table, from: fk.from, to: fk.to,
-        cardinality: unique ? 'o|' : 'o{' });
+        parentCardinality: column.notnull || column.pk ? '||' : 'o|',
+        childCardinality: unique ? 'o|' : 'o{' });
     }
   }
   relationship.sort((a, b) => `${a.parent}.${a.child}.${a.from}`.localeCompare(`${b.parent}.${b.child}.${b.from}`));
@@ -74,7 +76,7 @@ try {
     '',
     '```mermaid',
     'erDiagram',
-    ...relationship.map(rel => `    ${rel.parent} ||--${rel.cardinality} ${rel.child} : "${rel.from}"`),
+    ...relationship.map(rel => `    ${rel.parent} ${rel.parentCardinality}--${rel.childCardinality} ${rel.child} : "${rel.from}"`),
     '```',
     '',
     '## Bảng và cột',
@@ -112,7 +114,9 @@ try {
     cells.push(`<mxCell id="tbl_${table.name}" value="${xml(label)}" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=9;fillColor=${colors[row % colors.length]};strokeColor=#475569;fontSize=11;" vertex="1" parent="1"><mxGeometry x="${col * 360 + 30}" y="${row * 310 + 30}" width="300" height="270" as="geometry"/></mxCell>`);
   });
   relationship.forEach((rel, index) => {
-    cells.push(`<mxCell id="fk_${index}" value="${xml(rel.from)}" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=${rel.cardinality === 'o|' ? 'ERone' : 'ERmany'};endArrow=ERone;strokeColor=#64748b;fontSize=10;" edge="1" parent="1" source="tbl_${rel.child}" target="tbl_${rel.parent}"><mxGeometry relative="1" as="geometry"/></mxCell>`);
+    const childCount = rel.childCardinality === 'o|' ? '0..1' : '0..N';
+    const parentCount = rel.parentCardinality === 'o|' ? '0..1' : '1';
+    cells.push(`<mxCell id="fk_${index}" value="${xml(rel.from)} (${parentCount} cha; ${childCount} con)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=none;endArrow=none;strokeColor=#64748b;fontSize=10;" edge="1" parent="1" source="tbl_${rel.child}" target="tbl_${rel.parent}"><mxGeometry relative="1" as="geometry"/></mxCell>`);
   });
   const drawio = `<?xml version="1.0" encoding="UTF-8"?>\n<mxfile host="app.diagrams.net"><diagram name="MediBook SQLite"><mxGraphModel grid="1" gridSize="10" page="1" pageScale="1" pageWidth="1500" pageHeight="2300"><root>${cells.join('')}</root></mxGraphModel></diagram></mxfile>\n`;
 

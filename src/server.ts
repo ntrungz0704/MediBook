@@ -1320,18 +1320,34 @@ app.post('/api/favorite-doctor', requireAuth, (req, res) => {
 
 app.post('/profile', requireAuth, (req, res) => {
   const { name, phone, dob, gender, blood_group, health_insurance_no, address, emergency_contact, medical_history } = req.body;
-  db.prepare('UPDATE users SET name = ?, phone = ? WHERE id = ?').run(name.trim(), phone.trim(), req.session.user.id);
-
-  if (req.session.user.role === 'patient') {
-    db.prepare(`
-      UPDATE patients 
-      SET dob = ?, gender = ?, blood_group = ?, health_insurance_no = ?, address = ?, emergency_contact = ?, medical_history = ?
-      WHERE user_id = ?
-    `).run(dob || null, gender || 'other', blood_group || null, health_insurance_no || null, address || null, emergency_contact || null, medical_history || null, req.session.user.id);
+  const normalizedName = typeof name === 'string' ? name.trim() : '';
+  const normalizedPhone = typeof phone === 'string' ? phone.trim() : '';
+  const isPatient = req.session.user.role === 'patient';
+  const optionalFields = [blood_group, health_insurance_no, address, emergency_contact, medical_history];
+  const rawDate = dob || '';
+  const dateParts = typeof rawDate === 'string' && /^(\d{4})-(\d{2})-(\d{2})$/.exec(rawDate);
+  const parsedDate = dateParts && new Date(Date.UTC(Number(dateParts[1]), Number(dateParts[2]) - 1, Number(dateParts[3])));
+  if (!normalizedName || normalizedName.length > 120 || !/^(?:0|\+84)[35789]\d{8}$/.test(normalizedPhone) ||
+      (isPatient && (typeof rawDate !== 'string' || (rawDate && (!parsedDate || parsedDate.toISOString().slice(0, 10) !== rawDate || rawDate > businessNow().date)) ||
+        !['male', 'female', 'other'].includes(gender || 'other') ||
+        optionalFields.some(field => typeof field !== 'string' && field !== undefined || typeof field === 'string' && field.length > 5000)))) {
+    req.flash('error', 'Thông tin hồ sơ không hợp lệ. Giới tính chỉ nhận Nam, Nữ hoặc Khác.');
+    return res.redirect('/profile');
   }
+  db.transaction(() => {
+    db.prepare('UPDATE users SET name = ?, phone = ? WHERE id = ?').run(normalizedName, normalizedPhone, req.session.user.id);
+    if (isPatient) {
+      db.prepare('INSERT OR IGNORE INTO patients (user_id) VALUES (?)').run(req.session.user.id);
+      db.prepare(`
+        UPDATE patients
+        SET dob = ?, gender = ?, blood_group = ?, health_insurance_no = ?, address = ?, emergency_contact = ?, medical_history = ?
+        WHERE user_id = ?
+      `).run(rawDate || null, gender || 'other', blood_group || null, health_insurance_no || null, address || null, emergency_contact || null, medical_history || null, req.session.user.id);
+    }
+  })();
 
-  req.session.user.name = name.trim();
-  req.session.user.phone = phone.trim();
+  req.session.user.name = normalizedName;
+  req.session.user.phone = normalizedPhone;
   req.flash('success', 'Cập nhật thông tin hồ sơ thành công!');
   res.redirect('/profile');
 });
